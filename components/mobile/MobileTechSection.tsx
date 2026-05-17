@@ -3,7 +3,12 @@
 import { useState } from 'react';
 import { useGameStore } from '@/store/gameStore';
 import { TECH_COLOR_HEX, type TechColor } from '@/data/factionSheets';
-import { BASIC_TECHNOLOGIES, TECH_BY_COLOR, canResearch, type Technology } from '@/data/technologies';
+import {
+  BASIC_TECHNOLOGIES,
+  TECH_BY_COLOR,
+  canResearch,
+  type Technology,
+} from '@/data/technologies';
 import type { MobileCommand } from '@/lib/sync/types';
 import MobileTechDetailsModal from './MobileTechDetailsModal';
 
@@ -32,7 +37,13 @@ export default function MobileTechSection({ viewingPlayerIdx, myPlayerIdx, sendC
 
   const myResearched = researchedTechs[viewingPlayerIdx] ?? [];
   const myExhausted = exhaustedTechs[viewingPlayerIdx] ?? [];
-  const totalCount = BASIC_TECHNOLOGIES.length;
+  // Counter only reflects basic techs (unit upgrades are handled from the unit cards)
+  const basicTechsAll = BASIC_TECHNOLOGIES.filter((t) => t.category !== 'unitUpgrade');
+  const totalCount = basicTechsAll.length;
+  const researchedBasicCount = myResearched.filter((id) => {
+    const t = basicTechsAll.find((x) => x.id === id);
+    return t !== undefined;
+  }).length;
   const canToggle = viewingPlayerIdx >= 0 && viewingPlayerIdx === myPlayerIdx;
 
   return (
@@ -63,7 +74,7 @@ export default function MobileTechSection({ viewingPlayerIdx, myPlayerIdx, sendC
               </span>
             )}
             <span className="text-xs text-gray-400" style={{ fontFamily: 'var(--font-share-tech-mono)' }}>
-              {myResearched.length} / {totalCount}
+              {researchedBasicCount} / {totalCount}
             </span>
           </div>
         </button>
@@ -167,6 +178,7 @@ export default function MobileTechSection({ viewingPlayerIdx, myPlayerIdx, sendC
                 </div>
               );
             })}
+
             {!canToggle && (
               <p className="text-[10px] text-gray-500 italic text-center mt-1">
                 {lang === 'es'

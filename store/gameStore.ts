@@ -20,6 +20,7 @@ import {
 import {
   makeDefaultPlayer,
   makeDefaultStrategies,
+  normalizePlayer,
   DEFAULT_OPTIONS,
   type GamePhase,
   type ClockRun,
@@ -131,6 +132,7 @@ interface GameState {
 
   // VP
   incrementVP: (playerIdx: number, delta: number) => void;
+  adjustTokens: (playerIdx: number, pool: 'tactic' | 'fleet' | 'strategy', delta: number) => void;
 
   // Status
   setStatusStep: (step: 0 | 1) => void;
@@ -154,6 +156,7 @@ interface GameState {
   scoreObjective: (objectiveId: string, playerIdx: number) => void;
   unscoreObjective: (objectiveId: string, playerIdx: number) => void;
   researchTech: (playerIdx: number, techId: string) => void;
+  forceResearchTech: (playerIdx: number, techId: string) => void;
   unresearchTech: (playerIdx: number, techId: string) => void;
   exhaustTech: (playerIdx: number, techId: string) => void;
   readyTech: (playerIdx: number, techId: string) => void;
@@ -522,6 +525,23 @@ export const useGameStore = create<GameState>()((set, get) => ({
     get().persistGame();
   },
 
+  adjustTokens: (playerIdx, pool, delta) => {
+    set((s) => {
+      const player = s.players[playerIdx];
+      if (!player) return {};
+      const current = player.commandTokens?.[pool] ?? 0;
+      const next = Math.max(0, current + delta);
+      if (next === current) return {};
+      const players = [...s.players];
+      players[playerIdx] = {
+        ...player,
+        commandTokens: { ...(player.commandTokens ?? { tactic: 0, fleet: 0, strategy: 0 }), [pool]: next },
+      };
+      return { players };
+    });
+    get().persistGame();
+  },
+
   // ── Status ─────────────────────────────────────────────────────────────────
 
   setStatusStep: (step) => set({ statusStep: step }),
@@ -662,8 +682,24 @@ export const useGameStore = create<GameState>()((set, get) => ({
       if (!tech) return {};
       const current = s.researchedTechs[playerIdx] ?? [];
       if (current.includes(techId)) return {};
-      // Enforce same-color prereqs (level N requires N already-researched of same color)
+      // Enforce prereqs (mixed-color aware)
       if (!canResearch(current, tech)) return {};
+      return {
+        researchedTechs: {
+          ...s.researchedTechs,
+          [playerIdx]: [...current, techId],
+        },
+      };
+    });
+    get().persistGame();
+  },
+
+  /** Bypass prereq validation. Caller (command processor) must have validated the bypass conditions. */
+  forceResearchTech: (playerIdx, techId) => {
+    set((s) => {
+      if (!TECH_BY_ID[techId]) return {};
+      const current = s.researchedTechs[playerIdx] ?? [];
+      if (current.includes(techId)) return {};
       return {
         researchedTechs: {
           ...s.researchedTechs,
@@ -819,7 +855,7 @@ export const useGameStore = create<GameState>()((set, get) => ({
   hydrateFromSave: (saved) => {
     set({
       nbPlayers: saved.nbPlayers,
-      players: saved.players,
+      players: saved.players.map(normalizePlayer),
       speakerIdx: saved.speakerIdx,
       previousSpeakerIdx: saved.previousSpeakerIdx,
       phase: saved.phase,
@@ -848,7 +884,7 @@ export const useGameStore = create<GameState>()((set, get) => ({
   hydrateFromSync: (synced) => {
     set({
       nbPlayers: synced.nbPlayers,
-      players: synced.players,
+      players: synced.players.map(normalizePlayer),
       speakerIdx: synced.speakerIdx,
       previousSpeakerIdx: synced.previousSpeakerIdx,
       phase: synced.phase,

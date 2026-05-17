@@ -14,10 +14,12 @@ export type MobileCommand =
   | { type: 'scoreObjective'; objectiveId: string }
   | { type: 'unscoreObjective'; objectiveId: string }
   | { type: 'researchTech'; techId: string }
+  | { type: 'researchTechWithBypass'; techId: string; bypassTechId: string }
   | { type: 'unresearchTech'; techId: string }
   | { type: 'exhaustTech'; techId: string }
   | { type: 'readyTech'; techId: string }
-  | { type: 'readyAllMyTechs' };
+  | { type: 'readyAllMyTechs' }
+  | { type: 'adjustTokens'; pool: 'tactic' | 'fleet' | 'strategy'; delta: number };
 
 export interface PendingCommand {
   deviceId: string;

@@ -3,8 +3,15 @@
 import Image from 'next/image';
 import { useGameStore } from '@/store/gameStore';
 import { FACTIONS } from '@/data/factions';
-import { TECH_COLOR_HEX } from '@/data/factionSheets';
-import { canResearch, countResearchedOfColor, type Technology } from '@/data/technologies';
+import { TECH_COLOR_HEX, UNIT_TYPE_LABELS, type TechColor } from '@/data/factionSheets';
+import {
+  AI_DEV_ALGORITHM_ID,
+  TECH_BY_ID,
+  canResearch,
+  getPrereqs,
+  missingPrereqCount,
+  type Technology,
+} from '@/data/technologies';
 import type { MobileCommand } from '@/lib/sync/types';
 
 interface Props {
@@ -19,19 +26,6 @@ interface Props {
   onClose: () => void;
 }
 
-const COLOR_NAME_ES: Record<string, string> = {
-  red: 'rojas',
-  green: 'verdes',
-  blue: 'azules',
-  yellow: 'amarillas',
-};
-const COLOR_NAME_EN: Record<string, string> = {
-  red: 'red',
-  green: 'green',
-  blue: 'blue',
-  yellow: 'yellow',
-};
-
 export default function MobileTechDetailsModal({
   tech,
   canToggle,
@@ -45,13 +39,26 @@ export default function MobileTechDetailsModal({
 
   const researched = researchedIds.includes(tech.id);
   const exhausted = researched && exhaustedIds.includes(tech.id);
-  const metCount = Math.min(
-    countResearchedOfColor(researchedIds, tech.color),
-    tech.level,
-  );
-  const prereqsMet = countResearchedOfColor(researchedIds, tech.color) >= tech.level;
+  const prereqs = getPrereqs(tech);
+  const prereqsMet = canResearch(researchedIds, tech) || researched;
+  const missing = missingPrereqCount(researchedIds, tech);
   const canMarkNow = canToggle && !researched && prereqsMet;
-  const missing = Math.max(tech.level - countResearchedOfColor(researchedIds, tech.color), 0);
+  const isUnitUpgrade = tech.category === 'unitUpgrade';
+
+  // AI Dev bypass eligibility
+  const aiDevResearched = researchedIds.includes(AI_DEV_ALGORITHM_ID);
+  const aiDevReady = aiDevResearched && !exhaustedIds.includes(AI_DEV_ALGORITHM_ID);
+  const canUseBypass =
+    canToggle &&
+    !researched &&
+    isUnitUpgrade &&
+    aiDevReady &&
+    missing === 1 &&
+    tech.id !== AI_DEV_ALGORITHM_ID;
+
+  const startingFactions = (tech.startingFactionIdx ?? [])
+    .map((i) => FACTIONS[i])
+    .filter(Boolean);
 
   const toggleResearched = async () => {
     if (!canToggle) return;
@@ -74,9 +81,15 @@ export default function MobileTechDetailsModal({
     onClose();
   };
 
-  const startingFactions = (tech.startingFactionIdx ?? [])
-    .map((i) => FACTIONS[i])
-    .filter(Boolean);
+  const useBypass = async () => {
+    if (!canUseBypass) return;
+    await sendCommand({
+      type: 'researchTechWithBypass',
+      techId: tech.id,
+      bypassTechId: AI_DEV_ALGORITHM_ID,
+    });
+    onClose();
+  };
 
   return (
     <div
@@ -93,9 +106,11 @@ export default function MobileTechDetailsModal({
         >
           <div className="flex items-center gap-2 min-w-0">
             <span
-              className="w-7 h-7 rounded-full border border-black/60 flex-shrink-0"
+              className="w-7 h-7 rounded-full border border-black/60 flex-shrink-0 flex items-center justify-center"
               style={{ background: color, boxShadow: `0 0 6px ${color}90` }}
-            />
+            >
+              {isUnitUpgrade && <span className="text-[10px] text-white">⚙</span>}
+            </span>
             <div className="min-w-0">
               <h2
                 className="text-base text-white truncate"
@@ -104,14 +119,17 @@ export default function MobileTechDetailsModal({
                 {lang === 'es' ? tech.nameEs : tech.nameEn}
               </h2>
               <p className="text-[10px] text-gray-400 uppercase tracking-wider">
-                {lang === 'es' ? 'Nivel' : 'Level'} {tech.level} ·{' '}
+                {isUnitUpgrade
+                  ? lang === 'es' ? 'Mejora de Unidad' : 'Unit Upgrade'
+                  : `${lang === 'es' ? 'Nivel' : 'Level'} ${tech.level}`}
+                {' · '}
                 {tech.expansion === 'base' ? 'Base' : 'PoK'}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="px-4 py-3 max-h-72 overflow-y-auto">
+        <div className="px-4 py-3 max-h-[70vh] overflow-y-auto">
           <p
             className="text-sm text-gray-100 leading-relaxed"
             style={{ fontFamily: 'var(--font-electrolize)' }}
@@ -119,47 +137,85 @@ export default function MobileTechDetailsModal({
             {lang === 'es' ? tech.effectEs : tech.effectEn}
           </p>
 
-          {/* Prereqs visualization (filled = met, hollow = missing) */}
-          {tech.level > 0 && (
-            <div className="flex items-center gap-1.5 mt-3">
+          {/* Prereqs visualization (mixed-color aware) */}
+          {prereqs.length > 0 && (
+            <PrereqsRow
+              prereqs={prereqs}
+              researchedIds={researchedIds}
+              prereqsMet={prereqsMet}
+              missing={missing}
+              lang={lang}
+            />
+          )}
+
+          {/* This tech provides — only basic techs contribute color icons */}
+          {!isUnitUpgrade && (
+            <div className="flex items-center gap-1.5 mt-2">
               <span className="text-[10px] text-gray-400 uppercase tracking-wider">
-                {lang === 'es' ? 'Prereqs:' : 'Prereqs:'}
+                {lang === 'es' ? 'Aporta:' : 'Provides:'}
               </span>
-              <div className="flex gap-1">
-                {Array.from({ length: tech.level }).map((_, i) => {
-                  const met = i < metCount;
-                  return (
-                    <span
-                      key={i}
-                      className="w-4 h-4 rounded-full border border-black/60"
-                      style={{
-                        background: met ? color : 'transparent',
-                        borderColor: met ? color : 'rgba(255,255,255,0.3)',
-                        boxShadow: met ? `0 0 4px ${color}80` : 'none',
-                      }}
-                    />
-                  );
-                })}
-              </div>
               <span
-                className={`text-[11px] ml-1 ${prereqsMet ? 'text-green-300' : 'text-red-300'}`}
-                style={{ fontFamily: 'var(--font-share-tech-mono)' }}
-              >
-                {metCount} / {tech.level}
-              </span>
+                className="w-4 h-4 rounded-full border border-black/60"
+                style={{ background: color, boxShadow: `0 0 4px ${color}80` }}
+              />
             </div>
           )}
 
-          {/* This tech provides */}
-          <div className="flex items-center gap-1.5 mt-2">
-            <span className="text-[10px] text-gray-400 uppercase tracking-wider">
-              {lang === 'es' ? 'Aporta:' : 'Provides:'}
-            </span>
-            <span
-              className="w-4 h-4 rounded-full border border-black/60"
-              style={{ background: color, boxShadow: `0 0 4px ${color}80` }}
-            />
-          </div>
+          {/* Upgraded unit preview */}
+          {isUnitUpgrade && tech.upgradedStats && tech.upgradesUnit && (
+            <div className="mt-3 pt-3 border-t border-gray-700">
+              <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1.5">
+                {lang === 'es' ? 'Mejora la unidad' : 'Upgrades unit'}
+              </p>
+              <div className="rounded border border-red-700/60 bg-red-900/10 p-2">
+                <p className="text-xs text-red-300 uppercase tracking-wider">
+                  {UNIT_TYPE_LABELS[tech.upgradesUnit][lang]}
+                </p>
+                <p className="text-sm text-white" style={{ fontFamily: 'var(--font-audiowide)' }}>
+                  {lang === 'es' ? tech.upgradedNameEs : tech.upgradedNameEn}
+                </p>
+                {tech.upgradedSubtitleEs && (
+                  <p className="text-[11px] text-gray-400 italic">
+                    {lang === 'es' ? tech.upgradedSubtitleEs : tech.upgradedSubtitleEn}
+                  </p>
+                )}
+                <div className="grid grid-cols-4 gap-1 mt-1.5 text-center">
+                  {(['cost', 'combat', 'movement', 'capacity'] as const).map((key) => {
+                    const value =
+                      key === 'combat' && tech.upgradedStats!.combatDice && tech.upgradedStats!.combat !== null
+                        ? `${tech.upgradedStats!.combat} ×${tech.upgradedStats!.combatDice}`
+                        : tech.upgradedStats![key] !== null && tech.upgradedStats![key] !== undefined
+                        ? String(tech.upgradedStats![key])
+                        : '—';
+                    const label = {
+                      cost: lang === 'es' ? 'Coste' : 'Cost',
+                      combat: lang === 'es' ? 'Combate' : 'Combat',
+                      movement: lang === 'es' ? 'Mov' : 'Mov',
+                      capacity: lang === 'es' ? 'Cap' : 'Cap',
+                    }[key];
+                    return (
+                      <div key={key} className="flex flex-col">
+                        <span className="text-[9px] text-gray-400">{label}</span>
+                        <span
+                          className="text-sm text-white font-bold"
+                          style={{ fontFamily: 'var(--font-share-tech-mono)' }}
+                        >
+                          {value}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+                {tech.upgradedStats.abilitiesEs.length > 0 && (
+                  <ul className="text-[11px] text-gray-200 mt-1.5 space-y-0.5">
+                    {(lang === 'es' ? tech.upgradedStats.abilitiesEs : tech.upgradedStats.abilitiesEn).map((a, i) => (
+                      <li key={i}>◆ {a}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+          )}
 
           {startingFactions.length > 0 && (
             <div className="mt-3 pt-3 border-t border-gray-700">
@@ -187,22 +243,25 @@ export default function MobileTechDetailsModal({
           <div className="px-4 py-3 border-t border-gray-700 pointer-events-auto flex flex-col gap-1.5">
             {researched ? (
               <>
-                {exhausted ? (
-                  <button
-                    onClick={toggleExhausted}
-                    className="w-full py-2.5 rounded border-2 border-yellow-500/60 bg-yellow-500/15 text-yellow-200 text-sm active:bg-yellow-500/30"
-                    style={{ fontFamily: 'var(--font-aldrich)' }}
-                  >
-                    ↻ {lang === 'es' ? 'Enderezar carta' : 'Ready card'}
-                  </button>
-                ) : (
-                  <button
-                    onClick={toggleExhausted}
-                    className="w-full py-2.5 rounded border-2 border-yellow-500/40 bg-yellow-500/5 text-yellow-300 text-sm active:bg-yellow-500/20"
-                    style={{ fontFamily: 'var(--font-aldrich)' }}
-                  >
-                    ⌀ {lang === 'es' ? 'Marcar como agotada' : 'Mark as exhausted'}
-                  </button>
+                {/* Exhaust toggle — not applicable to unit upgrades (they're passive). */}
+                {!isUnitUpgrade && (
+                  exhausted ? (
+                    <button
+                      onClick={toggleExhausted}
+                      className="w-full py-2.5 rounded border-2 border-yellow-500/60 bg-yellow-500/15 text-yellow-200 text-sm active:bg-yellow-500/30"
+                      style={{ fontFamily: 'var(--font-aldrich)' }}
+                    >
+                      ↻ {lang === 'es' ? 'Enderezar carta' : 'Ready card'}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={toggleExhausted}
+                      className="w-full py-2.5 rounded border-2 border-yellow-500/40 bg-yellow-500/5 text-yellow-300 text-sm active:bg-yellow-500/20"
+                      style={{ fontFamily: 'var(--font-aldrich)' }}
+                    >
+                      ⌀ {lang === 'es' ? 'Marcar como agotada' : 'Mark as exhausted'}
+                    </button>
+                  )
                 )}
                 <button
                   onClick={toggleResearched}
@@ -222,11 +281,22 @@ export default function MobileTechDetailsModal({
                 >
                   {lang === 'es' ? 'Marcar como investigada' : 'Mark as researched'}
                 </button>
+                {canUseBypass && (
+                  <button
+                    onClick={useBypass}
+                    className="w-full py-2 rounded border-2 border-cyan-500/60 bg-cyan-500/15 text-cyan-200 text-xs active:bg-cyan-500/30"
+                    style={{ fontFamily: 'var(--font-aldrich)' }}
+                  >
+                    🤖 {lang === 'es'
+                      ? 'Usar Algoritmo IA (ignora 1 prereq + agota)'
+                      : 'Use AI Algorithm (skip 1 prereq + exhaust)'}
+                  </button>
+                )}
                 {!prereqsMet && (
                   <p className="text-[11px] text-red-300 text-center">
                     {lang === 'es'
-                      ? `Necesitas ${missing} tecnologías ${COLOR_NAME_ES[tech.color]} más`
-                      : `You need ${missing} more ${COLOR_NAME_EN[tech.color]} technolog${missing === 1 ? 'y' : 'ies'}`}
+                      ? `Te faltan ${missing} prerequisitos`
+                      : `You are missing ${missing} prereq${missing === 1 ? '' : 's'}`}
                   </p>
                 )}
               </>
@@ -243,6 +313,66 @@ export default function MobileTechDetailsModal({
           </button>
         </div>
       </div>
+    </div>
+  );
+}
+
+// ─── Prereqs row ───────────────────────────────────────────────────────────────
+
+function PrereqsRow({
+  prereqs,
+  researchedIds,
+  prereqsMet,
+  missing,
+  lang,
+}: {
+  prereqs: TechColor[];
+  researchedIds: string[];
+  prereqsMet: boolean;
+  missing: number;
+  lang: 'es' | 'en';
+}) {
+  // Count haves by color — exclude unit upgrades (they don't contribute color icons)
+  const have: Record<TechColor, number> = { red: 0, green: 0, blue: 0, yellow: 0 };
+  for (const id of researchedIds) {
+    const t = TECH_BY_ID[id];
+    if (t && t.category !== 'unitUpgrade') have[t.color]++;
+  }
+  // Build met/missing array — for each required prereq in order, assign from have count
+  const consumed: Record<TechColor, number> = { red: 0, green: 0, blue: 0, yellow: 0 };
+  const slots = prereqs.map((c) => {
+    const met = consumed[c] < have[c];
+    if (met) consumed[c]++;
+    return { color: c, met };
+  });
+
+  return (
+    <div className="flex items-center gap-1.5 mt-3 flex-wrap">
+      <span className="text-[10px] text-gray-400 uppercase tracking-wider">
+        {lang === 'es' ? 'Prereqs:' : 'Prereqs:'}
+      </span>
+      <div className="flex gap-1">
+        {slots.map((s, i) => {
+          const hex = TECH_COLOR_HEX[s.color];
+          return (
+            <span
+              key={i}
+              className="w-4 h-4 rounded-full border border-black/60"
+              style={{
+                background: s.met ? hex : 'transparent',
+                borderColor: s.met ? hex : `${hex}66`,
+                boxShadow: s.met ? `0 0 4px ${hex}80` : 'none',
+              }}
+            />
+          );
+        })}
+      </div>
+      <span
+        className={`text-[11px] ml-1 ${prereqsMet ? 'text-green-300' : 'text-red-300'}`}
+        style={{ fontFamily: 'var(--font-share-tech-mono)' }}
+      >
+        {prereqs.length - missing} / {prereqs.length}
+      </span>
     </div>
   );
 }

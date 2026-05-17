@@ -34,6 +34,14 @@ export type Lang = 'en' | 'es';
 
 export type ClockRun = -1 | 0 | 1;
 
+export interface CommandTokenPools {
+  tactic: number;
+  fleet: number;
+  strategy: number;
+}
+
+export type CommandPool = keyof CommandTokenPools;
+
 export interface PlayerData {
   faction: number;
   color: number;
@@ -42,6 +50,7 @@ export interface PlayerData {
   nbSpeaker: number;
   influence: number;
   vp: number;
+  commandTokens: CommandTokenPools;
 }
 
 export interface StrategyEntry {
@@ -152,7 +161,22 @@ export const DEFAULT_OPTIONS: GameOptions = {
 };
 
 export function makeDefaultPlayer(idx: number): PlayerData {
-  return { faction: idx, color: idx % 8, name: `Player ${idx + 1}`, clock: 0, nbSpeaker: 0, influence: 0, vp: 0 };
+  return {
+    faction: idx,
+    color: idx % 8,
+    name: `Player ${idx + 1}`,
+    clock: 0,
+    nbSpeaker: 0,
+    influence: 0,
+    vp: 0,
+    commandTokens: { tactic: 3, fleet: 3, strategy: 2 },
+  };
+}
+
+/** Normalize a possibly-old player object (from older saves) to current schema. */
+export function normalizePlayer(p: PlayerData): PlayerData {
+  if (p && p.commandTokens && typeof p.commandTokens.tactic === 'number') return p;
+  return { ...p, commandTokens: { tactic: 3, fleet: 3, strategy: 2 } };
 }
 
 export function makeDefaultStrategies(): StrategyEntry[] {

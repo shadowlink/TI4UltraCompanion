@@ -59,10 +59,15 @@ export default function MobileActionPhase({ myPlayerIdx, sendCommand }: Props) {
     setBusy(false);
   };
 
+  // Preserve actual strategy slot indices (1-8), filtering passed and unowned slots
   const remainingPlayers = strategies
-    .slice(1)
-    .filter((st) => st.playerIdx !== NO_PLAYER && st.playerIdx < 8 && st.status !== STRATEGY_PASSED)
-    .map((st, idx) => ({ strategy: st, slotIdx: idx + 1 }));
+    .map((st, idx) => ({ strategy: st, slotIdx: idx }))
+    .filter(({ strategy, slotIdx }) =>
+      slotIdx >= 1 &&
+      strategy.playerIdx !== NO_PLAYER &&
+      strategy.playerIdx < 8 &&
+      strategy.status !== STRATEGY_PASSED,
+    );
 
   return (
     <div className="flex flex-col gap-3 p-3">

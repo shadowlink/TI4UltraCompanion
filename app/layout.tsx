@@ -41,7 +41,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       lang="en"
       className={`${audiowide.variable} ${aldrich.variable} ${electrolize.variable} ${shareTechMono.variable} h-full`}
     >
-      <body className="min-h-full">{children}</body>
+      <body className="h-full overflow-hidden">{children}</body>
     </html>
   );
 }

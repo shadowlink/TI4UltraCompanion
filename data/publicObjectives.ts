@@ -112,7 +112,7 @@ export const PUBLIC_OBJECTIVES: PublicObjective[] = [
   },
   {
     id: "build-defenses",
-    nameEn: "erigir Defensas",
+    nameEn: "Erigir Defensas",
     conditionEn: "Ten al menos 4 estructuras",
     points: 1,
     stage: 1,

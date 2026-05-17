@@ -4,6 +4,11 @@ import { useEffect, useRef } from 'react';
 import { useGameStore } from '@/store/gameStore';
 import type { PendingCommand, MobileCommand } from '@/lib/sync/types';
 import {
+  AI_DEV_ALGORITHM_ID,
+  TECH_BY_ID,
+  missingPrereqCount,
+} from '@/data/technologies';
+import {
   NO_PLAYER,
   PHASE_STRATEGY,
   PHASE_ACTION,
@@ -117,6 +122,23 @@ function processCommand(cmd: PendingCommand): void {
       store.researchTech(playerIdx, cmd.command.techId);
       return;
     }
+    case 'researchTechWithBypass': {
+      const { techId, bypassTechId } = cmd.command;
+      const tech = TECH_BY_ID[techId];
+      if (!tech || tech.category !== 'unitUpgrade') return;
+      // Bypass must be AI Dev Algorithm, researched and not exhausted by this player
+      if (bypassTechId !== AI_DEV_ALGORITHM_ID) return;
+      const owned = store.researchedTechs[playerIdx] ?? [];
+      if (!owned.includes(bypassTechId)) return;
+      const exhausted = store.exhaustedTechs[playerIdx] ?? [];
+      if (exhausted.includes(bypassTechId)) return;
+      // Must be missing exactly 1 prereq to use the bypass
+      if (missingPrereqCount(owned, tech) !== 1) return;
+      // Apply: exhaust AI Dev + force research
+      store.exhaustTech(playerIdx, bypassTechId);
+      store.forceResearchTech(playerIdx, techId);
+      return;
+    }
     case 'unresearchTech': {
       store.unresearchTech(playerIdx, cmd.command.techId);
       return;
@@ -131,6 +153,13 @@ function processCommand(cmd: PendingCommand): void {
     }
     case 'readyAllMyTechs': {
       store.readyAllMyTechs(playerIdx);
+      return;
+    }
+    case 'adjustTokens': {
+      const { pool, delta } = cmd.command;
+      if (delta !== 1 && delta !== -1) return;
+      if (pool !== 'tactic' && pool !== 'fleet' && pool !== 'strategy') return;
+      store.adjustTokens(playerIdx, pool, delta);
       return;
     }
   }

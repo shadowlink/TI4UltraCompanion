@@ -1,11 +1,15 @@
 'use client';
 
+import { useState } from 'react';
 import Image from 'next/image';
 import { useGameStore } from '@/store/gameStore';
 import { FACTIONS } from '@/data/factions';
-import { getFactionSheet } from '@/data/factionSheets';
+import { getFactionSheet, type FactionUnit, type TechColor } from '@/data/factionSheets';
+import { TECH_BY_ID, canResearch, getUnitUpgradeFor, type Technology } from '@/data/technologies';
 import MobileUnitCard from './MobileUnitCard';
 import MobileTechSection from './MobileTechSection';
+import MobileCommandSheet from './MobileCommandSheet';
+import MobileTechDetailsModal from './MobileTechDetailsModal';
 import type { MobileCommand } from '@/lib/sync/types';
 
 interface Props {
@@ -17,6 +21,40 @@ interface Props {
   sendCommand: (cmd: MobileCommand) => Promise<{ ok: boolean; error?: string }>;
 }
 
+/** For each prereq slot, mark it met if the player has enough basic techs of that color. */
+function computeMetMask(prereqs: TechColor[] | undefined, researchedIds: string[]): boolean[] {
+  if (!prereqs || prereqs.length === 0) return [];
+  const have: Record<TechColor, number> = { red: 0, green: 0, blue: 0, yellow: 0 };
+  for (const id of researchedIds) {
+    const t = TECH_BY_ID[id];
+    if (t && t.category !== 'unitUpgrade') have[t.color]++;
+  }
+  const used: Record<TechColor, number> = { red: 0, green: 0, blue: 0, yellow: 0 };
+  return prereqs.map((c) => {
+    if (used[c] < have[c]) {
+      used[c]++;
+      return true;
+    }
+    return false;
+  });
+}
+
+function applyUpgrade(unit: FactionUnit, researchedIds: string[]): FactionUnit {
+  const upgrade = getUnitUpgradeFor(unit.type);
+  if (!upgrade || !researchedIds.includes(upgrade.id) || !upgrade.upgradedStats) {
+    return unit;
+  }
+  return {
+    ...unit,
+    nameEs: upgrade.upgradedNameEs ?? unit.nameEs,
+    nameEn: upgrade.upgradedNameEn ?? unit.nameEn,
+    stats: upgrade.upgradedStats,
+    hasUpgrade: false,
+    upgradePrereqs: undefined,
+    upgradedStats: undefined,
+  };
+}
+
 export default function MobileFactionSheet({
   factionIdx,
   viewingPlayerIdx,
@@ -26,6 +64,12 @@ export default function MobileFactionSheet({
   const lang = useGameStore((s) => s.lang);
   const sheet = getFactionSheet(factionIdx);
   const faction = FACTIONS[factionIdx];
+  const researchedTechs = useGameStore((s) => s.researchedTechs);
+  const exhaustedTechs = useGameStore((s) => s.exhaustedTechs);
+  const myResearched = viewingPlayerIdx >= 0 ? (researchedTechs[viewingPlayerIdx] ?? []) : [];
+  const myExhausted = viewingPlayerIdx >= 0 ? (exhaustedTechs[viewingPlayerIdx] ?? []) : [];
+  const canToggle = viewingPlayerIdx >= 0 && viewingPlayerIdx === myPlayerIdx;
+  const [openUpgrade, setOpenUpgrade] = useState<Technology | null>(null);
 
   if (!sheet || !faction) {
     return (
@@ -85,6 +129,15 @@ export default function MobileFactionSheet({
         </div>
       )}
 
+      {/* Command sheet (player tokens) */}
+      {viewingPlayerIdx >= 0 && (
+        <MobileCommandSheet
+          viewingPlayerIdx={viewingPlayerIdx}
+          myPlayerIdx={myPlayerIdx}
+          sendCommand={sendCommand}
+        />
+      )}
+
       {/* Commodities */}
       {sheet.commodities > 0 && (
         <div className="flex items-center justify-between rounded border border-cyan-500/40 bg-cyan-500/10 px-4 py-2">
@@ -138,9 +191,23 @@ export default function MobileFactionSheet({
             {lang === 'es' ? 'Unidades' : 'Units'}
           </h2>
           <div className="grid grid-cols-2 gap-2">
-            {sheet.units.map((unit) => (
-              <MobileUnitCard key={unit.type} unit={unit} />
-            ))}
+            {sheet.units.map((unit) => {
+              const upgradeTech = getUnitUpgradeFor(unit.type);
+              const isUpgraded = upgradeTech ? myResearched.includes(upgradeTech.id) : false;
+              const isUpgradable = upgradeTech && !isUpgraded && canResearch(myResearched, upgradeTech);
+              const effective = applyUpgrade(unit, myResearched);
+              const metMask = computeMetMask(effective.upgradePrereqs, myResearched);
+              return (
+                <MobileUnitCard
+                  key={unit.type}
+                  unit={effective}
+                  isUpgraded={isUpgraded}
+                  isUpgradable={isUpgradable}
+                  metPrereqMask={metMask}
+                  onClick={upgradeTech ? () => setOpenUpgrade(upgradeTech) : undefined}
+                />
+              );
+            })}
           </div>
         </div>
       )}
@@ -151,6 +218,18 @@ export default function MobileFactionSheet({
           viewingPlayerIdx={viewingPlayerIdx}
           myPlayerIdx={myPlayerIdx}
           sendCommand={sendCommand}
+        />
+      )}
+
+      {/* Unit upgrade modal (opened from tapping a unit card) */}
+      {openUpgrade && (
+        <MobileTechDetailsModal
+          tech={openUpgrade}
+          canToggle={canToggle}
+          researchedIds={myResearched}
+          exhaustedIds={myExhausted}
+          sendCommand={sendCommand}
+          onClose={() => setOpenUpgrade(null)}
         />
       )}
     </div>

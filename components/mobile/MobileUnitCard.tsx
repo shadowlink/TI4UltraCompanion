@@ -5,6 +5,14 @@ import { UNIT_TYPE_LABELS, TECH_COLOR_HEX, type FactionUnit, type UnitStatKey } 
 
 interface Props {
   unit: FactionUnit;
+  /** Tap handler — when defined, the card becomes a button. */
+  onClick?: () => void;
+  /** When true, the unit has been upgraded (shows a "II" badge). */
+  isUpgraded?: boolean;
+  /** When true, the upgrade is researchable right now (subtle glow on MEJORA row). */
+  isUpgradable?: boolean;
+  /** Parallel array to `unit.upgradePrereqs`: which prereqs are currently met. */
+  metPrereqMask?: boolean[];
 }
 
 function statValue(v: string | number | null): string {
@@ -12,7 +20,13 @@ function statValue(v: string | number | null): string {
   return String(v);
 }
 
-export default function MobileUnitCard({ unit }: Props) {
+export default function MobileUnitCard({
+  unit,
+  onClick,
+  isUpgraded,
+  isUpgradable,
+  metPrereqMask,
+}: Props) {
   const lang = useGameStore((s) => s.lang);
   const stats = unit.stats;
   const combatDice = stats.combatDice ?? 1;
@@ -75,8 +89,30 @@ export default function MobileUnitCard({ unit }: Props) {
   const hideCapacity = unit.type !== 'flagship' && unit.type !== 'dreadnought' &&
                        unit.type !== 'warSun' && unit.type !== 'cruiser' && unit.type !== 'carrier';
 
+  const Wrapper = onClick ? 'button' : 'div';
+  const wrapperProps = onClick
+    ? {
+        type: 'button' as const,
+        onClick,
+        className:
+          'rounded-lg border-2 border-red-700/70 bg-gradient-to-b from-red-900/20 to-black/60 p-2 flex flex-col gap-1.5 text-left pointer-events-auto active:scale-[0.98] transition-transform relative',
+      }
+    : {
+        className:
+          'rounded-lg border-2 border-red-700/70 bg-gradient-to-b from-red-900/20 to-black/60 p-2 flex flex-col gap-1.5 relative',
+      };
+
   return (
-    <div className="rounded-lg border-2 border-red-700/70 bg-gradient-to-b from-red-900/20 to-black/60 p-2 flex flex-col gap-1.5">
+    <Wrapper {...wrapperProps}>
+      {isUpgraded && (
+        <span
+          className="absolute top-1 right-1 text-[9px] font-bold text-white px-1.5 py-0.5 rounded bg-yellow-600/80 leading-none"
+          style={{ fontFamily: 'var(--font-share-tech-mono)' }}
+          title={lang === 'es' ? 'Mejorada' : 'Upgraded'}
+        >
+          II
+        </span>
+      )}
       <div className="flex items-baseline justify-between gap-2">
         <span
           className="text-[10px] text-red-300 uppercase tracking-wider leading-none"
@@ -137,7 +173,11 @@ export default function MobileUnitCard({ unit }: Props) {
       )}
 
       {unit.hasUpgrade && (
-        <div className="flex items-center gap-1.5 mt-1 pt-1.5 border-t border-gray-700/50">
+        <div
+          className={`flex items-center gap-1.5 mt-auto pt-1.5 border-t ${
+            isUpgradable ? 'border-green-400/50' : 'border-gray-700/50'
+          }`}
+        >
           <span
             className="text-[9px] text-yellow-300 uppercase tracking-wider"
             style={{ fontFamily: 'var(--font-aldrich)' }}
@@ -146,17 +186,25 @@ export default function MobileUnitCard({ unit }: Props) {
           </span>
           {unit.upgradePrereqs && unit.upgradePrereqs.length > 0 && (
             <div className="flex gap-1">
-              {unit.upgradePrereqs.map((color, i) => (
-                <span
-                  key={i}
-                  className="w-3 h-3 rounded-full border border-black/60"
-                  style={{ background: TECH_COLOR_HEX[color], boxShadow: `0 0 4px ${TECH_COLOR_HEX[color]}80` }}
-                />
-              ))}
+              {unit.upgradePrereqs.map((color, i) => {
+                const hex = TECH_COLOR_HEX[color];
+                const met = metPrereqMask?.[i] ?? false;
+                return (
+                  <span
+                    key={i}
+                    className="w-3 h-3 rounded-full border"
+                    style={{
+                      background: met ? hex : 'transparent',
+                      borderColor: met ? 'rgba(0,0,0,0.6)' : `${hex}99`,
+                      boxShadow: met ? `0 0 4px ${hex}80` : 'none',
+                    }}
+                  />
+                );
+              })}
             </div>
           )}
         </div>
       )}
-    </div>
+    </Wrapper>
   );
 }

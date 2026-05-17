@@ -17,7 +17,6 @@ import {
 import type { RoomPairing } from '@/lib/sync/types';
 
 import MobilePhaseHeader from './MobilePhaseHeader';
-import MobileStrategiesStrip from './MobileStrategiesStrip';
 import MobileVPRow from './MobileVPRow';
 import MobileSetupPhase from './MobileSetupPhase';
 import MobileStrategyPhase from './MobileStrategyPhase';
@@ -57,7 +56,7 @@ export default function MobileViewerShell({ viewerCode, connected, error, pairin
   // Game not initialized yet
   if (!connected && phase === PHASE_INIT) {
     return (
-      <div className="flex flex-col h-screen items-center justify-center bg-black p-4">
+      <div className="flex flex-col h-dvh items-center justify-center bg-black p-4">
         <p className="text-orange-300" style={{ fontFamily: 'var(--font-audiowide)' }}>
           {lang === 'es' ? 'Conectando...' : 'Connecting...'}
         </p>
@@ -70,7 +69,7 @@ export default function MobileViewerShell({ viewerCode, connected, error, pairin
   // Setup not finished — show waiting screen (no faction picker yet)
   if (phase === PHASE_INIT || phase === PHASE_GALAXY) {
     return (
-      <div className="flex flex-col h-screen bg-black">
+      <div className="flex flex-col h-dvh bg-black">
         <div className={`flex items-center justify-center gap-2 px-3 py-1 text-[11px] ${
           connected ? 'bg-green-900/40 text-green-300' : 'bg-red-900/40 text-red-300'
         }`}>
@@ -120,7 +119,7 @@ export default function MobileViewerShell({ viewerCode, connected, error, pairin
   const showVPRow = phase !== PHASE_END;
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden bg-black">
+    <div className="flex flex-col h-dvh overflow-hidden bg-black">
       {/* Top bar: connection + view tabs + switch button */}
       <div className={`flex items-center justify-between gap-2 px-2 py-1 text-[11px] flex-shrink-0 ${
         connected ? 'bg-green-900/40 text-green-300' : 'bg-red-900/40 text-red-300'
@@ -178,7 +177,6 @@ export default function MobileViewerShell({ viewerCode, connected, error, pairin
         <>
           <MobilePhaseHeader />
 
-          {showStrategiesStrip && <MobileStrategiesStrip />}
           {showStrategiesStrip && <MobilePublicObjectivesBar myPlayerIdx={myPlayerIdx} sendCommand={sendCommand} />}
 
           <main className="flex-1 overflow-y-auto">
