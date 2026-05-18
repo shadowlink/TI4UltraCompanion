@@ -189,7 +189,11 @@ const STANDARD_UNIT_NAMES: Record<UnitType, { es: string; en: string }> = {
 /** Universal upgrade metadata: tech prereqs + which stats improve. */
 const STANDARD_UPGRADE_META: Record<
   UnitType,
-  { hasUpgrade: boolean; upgradePrereqs?: TechColor[]; upgradedStats?: UnitStatKey[] }
+  {
+    hasUpgrade: boolean;
+    upgradePrereqs?: TechColor[];
+    upgradedStats?: UnitStatKey[];
+  }
 > = {
   flagship: { hasUpgrade: false },
   warSun: {
@@ -693,8 +697,7 @@ const SAAR_SHEET: FactionSheet = {
     {
       nameEs: "EXPOLIO",
       nameEn: "SCAVENGE",
-      descriptionEs:
-        "Tras tomar el control de un planeta, ganas 1 Mercancía.",
+      descriptionEs: "Tras tomar el control de un planeta, ganas 1 Mercancía.",
       descriptionEn: "After you gain control of a planet, gain 1 trade good.",
     },
     {
@@ -851,9 +854,9 @@ const SOL_SHEET: FactionSheet = {
       nameEs: "VERSATILIDAD",
       nameEn: "VERSATILE",
       descriptionEs:
-        "Cuando ganes Mercancías de tu carta de Estrategia, recibe 2 adicionales.",
+        "Cuando ganas fichas de Mando durante la fase de Estado, ganas 1 ficha de Mando adicional.",
       descriptionEn:
-        "When you gain trade goods from your strategy card, gain 2 additional trade goods.",
+        "When you gain command tokens during the status phase, gain 1 additional command token.",
     },
   ],
   units: withOverride(makeStandardUnits(), "flagship", {
@@ -1684,7 +1687,11 @@ const TITANS_SHEET: FactionSheet = {
       combatDice: 2,
       movement: 1,
       capacity: 3,
-      abilitiesEs: ["Resistencia al daño", "Bombardeo 5", "Cañón espacial 5 (×3)"],
+      abilitiesEs: [
+        "Resistencia al daño",
+        "Bombardeo 5",
+        "Cañón espacial 5 (×3)",
+      ],
       abilitiesEn: ["Sustain Damage", "Bombardment 5", "Space Cannon 5 (×3)"],
       description: {
         es: "Durante un combate, esta unidad usa el valor de Combate 7. Otros jugadores no pueden usar CAÑÓN ESPACIAL contra naves de este sistema.",
