@@ -40,6 +40,7 @@ import {
 import { saveGame, clearSavedGame } from '@/lib/persistence';
 import { STAGE_I_OBJECTIVES, STAGE_II_OBJECTIVES, OBJECTIVES_BY_ID } from '@/data/publicObjectives';
 import { TECH_BY_ID, canResearch } from '@/data/technologies';
+import { getFactionSheet } from '@/data/factionSheets';
 
 // ─── State shape ─────────────────────────────────────────────────────────────
 
@@ -133,6 +134,8 @@ interface GameState {
   // VP
   incrementVP: (playerIdx: number, delta: number) => void;
   adjustTokens: (playerIdx: number, pool: 'tactic' | 'fleet' | 'strategy', delta: number) => void;
+  adjustCommodities: (playerIdx: number, delta: number) => void;
+  adjustTradeGoods: (playerIdx: number, delta: number) => void;
 
   // Status
   setStatusStep: (step: 0 | 1) => void;
@@ -225,7 +228,7 @@ const INITIAL_STATE = {
   currentPlayerTimer: 0,
   lastActivity: 0,
   decisionTimerRemaining: DEFAULT_OPTIONS.decisionTimerLimit,
-  lang: 'en' as Lang,
+  lang: 'es' as Lang,
   activeModal: null as ModalType,
   showTransition: false,
   transitionText: { turn: '', phase: '' },
@@ -537,6 +540,35 @@ export const useGameStore = create<GameState>()((set, get) => ({
         ...player,
         commandTokens: { ...(player.commandTokens ?? { tactic: 0, fleet: 0, strategy: 0 }), [pool]: next },
       };
+      return { players };
+    });
+    get().persistGame();
+  },
+
+  adjustCommodities: (playerIdx, delta) => {
+    set((s) => {
+      const player = s.players[playerIdx];
+      if (!player) return {};
+      const max = getFactionSheet(player.faction)?.commodities ?? 0;
+      const current = player.commodities ?? 0;
+      const next = Math.min(max, Math.max(0, current + delta));
+      if (next === current) return {};
+      const players = [...s.players];
+      players[playerIdx] = { ...player, commodities: next };
+      return { players };
+    });
+    get().persistGame();
+  },
+
+  adjustTradeGoods: (playerIdx, delta) => {
+    set((s) => {
+      const player = s.players[playerIdx];
+      if (!player) return {};
+      const current = player.tradeGoods ?? 0;
+      const next = Math.max(0, current + delta);
+      if (next === current) return {};
+      const players = [...s.players];
+      players[playerIdx] = { ...player, tradeGoods: next };
       return { players };
     });
     get().persistGame();

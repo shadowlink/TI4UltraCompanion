@@ -79,6 +79,23 @@ export const FACTIONS: FactionEntry[] = [
   { nameEn: 'The Drahn Consortium', nameEs: 'The Drahn Consortium', iconPath: `${IMG_BASE}drahn.png`, shortName: 'Drahn' },
 ];
 
+/**
+ * Allowlist of factions playable in the current build.
+ * Base game (0-16) + Prophecy of Kings (17-23) + Codex Keleres (24)
+ * + selected Discordant Stars: Edyn (36), Free Systems (38), Kjalengard (43), Myko-Mentori (53).
+ */
+export const ALLOWED_FACTION_IDXS: number[] = [
+  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
+  17, 18, 19, 20, 21, 22, 23, 24,
+  36, 38, 43, 53,
+];
+
+export const ALLOWED_FACTION_SET: Set<number> = new Set(ALLOWED_FACTION_IDXS);
+
+export function isAllowedFaction(idx: number): boolean {
+  return ALLOWED_FACTION_SET.has(idx);
+}
+
 export const PLAYER_COLORS = ['black', 'blue', 'green', 'purple', 'red', 'yellow', 'orange', 'hotpink'];
 
 // CSS color values for each player color (for borders/highlights)

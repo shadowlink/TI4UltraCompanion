@@ -1,7 +1,16 @@
 'use client';
 
+import { useState } from 'react';
 import { useGameStore } from '@/store/gameStore';
-import { UNIT_TYPE_LABELS, TECH_COLOR_HEX, type FactionUnit, type UnitStatKey } from '@/data/factionSheets';
+import {
+  UNIT_TYPE_LABELS,
+  TECH_COLOR_HEX,
+  getUnitIconPath,
+  type FactionUnit,
+  type UnitStatKey,
+} from '@/data/factionSheets';
+
+type CardSize = 'sm' | 'md';
 
 interface Props {
   unit: FactionUnit;
@@ -13,6 +22,8 @@ interface Props {
   isUpgradable?: boolean;
   /** Parallel array to `unit.upgradePrereqs`: which prereqs are currently met. */
   metPrereqMask?: boolean[];
+  /** 'sm' (default, mobile-tight) or 'md' (PC browser, larger). */
+  size?: CardSize;
 }
 
 function statValue(v: string | number | null): string {
@@ -20,14 +31,50 @@ function statValue(v: string | number | null): string {
   return String(v);
 }
 
+const SIZE = {
+  sm: {
+    padding: 'p-2',
+    gap: 'gap-1.5',
+    typeLabel: 'text-[10px]',
+    name: 'text-sm',
+    icon: 'w-12 h-12',
+    statLabel: 'text-[9px]',
+    statValue: 'text-base',
+    statValuePadding: 'px-1.5 py-0.5',
+    abilities: 'text-[11px]',
+    desc: 'text-[10px]',
+    upgradeLabel: 'text-[9px]',
+    upgradeCircle: 'w-3 h-3',
+    badgeII: 'text-[9px]',
+  },
+  md: {
+    padding: 'p-3',
+    gap: 'gap-2',
+    typeLabel: 'text-sm',
+    name: 'text-lg',
+    icon: 'w-16 h-16',
+    statLabel: 'text-xs',
+    statValue: 'text-xl',
+    statValuePadding: 'px-2 py-1',
+    abilities: 'text-base',
+    desc: 'text-sm',
+    upgradeLabel: 'text-xs',
+    upgradeCircle: 'w-4 h-4',
+    badgeII: 'text-xs',
+  },
+} as const;
+
 export default function MobileUnitCard({
   unit,
   onClick,
   isUpgraded,
   isUpgradable,
   metPrereqMask,
+  size = 'sm',
 }: Props) {
   const lang = useGameStore((s) => s.lang);
+  const [iconFailed, setIconFailed] = useState(false);
+  const s = SIZE[size];
   const stats = unit.stats;
   const combatDice = stats.combatDice ?? 1;
   const combatLabel =
@@ -59,14 +106,14 @@ export default function MobileUnitCard({
     return (
       <div className="flex flex-col items-center min-w-0">
         <span
-          className="text-[9px] text-white px-1.5 py-0.5 rounded-t leading-none whitespace-nowrap"
+          className={`${s.statLabel} text-white px-1.5 py-0.5 rounded-t leading-none whitespace-nowrap`}
           style={{ background: color, fontFamily: 'var(--font-aldrich)' }}
         >
           {label}
         </span>
         <div className="relative w-full">
           <span
-            className="text-base font-bold text-white px-1.5 py-0.5 bg-black/40 rounded-b w-full block text-center leading-tight"
+            className={`${s.statValue} ${s.statValuePadding} font-bold text-white bg-black/40 rounded-b w-full block text-center leading-tight`}
             style={{ fontFamily: 'var(--font-share-tech-mono)' }}
           >
             {value}
@@ -89,24 +136,21 @@ export default function MobileUnitCard({
   const hideCapacity = unit.type !== 'flagship' && unit.type !== 'dreadnought' &&
                        unit.type !== 'warSun' && unit.type !== 'cruiser' && unit.type !== 'carrier';
 
+  const baseClass = `rounded-lg border-2 border-red-700/70 bg-gradient-to-b from-red-900/20 to-black/60 ${s.padding} flex flex-col ${s.gap} relative`;
   const Wrapper = onClick ? 'button' : 'div';
   const wrapperProps = onClick
     ? {
         type: 'button' as const,
         onClick,
-        className:
-          'rounded-lg border-2 border-red-700/70 bg-gradient-to-b from-red-900/20 to-black/60 p-2 flex flex-col gap-1.5 text-left pointer-events-auto active:scale-[0.98] transition-transform relative',
+        className: `${baseClass} text-left pointer-events-auto active:scale-[0.98] transition-transform`,
       }
-    : {
-        className:
-          'rounded-lg border-2 border-red-700/70 bg-gradient-to-b from-red-900/20 to-black/60 p-2 flex flex-col gap-1.5 relative',
-      };
+    : { className: baseClass };
 
   return (
     <Wrapper {...wrapperProps}>
       {isUpgraded && (
         <span
-          className="absolute top-1 right-1 text-[9px] font-bold text-white px-1.5 py-0.5 rounded bg-yellow-600/80 leading-none"
+          className={`absolute top-1 right-1 ${s.badgeII} font-bold text-white px-1.5 py-0.5 rounded bg-yellow-600/80 leading-none`}
           style={{ fontFamily: 'var(--font-share-tech-mono)' }}
           title={lang === 'es' ? 'Mejorada' : 'Upgraded'}
         >
@@ -115,14 +159,26 @@ export default function MobileUnitCard({
       )}
       <div className="flex items-baseline justify-between gap-2">
         <span
-          className="text-[10px] text-red-300 uppercase tracking-wider leading-none"
+          className={`${s.typeLabel} text-red-300 uppercase tracking-wider leading-none`}
           style={{ fontFamily: 'var(--font-aldrich)' }}
         >
           {typeLabel}
         </span>
       </div>
 
-      <p className="text-sm text-white leading-tight" style={{ fontFamily: 'var(--font-audiowide)' }}>
+      {!iconFailed && (
+        <div className={`${s.icon} mx-auto rounded bg-white/5 flex items-center justify-center overflow-hidden`}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={getUnitIconPath(unit.type)}
+            alt={lang === 'es' ? unit.nameEs : unit.nameEn}
+            className="w-full h-full object-contain"
+            onError={() => setIconFailed(true)}
+          />
+        </div>
+      )}
+
+      <p className={`${s.name} text-white leading-tight`} style={{ fontFamily: 'var(--font-audiowide)' }}>
         {lang === 'es' ? unit.nameEs : unit.nameEn}
       </p>
 
@@ -156,7 +212,7 @@ export default function MobileUnitCard({
       </div>
 
       {abilities.length > 0 && (
-        <ul className="flex flex-col gap-0.5 text-[11px] text-gray-200">
+        <ul className={`flex flex-col gap-0.5 ${s.abilities} text-gray-200`}>
           {abilities.map((a, i) => (
             <li key={i} className="flex items-start gap-1">
               <span className="text-yellow-400">◆</span>
@@ -167,7 +223,7 @@ export default function MobileUnitCard({
       )}
 
       {desc && (
-        <p className="text-[10px] text-gray-300 leading-tight italic">
+        <p className={`${s.desc} text-gray-300 leading-snug italic`}>
           {desc}
         </p>
       )}
@@ -179,7 +235,7 @@ export default function MobileUnitCard({
           }`}
         >
           <span
-            className="text-[9px] text-yellow-300 uppercase tracking-wider"
+            className={`${s.upgradeLabel} text-yellow-300 uppercase tracking-wider`}
             style={{ fontFamily: 'var(--font-aldrich)' }}
           >
             ▲ {lang === 'es' ? 'mejora' : 'upgrade'}
@@ -192,7 +248,7 @@ export default function MobileUnitCard({
                 return (
                   <span
                     key={i}
-                    className="w-3 h-3 rounded-full border"
+                    className={`${s.upgradeCircle} rounded-full border`}
                     style={{
                       background: met ? hex : 'transparent',
                       borderColor: met ? 'rgba(0,0,0,0.6)' : `${hex}99`,

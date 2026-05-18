@@ -51,6 +51,8 @@ export interface PlayerData {
   influence: number;
   vp: number;
   commandTokens: CommandTokenPools;
+  commodities: number;
+  tradeGoods: number;
 }
 
 export interface StrategyEntry {
@@ -170,13 +172,23 @@ export function makeDefaultPlayer(idx: number): PlayerData {
     influence: 0,
     vp: 0,
     commandTokens: { tactic: 3, fleet: 3, strategy: 2 },
+    commodities: 0,
+    tradeGoods: 0,
   };
 }
 
 /** Normalize a possibly-old player object (from older saves) to current schema. */
 export function normalizePlayer(p: PlayerData): PlayerData {
-  if (p && p.commandTokens && typeof p.commandTokens.tactic === 'number') return p;
-  return { ...p, commandTokens: { tactic: 3, fleet: 3, strategy: 2 } };
+  const tokensOk = p && p.commandTokens && typeof p.commandTokens.tactic === 'number';
+  const commoditiesOk = typeof p.commodities === 'number';
+  const tradeGoodsOk = typeof p.tradeGoods === 'number';
+  if (tokensOk && commoditiesOk && tradeGoodsOk) return p;
+  return {
+    ...p,
+    commandTokens: tokensOk ? p.commandTokens : { tactic: 3, fleet: 3, strategy: 2 },
+    commodities: commoditiesOk ? p.commodities : 0,
+    tradeGoods: tradeGoodsOk ? p.tradeGoods : 0,
+  };
 }
 
 export function makeDefaultStrategies(): StrategyEntry[] {

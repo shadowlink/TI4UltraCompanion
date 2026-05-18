@@ -31,7 +31,7 @@ const shareTechMono = Share_Tech_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Extracomputer — TI4 Assistant',
+  title: 'TIIV Manager',
   description: 'A game assistant for Twilight Imperium 4',
 };
 

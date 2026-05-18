@@ -18,6 +18,17 @@ export default function StartScreen() {
   }, []);
 
   const handleNewGame = () => {
+    const password = window.prompt(
+      lang === 'es'
+        ? 'Introduce la contraseña para crear partida:'
+        : 'Enter password to create a game:',
+    );
+    if (password !== 'tapia') {
+      if (password !== null) {
+        window.alert(lang === 'es' ? 'Contraseña incorrecta.' : 'Wrong password.');
+      }
+      return;
+    }
     startNewGame();
     router.push('/game');
   };
@@ -35,7 +46,7 @@ export default function StartScreen() {
           className="text-4xl md:text-6xl text-shadow mb-2"
           style={{ fontFamily: 'var(--font-audiowide)', color: 'var(--color-accent)' }}
         >
-          Extracomputer
+          TIIV Manager
         </h1>
         <p
           className="text-lg text-gray-400"
@@ -84,6 +95,14 @@ export default function StartScreen() {
           style={{ fontFamily: 'var(--font-aldrich)' }}
         >
           {lang === 'es' ? 'Continuar' : 'Continue'}
+        </button>
+
+        <button
+          onClick={() => router.push('/factions')}
+          className="py-4 text-lg border-2 border-purple-500 bg-purple-500/10 hover:bg-purple-500/30 text-purple-300 rounded transition-all"
+          style={{ fontFamily: 'var(--font-aldrich)' }}
+        >
+          📖 {lang === 'es' ? 'Explorar Facciones' : 'Browse Factions'}
         </button>
       </div>
 

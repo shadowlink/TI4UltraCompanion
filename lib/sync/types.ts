@@ -19,7 +19,9 @@ export type MobileCommand =
   | { type: 'exhaustTech'; techId: string }
   | { type: 'readyTech'; techId: string }
   | { type: 'readyAllMyTechs' }
-  | { type: 'adjustTokens'; pool: 'tactic' | 'fleet' | 'strategy'; delta: number };
+  | { type: 'adjustTokens'; pool: 'tactic' | 'fleet' | 'strategy'; delta: number }
+  | { type: 'adjustCommodities'; delta: number }
+  | { type: 'adjustTradeGoods'; delta: number };
 
 export interface PendingCommand {
   deviceId: string;

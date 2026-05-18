@@ -4,9 +4,9 @@ import { useState } from 'react';
 import { useGameStore } from '@/store/gameStore';
 import { TECH_COLOR_HEX, type TechColor } from '@/data/factionSheets';
 import {
-  BASIC_TECHNOLOGIES,
-  TECH_BY_COLOR,
   canResearch,
+  getAvailableTechsForFaction,
+  getTechsByColorForFaction,
   type Technology,
 } from '@/data/technologies';
 import type { MobileCommand } from '@/lib/sync/types';
@@ -32,13 +32,18 @@ export default function MobileTechSection({ viewingPlayerIdx, myPlayerIdx, sendC
   const lang = useGameStore((s) => s.lang);
   const researchedTechs = useGameStore((s) => s.researchedTechs);
   const exhaustedTechs = useGameStore((s) => s.exhaustedTechs);
+  const players = useGameStore((s) => s.players);
   const [expanded, setExpanded] = useState(false);
   const [openTech, setOpenTech] = useState<Technology | null>(null);
 
   const myResearched = researchedTechs[viewingPlayerIdx] ?? [];
   const myExhausted = exhaustedTechs[viewingPlayerIdx] ?? [];
+  const viewingFactionIdx =
+    viewingPlayerIdx >= 0 ? players[viewingPlayerIdx]?.faction ?? null : null;
   // Counter only reflects basic techs (unit upgrades are handled from the unit cards)
-  const basicTechsAll = BASIC_TECHNOLOGIES.filter((t) => t.category !== 'unitUpgrade');
+  const basicTechsAll = getAvailableTechsForFaction(viewingFactionIdx).filter(
+    (t) => t.category !== 'unitUpgrade',
+  );
   const totalCount = basicTechsAll.length;
   const researchedBasicCount = myResearched.filter((id) => {
     const t = basicTechsAll.find((x) => x.id === id);
@@ -83,7 +88,9 @@ export default function MobileTechSection({ viewingPlayerIdx, myPlayerIdx, sendC
           <div className="flex flex-col gap-3 px-2 py-3">
             {COLOR_ORDER.map((color) => {
               const colorHex = TECH_COLOR_HEX[color];
-              const techs = [...TECH_BY_COLOR[color]].sort((a, b) => a.level - b.level);
+              const techs = getTechsByColorForFaction(color, viewingFactionIdx).sort(
+                (a, b) => a.level - b.level,
+              );
               const researchedInColor = techs.filter((t) => myResearched.includes(t.id)).length;
               return (
                 <div key={color} className="flex flex-col gap-1.5">

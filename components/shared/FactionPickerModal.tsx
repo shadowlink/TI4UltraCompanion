@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { useGameStore } from '@/store/gameStore';
-import { FACTIONS, PLAYER_COLORS, PLAYER_COLOR_VALUES } from '@/data/factions';
+import { FACTIONS, PLAYER_COLORS, PLAYER_COLOR_VALUES, isAllowedFaction } from '@/data/factions';
 
 interface FactionPickerModalProps {
   playerIdx: number;
@@ -94,6 +94,7 @@ export default function FactionPickerModal({ playerIdx, onClose }: FactionPicker
           <p className="text-xs text-gray-400 mb-2">{lang === 'es' ? 'Facción' : 'Faction'}</p>
           <div className="grid grid-cols-6 md:grid-cols-10 gap-2">
             {FACTIONS.map((faction, i) => {
+              if (!isAllowedFaction(i)) return null;
               const isUsed = usedFactions.includes(i);
               const isSelected = selectedFaction === i;
               return (

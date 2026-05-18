@@ -162,6 +162,18 @@ function processCommand(cmd: PendingCommand): void {
       store.adjustTokens(playerIdx, pool, delta);
       return;
     }
+    case 'adjustCommodities': {
+      const { delta } = cmd.command;
+      if (delta !== 1 && delta !== -1) return;
+      store.adjustCommodities(playerIdx, delta);
+      return;
+    }
+    case 'adjustTradeGoods': {
+      const { delta } = cmd.command;
+      if (delta !== 1 && delta !== -1) return;
+      store.adjustTradeGoods(playerIdx, delta);
+      return;
+    }
   }
 }
 
