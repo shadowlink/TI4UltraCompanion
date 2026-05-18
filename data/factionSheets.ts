@@ -846,7 +846,7 @@ const SOL_SHEET: FactionSheet = {
       nameEs: "DESCENSO ORBITAL",
       nameEn: "ORBITAL DROP",
       descriptionEs:
-        "ACCIÓN: Gasta 1 ficha de Estrategia para colocar 2 unidades de Infantería de tus refuerzos en un planeta que controles.",
+        "ACCIÓN: Gasta 1 ficha de tu reserva de Estrategia para coger 2 unidades de Infantería de tus refuerzos y colocarlos en un planeta que controles.",
       descriptionEn:
         "ACTION: Spend 1 strategy token to place 2 infantry from your reinforcements on 1 planet you control.",
     },
@@ -871,7 +871,7 @@ const SOL_SHEET: FactionSheet = {
       abilitiesEs: ["Resistencia al daño"],
       abilitiesEn: ["Sustain Damage"],
       description: {
-        es: "Al final de la fase de Estado, coloca 1 unidad de Infantería de tus refuerzos en este sistema.",
+        es: "Al final de la fase de Estado, coger 1 unidad de Infantería de tus refuerzos y colócala en la zona de espacio de este sistema.",
         en: "At the end of the status phase, place 1 infantry from your reinforcements in this system.",
       },
     },
@@ -892,29 +892,29 @@ const CREUSS_SHEET: FactionSheet = {
       nameEs: "ENTRELAZAMIENTO CUÁNTICO",
       nameEn: "QUANTUM ENTANGLEMENT",
       descriptionEs:
-        "Consideras los Agujeros de gusano alfa y beta como si fueran del mismo tipo.",
+        "Todos los sistemas que contengan un Agujero de gusano Alfa o Beta se consideran adyacentes entre sí para ti. Ningún efecto de juego puede impedirte utilizar esta capacidad.",
       descriptionEn:
-        "You treat all alpha and beta wormholes as adjacent to each other.",
+        "You treat all alpha and beta wormholes as adjacent to each other for you.",
     },
     {
-      nameEs: "DESLIZAMIENTO",
+      nameEs: "REBUFO ESPACIAL",
       nameEn: "SLIPSTREAM",
       descriptionEs:
-        "Durante una acción táctica, aplica +1 al atributo de Movimiento de tus naves que comiencen su movimiento en un sistema con Agujero de gusano alfa o beta.",
+        "Durante tus acciones tácticas, aplica un +1 al atributo de Movimiento de todas tus naves que empiecen su movimiento en tu sistema de origen o en un sistema que contenga un Agujero de gusano Alfa o Beta.",
       descriptionEn:
         "During a tactical action, apply +1 to the move value of each of your ships that starts its movement in your home system or in a system that contains either an alpha or beta wormhole.",
     },
     {
-      nameEs: "PORTAL DE CREUSS",
+      nameEs: "PORTAL CREUSS",
       nameEn: "CREUSS GATE",
       descriptionEs:
-        "Comienzas con la ficha de sistema Portal de Creuss. Tu sistema de origen no se coloca durante la preparación del juego.",
+        "Al montar el tablero de juego, coloca el Portal Creuss (el módulo 17) donde se situaría normalmente tu sistema de origen. El sistema del Portal Creuss no es un sistema de origen. Luego coloca tu sistema de origen (el módulo 51) en tu zona de juego.",
       descriptionEn:
         "Begin with the Creuss Gate system tile. Your home system is not placed during setup.",
     },
   ],
   units: withOverride(makeStandardUnits(), "flagship", {
-    nameEs: "Espíritu Errante",
+    nameEs: "Hil Colish",
     nameEn: "Hil Colish",
     stats: {
       cost: "8",
@@ -925,7 +925,7 @@ const CREUSS_SHEET: FactionSheet = {
       abilitiesEs: ["Resistencia al daño"],
       abilitiesEn: ["Sustain Damage"],
       description: {
-        es: "Las capacidades de tus tarjetas de Agujero de gusano se aplican como si este sistema contuviera un Agujero de gusano delta. Esta nave puede moverse a través de Agujeros de gusano.",
+        es: "El sistema ocupado por esta nave contiene un Agujero de gusano Delta. Durante el movimiento, esta nave puede moverse antes o despues que tus otras naves.",
         en: "This ship's system is adjacent to all wormholes. This unit's fleet may move through wormholes.",
       },
     },
@@ -1053,7 +1053,7 @@ const NEKRO_SHEET: FactionSheet = {
       nameEs: "AMENAZA GALÁCTICA",
       nameEn: "GALACTIC THREAT",
       descriptionEs:
-        "No puedes votar en las agendas. Cuando otro jugador investigue una Tecnología, puedes purgar 2 de tus tecnologías de Asimilación para ganar esa Tecnología.",
+        "No puedes votar por las cartas de Consejo Galáctico. Una vez en cada fase de Consejo Galáctico, después de que se haya mostrado una carta de Consejo Galáctico, puedes pronosticar en voz alta la reoslución de esa carta. Si aciertas, ganas 1 Tecnología que tenga desarrollada un jugador que haya votado por la resolución que has pronosticado.",
       descriptionEn:
         "You cannot vote on agendas. When another player researches a technology, you may purge 2 of your assimilator tokens to gain that technology.",
     },
@@ -1061,7 +1061,7 @@ const NEKRO_SHEET: FactionSheet = {
       nameEs: "SINGULARIDAD TECNOLÓGICA",
       nameEn: "TECHNOLOGICAL SINGULARITY",
       descriptionEs:
-        "Tras ganar 1 combate terrestre frente a un planeta que contenía al menos 1 de las Tecnologías del adversario, puedes ganar 1 de sus Tecnologías.",
+        "Una vez por combate, después de que 1 unidad de tu adversario sea destruida, puedes ganar 1 Tecnología que tenga desarrollada ese jugador.",
       descriptionEn:
         "Once per combat, after 1 of your opponent's units is destroyed, you may gain 1 of their technologies.",
     },
@@ -1069,13 +1069,13 @@ const NEKRO_SHEET: FactionSheet = {
       nameEs: "PROPAGACIÓN",
       nameEn: "PROPAGATION",
       descriptionEs:
-        "No puedes puntuar Objetivos. Ganas 1 punto de Victoria por cada Objetivo público que otro jugador puntúe si tienes esa Tecnología bajo Asimilación.",
+        "No puedes investigar Tecnologías. Cuando vayas a investigar una Tecnología, en vez de eso ganas 3 fichas de Mando.",
       descriptionEn:
         "You cannot score objectives. You cannot gain victory points. When you would gain victory points, gain trade goods equal to that amount.",
     },
   ],
   units: withOverride(makeStandardUnits(), "flagship", {
-    nameEs: "Asimilador",
+    nameEs: "El Alastor",
     nameEn: "The Alastor",
     stats: {
       cost: "8",
@@ -1086,7 +1086,7 @@ const NEKRO_SHEET: FactionSheet = {
       abilitiesEs: ["Resistencia al daño"],
       abilitiesEn: ["Sustain Damage"],
       description: {
-        es: "Durante el combate espacial, esta nave puede atribuir sus tiradas de combate a otras naves de otros jugadores en este sistema; esas naves combaten en tu bando durante esta ronda de combate.",
+        es: "Al comienzo de un combate espacial, elige cualquier cantidad de las fuerzas terrestres que tengas en ese sistema para que participen en ese combate como si fueran naves.",
         en: "At the start of a space combat, choose any number of other ships in this system to participate in that combat as though they were your ships.",
       },
     },
