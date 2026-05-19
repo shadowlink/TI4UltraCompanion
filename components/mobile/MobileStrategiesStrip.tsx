@@ -12,7 +12,6 @@ import {
 } from '@/lib/constants';
 
 export default function MobileStrategiesStrip() {
-  const lang = useGameStore((s) => s.lang);
   const phase = useGameStore((s) => s.phase);
   const players = useGameStore((s) => s.players);
   const strategies = useGameStore((s) => s.strategies);
@@ -33,7 +32,7 @@ export default function MobileStrategiesStrip() {
           const playerColor = player
             ? PLAYER_COLOR_VALUES[PLAYER_COLORS[player.color]]
             : undefined;
-          const stratName = lang === 'es' ? st.nameEs : st.nameEn;
+          const stratName = st.nameEs;
 
           return (
             <div

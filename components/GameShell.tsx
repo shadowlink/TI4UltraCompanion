@@ -53,7 +53,6 @@ export default function GameShell() {
   const activeModal = useGameStore((s) => s.activeModal);
   const closeModal = useGameStore((s) => s.closeModal);
   const setClock = useGameStore((s) => s.setClock);
-  const lang = useGameStore((s) => s.lang);
 
   // Warn before leaving if game is active (host only)
   useEffect(() => {
@@ -119,15 +118,13 @@ export default function GameShell() {
         <div className="modal-overlay">
           <div className="bg-gray-900 border border-orange-500/50 rounded-lg p-6 max-w-sm mx-4 text-center">
             <p className="text-white mb-4">
-              {lang === 'es'
-                ? 'No se detecta actividad. La partida está a punto de pausarse.'
-                : 'No activity detected. The game is about to pause.'}
+              {'No se detecta actividad. La partida está a punto de pausarse.'}
             </p>
             <button
               onClick={() => { closeModal(); setClock(1); }}
               className="px-6 py-2 border border-orange-500 bg-orange-500/20 text-orange-300 rounded"
             >
-              {lang === 'es' ? 'Reanudar' : 'Resume'}
+              {'Reanudar'}
             </button>
           </div>
         </div>
@@ -137,13 +134,13 @@ export default function GameShell() {
         <div className="modal-overlay">
           <div className="bg-gray-900 border border-red-500/50 rounded-lg p-6 max-w-sm mx-4 text-center">
             <p className="text-white mb-4">
-              {lang === 'es' ? 'Partida pausada por inactividad.' : 'Game paused due to inactivity.'}
+              {'Partida pausada por inactividad.'}
             </p>
             <button
               onClick={() => { closeModal(); setClock(1); }}
               className="px-6 py-2 border border-orange-500 bg-orange-500/20 text-orange-300 rounded"
             >
-              {lang === 'es' ? 'Reanudar' : 'Resume'}
+              {'Reanudar'}
             </button>
           </div>
         </div>

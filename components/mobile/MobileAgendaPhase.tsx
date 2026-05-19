@@ -25,7 +25,6 @@ const VOTE_TYPE_LABELS: Record<string, { en: string; es: string }> = {
 };
 
 export default function MobileAgendaPhase({ myPlayerIdx, sendCommand }: Props) {
-  const lang = useGameStore((s) => s.lang);
   const players = useGameStore((s) => s.players);
   const nbPlayers = useGameStore((s) => s.nbPlayers);
   const agendaStep = useGameStore((s) => s.agendaStep);
@@ -40,10 +39,10 @@ export default function MobileAgendaPhase({ myPlayerIdx, sendCommand }: Props) {
 
   const agendaLabel =
     agendaStep === 1
-      ? lang === 'es' ? 'Primer Consejo' : 'First Agenda'
-      : lang === 'es' ? 'Segundo Consejo' : 'Second Agenda';
+      ? 'Primer Consejo'
+      : 'Segundo Consejo';
 
-  const voteTypeLabel = agendaVoteType ? VOTE_TYPE_LABELS[agendaVoteType]?.[lang] : '';
+  const voteTypeLabel = agendaVoteType ? VOTE_TYPE_LABELS[agendaVoteType]?.es : '';
 
   const columnTotals: Record<number, number> = {};
   votes.forEach((v) => {
@@ -97,9 +96,7 @@ export default function MobileAgendaPhase({ myPlayerIdx, sendCommand }: Props) {
           {agendaLabel}
         </p>
         <p className="text-xs text-gray-400">
-          {lang === 'es'
-            ? 'Esperando a que el host elija el tipo de votación...'
-            : 'Waiting for host to choose vote type...'}
+          {'Esperando a que el host elija el tipo de votación...'}
         </p>
       </div>
     );
@@ -110,7 +107,7 @@ export default function MobileAgendaPhase({ myPlayerIdx, sendCommand }: Props) {
     return (
       <div className="flex flex-col gap-3 p-3">
         <div className="text-center">
-          <p className="text-xs text-gray-400 uppercase tracking-wider">{lang === 'es' ? 'Resultados' : 'Results'}</p>
+          <p className="text-xs text-gray-400 uppercase tracking-wider">{'Resultados'}</p>
           <p className="text-base text-orange-300 mt-1" style={{ fontFamily: 'var(--font-audiowide)' }}>
             {agendaLabel}
           </p>
@@ -123,7 +120,7 @@ export default function MobileAgendaPhase({ myPlayerIdx, sendCommand }: Props) {
         {winnerIdx !== null && (
           <div className="rounded-lg border-2 border-yellow-500/70 bg-yellow-500/10 p-3 text-center">
             <p className="text-[10px] text-yellow-400 uppercase tracking-wider">
-              {lang === 'es' ? '🏆 Ganador' : '🏆 Winner'}
+              {'🏆 Ganador'}
             </p>
             <p className="text-lg text-yellow-200 mt-1" style={{ fontFamily: 'var(--font-audiowide)' }}>
               {columnLabel(Number(winnerIdx))}
@@ -158,7 +155,7 @@ export default function MobileAgendaPhase({ myPlayerIdx, sendCommand }: Props) {
         {votes.length > 0 && (
           <div>
             <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-1.5 mt-2">
-              {lang === 'es' ? 'Detalle' : 'Detail'}
+              {'Detalle'}
             </p>
             <div className="flex flex-col gap-1">
               {votes.map((v, i) => {
@@ -176,7 +173,7 @@ export default function MobileAgendaPhase({ myPlayerIdx, sendCommand }: Props) {
                       {faction.shortName}
                     </span>
                     {isAbstain ? (
-                      <span className="text-gray-500 italic">{lang === 'es' ? 'abst.' : 'abstain'}</span>
+                      <span className="text-gray-500 italic">{'abst.'}</span>
                     ) : (
                       <span className="text-white truncate max-w-[140px]">
                         {v.influenceAmount} → {columnLabel(v.voteColumnIdx)}
@@ -197,7 +194,7 @@ export default function MobileAgendaPhase({ myPlayerIdx, sendCommand }: Props) {
     <div className="flex flex-col gap-3 p-3">
       <div className="text-center">
         <p className="text-xs text-gray-400 uppercase tracking-wider">
-          {lang === 'es' ? 'Fase de Consejo Galáctico' : 'Galactic Council'}
+          {'Fase de Consejo Galáctico'}
         </p>
         <p className="text-base text-orange-300 mt-1" style={{ fontFamily: 'var(--font-audiowide)' }}>
           {agendaLabel}
@@ -217,7 +214,7 @@ export default function MobileAgendaPhase({ myPlayerIdx, sendCommand }: Props) {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-[10px] text-gray-400 uppercase tracking-wider">
-              {isMyTurn ? (lang === 'es' ? '¡Te toca votar!' : 'Your vote!') : (lang === 'es' ? 'Votando ahora' : 'Voting now')}
+              {isMyTurn ? ('¡Te toca votar!') : ('Votando ahora')}
             </p>
             <p className="text-sm text-white truncate" style={{ color: voterColor }}>
               {voterFaction.shortName}{currentVoter.name ? ` (${currentVoter.name})` : ''}
@@ -230,7 +227,7 @@ export default function MobileAgendaPhase({ myPlayerIdx, sendCommand }: Props) {
       {isMyTurn && agendaColumns.length > 0 && (
         <div className="rounded border border-orange-500/40 bg-orange-500/5 p-3 flex flex-col gap-2 pointer-events-auto">
           <p className="text-[11px] text-gray-400 uppercase tracking-wider">
-            {lang === 'es' ? 'Selecciona y vota' : 'Select and vote'}
+            {'Selecciona y vota'}
           </p>
           {/* Columns */}
           <div className="flex flex-col gap-1.5 max-h-48 overflow-y-auto">
@@ -262,9 +259,9 @@ export default function MobileAgendaPhase({ myPlayerIdx, sendCommand }: Props) {
             ))}
           </div>
           <div className="flex items-center justify-between text-xs text-gray-300">
-            <span>{lang === 'es' ? 'Votos' : 'Votes'}: <strong className="text-white text-base">{amount}</strong></span>
+            <span>{'Votos'}: <strong className="text-white text-base">{amount}</strong></span>
             <button onClick={() => setAmount(0)} className="text-gray-400 underline">
-              {lang === 'es' ? 'Reset' : 'Reset'}
+              {'Reset'}
             </button>
           </div>
           <div className="flex gap-2 mt-1">
@@ -274,7 +271,7 @@ export default function MobileAgendaPhase({ myPlayerIdx, sendCommand }: Props) {
               className="flex-1 py-2.5 rounded border-2 border-green-500/60 bg-green-500/15 text-green-200 text-sm active:bg-green-500/30 disabled:opacity-30"
               style={{ fontFamily: 'var(--font-aldrich)' }}
             >
-              {lang === 'es' ? 'Votar' : 'Vote'}
+              {'Votar'}
             </button>
             <button
               onClick={submitAbstain}
@@ -282,7 +279,7 @@ export default function MobileAgendaPhase({ myPlayerIdx, sendCommand }: Props) {
               className="flex-1 py-2.5 rounded border-2 border-gray-600 bg-gray-800/40 text-gray-300 text-sm active:bg-gray-700"
               style={{ fontFamily: 'var(--font-aldrich)' }}
             >
-              {lang === 'es' ? 'Abstenerse' : 'Abstain'}
+              {'Abstenerse'}
             </button>
           </div>
         </div>
@@ -290,20 +287,18 @@ export default function MobileAgendaPhase({ myPlayerIdx, sendCommand }: Props) {
 
       {isMyTurn && agendaColumns.length === 0 && (
         <p className="text-xs text-gray-500 italic text-center">
-          {lang === 'es'
-            ? 'Esperando que el host añada opciones para votar...'
-            : 'Waiting for host to add vote options...'}
+          {'Esperando que el host añada opciones para votar...'}
         </p>
       )}
 
       {/* Totals */}
       <div>
         <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-1.5">
-          {lang === 'es' ? 'Recuento' : 'Tally'}
+          {'Recuento'}
         </p>
         {sortedColumns.length === 0 ? (
           <p className="text-xs text-gray-500 italic px-2">
-            {lang === 'es' ? 'Sin votos aún' : 'No votes yet'}
+            {'Sin votos aún'}
           </p>
         ) : (
           <div className="flex flex-col gap-1">
@@ -330,7 +325,7 @@ export default function MobileAgendaPhase({ myPlayerIdx, sendCommand }: Props) {
       {votes.length > 0 && (
         <div>
           <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-1.5">
-            {lang === 'es' ? 'Votos' : 'Votes'}
+            {'Votos'}
           </p>
           <div className="flex flex-col gap-1">
             {votes.map((v, i) => {
@@ -348,7 +343,7 @@ export default function MobileAgendaPhase({ myPlayerIdx, sendCommand }: Props) {
                     {faction.shortName}
                   </span>
                   {isAbstain ? (
-                    <span className="text-gray-500 italic">{lang === 'es' ? 'abst.' : 'abstain'}</span>
+                    <span className="text-gray-500 italic">{'abst.'}</span>
                   ) : (
                     <span className="text-white truncate max-w-[140px]">
                       {v.influenceAmount} → {columnLabel(v.voteColumnIdx)}

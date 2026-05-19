@@ -10,7 +10,6 @@ import { NO_PLAYER } from '@/lib/constants';
 
 export default function EndGameScreen() {
   const router = useRouter();
-  const lang = useGameStore((s) => s.lang);
   const nbPlayers = useGameStore((s) => s.nbPlayers);
   const players = useGameStore((s) => s.players);
   const speakerIdx = useGameStore((s) => s.speakerIdx);
@@ -50,17 +49,17 @@ export default function EndGameScreen() {
           className="text-3xl text-yellow-400 text-shadow mb-1"
           style={{ fontFamily: 'var(--font-audiowide)' }}
         >
-          {lang === 'es' ? winnerFaction.nameEs : winnerFaction.nameEn}
+          {winnerFaction.nameEs}
         </h1>
         <p className="text-lg text-orange-300 text-shadow">
-          {lang === 'es' ? 'Una Nueva Era Comienza...' : 'A new age begins...'}
+          {'Una Nueva Era Comienza...'}
         </p>
       </div>
 
       {/* Stats */}
       <div className="text-center text-sm text-gray-400" style={{ fontFamily: 'var(--font-share-tech-mono)' }}>
-        <p>{lang === 'es' ? `Duración: ${formatTime(gameDuration)}` : `Duration: ${formatTime(gameDuration)}`}</p>
-        <p>{lang === 'es' ? `Rondas: ${turnCounter}` : `Rounds: ${turnCounter}`}</p>
+        <p>{`Duración: ${formatTime(gameDuration)}`}</p>
+        <p>{`Rondas: ${turnCounter}`}</p>
       </div>
 
       {/* Rankings table */}
@@ -69,9 +68,9 @@ export default function EndGameScreen() {
           <thead>
             <tr className="text-xs text-gray-400 border-b border-gray-700">
               <th className="py-1 text-left">#</th>
-              <th className="py-1 text-left">{lang === 'es' ? 'Facción' : 'Faction'}</th>
+              <th className="py-1 text-left">{'Facción'}</th>
               <th className="py-1 text-right">VP</th>
-              <th className="py-1 text-right">{lang === 'es' ? 'Tiempo' : 'Time'}</th>
+              <th className="py-1 text-right">{'Tiempo'}</th>
               <th className="py-1 text-right">👑</th>
             </tr>
           </thead>
@@ -118,7 +117,7 @@ export default function EndGameScreen() {
         className="px-8 py-3 text-lg border-2 border-orange-500 bg-orange-500/10 hover:bg-orange-500/30 text-orange-300 rounded transition-all"
         style={{ fontFamily: 'var(--font-aldrich)' }}
       >
-        {lang === 'es' ? 'Nueva Partida' : 'New Game'}
+        {'Nueva Partida'}
       </button>
     </div>
   );

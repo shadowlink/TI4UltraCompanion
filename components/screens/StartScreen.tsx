@@ -4,12 +4,9 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useGameStore } from '@/store/gameStore';
 import { hasSavedGame } from '@/lib/persistence';
-import { PHASE_INIT } from '@/lib/constants';
 
 export default function StartScreen() {
   const router = useRouter();
-  const lang = useGameStore((s) => s.lang);
-  const setLang = useGameStore((s) => s.setLang);
   const startNewGame = useGameStore((s) => s.startNewGame);
   const [canContinue, setCanContinue] = useState(false);
 
@@ -18,14 +15,10 @@ export default function StartScreen() {
   }, []);
 
   const handleNewGame = () => {
-    const password = window.prompt(
-      lang === 'es'
-        ? 'Introduce la contraseña para crear partida:'
-        : 'Enter password to create a game:',
-    );
+    const password = window.prompt('Introduce la contraseña para crear partida:');
     if (password !== 'tapia') {
       if (password !== null) {
-        window.alert(lang === 'es' ? 'Contraseña incorrecta.' : 'Wrong password.');
+        window.alert('Contraseña incorrecta.');
       }
       return;
     }
@@ -56,24 +49,6 @@ export default function StartScreen() {
         </p>
       </div>
 
-      {/* Language selector */}
-      <div className="flex gap-3 mb-8">
-        {(['en', 'es'] as const).map((l) => (
-          <button
-            key={l}
-            onClick={() => setLang(l)}
-            className={`px-4 py-2 rounded border transition-all text-sm ${
-              lang === l
-                ? 'border-orange-400 bg-orange-500/20 text-orange-300'
-                : 'border-gray-600 text-gray-400 hover:border-orange-500/50 hover:text-orange-300'
-            }`}
-            style={{ fontFamily: 'var(--font-aldrich)' }}
-          >
-            {l === 'en' ? '🇬🇧 English' : '🇪🇸 Español'}
-          </button>
-        ))}
-      </div>
-
       {/* Menu buttons */}
       <div className="flex flex-col gap-4 w-full max-w-xs">
         <button
@@ -81,7 +56,7 @@ export default function StartScreen() {
           className="py-4 text-lg border-2 border-orange-500 bg-orange-500/10 hover:bg-orange-500/30 text-orange-300 rounded transition-all"
           style={{ fontFamily: 'var(--font-aldrich)' }}
         >
-          {lang === 'es' ? 'Nueva Partida' : 'New Game'}
+          {'Nueva Partida'}
         </button>
 
         <button
@@ -94,7 +69,7 @@ export default function StartScreen() {
           }`}
           style={{ fontFamily: 'var(--font-aldrich)' }}
         >
-          {lang === 'es' ? 'Continuar' : 'Continue'}
+          {'Continuar'}
         </button>
 
         <button
@@ -102,7 +77,7 @@ export default function StartScreen() {
           className="py-4 text-lg border-2 border-purple-500 bg-purple-500/10 hover:bg-purple-500/30 text-purple-300 rounded transition-all"
           style={{ fontFamily: 'var(--font-aldrich)' }}
         >
-          📖 {lang === 'es' ? 'Explorar Facciones' : 'Browse Factions'}
+          📖 {'Explorar Facciones'}
         </button>
       </div>
 

@@ -14,7 +14,6 @@ interface Props {
 }
 
 export default function MobileFactionsView({ myFactionIdx, myPlayerIdx, sendCommand }: Props) {
-  const lang = useGameStore((s) => s.lang);
   const players = useGameStore((s) => s.players);
   const nbPlayers = useGameStore((s) => s.nbPlayers);
 
@@ -78,9 +77,7 @@ export default function MobileFactionsView({ myFactionIdx, myPlayerIdx, sendComm
       {/* Footer note */}
       <div className="px-3 py-1 border-t border-gray-800 bg-black/40 flex-shrink-0">
         <p className="text-[10px] text-gray-500 text-center">
-          {lang === 'es'
-            ? 'Información pública — todos los jugadores pueden consultarla'
-            : 'Public info — all players may view this'}
+          {'Información pública — todos los jugadores pueden consultarla'}
         </p>
       </div>
     </div>

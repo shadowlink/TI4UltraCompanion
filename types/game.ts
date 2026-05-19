@@ -30,8 +30,6 @@ export type StrategyStatus =
   | typeof STRATEGY_PASSED
   | typeof STRATEGY_PICKED;
 
-export type Lang = 'en' | 'es';
-
 export type ClockRun = -1 | 0 | 1;
 
 export interface CommandTokenPools {
@@ -145,7 +143,6 @@ export interface SaveState {
   agendaPhase: 0 | 1;
   statusStep: 0 | 1;
   options: GameOptions;
-  lang: Lang;
   objectiveDeck: string[];
   revealedCount: number;
   objectivesScoredBy: Record<string, number[]>;

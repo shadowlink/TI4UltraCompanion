@@ -29,7 +29,6 @@ export default function StrategyCard({
   showTG = true,
   size = 'md',
 }: StrategyCardProps) {
-  const lang = useGameStore((s) => s.lang);
   const players = useGameStore((s) => s.players);
 
   const isAssigned = strategy.playerIdx !== NO_PLAYER && strategy.playerIdx < 8;
@@ -43,7 +42,7 @@ export default function StrategyCard({
     : undefined;
   const faction = assignedPlayer ? FACTIONS[assignedPlayer.faction] : null;
 
-  const cardName = lang === 'es' ? strategy.nameEs : strategy.nameEn;
+  const cardName = strategy.nameEs;
   const cardColor = strategy.color;
 
   if (size === 'sm') {

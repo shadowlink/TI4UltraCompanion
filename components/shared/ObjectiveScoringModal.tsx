@@ -11,7 +11,6 @@ interface Props {
 }
 
 export default function ObjectiveScoringModal({ objectiveId, onClose }: Props) {
-  const lang = useGameStore((s) => s.lang);
   const players = useGameStore((s) => s.players);
   const nbPlayers = useGameStore((s) => s.nbPlayers);
   const objectivesScoredBy = useGameStore((s) => s.objectivesScoredBy);
@@ -73,7 +72,7 @@ export default function ObjectiveScoringModal({ objectiveId, onClose }: Props) {
 
         <div className="px-5 py-3">
           <p className="text-[11px] text-gray-500 uppercase tracking-wider mb-2">
-            {lang === 'es' ? 'Marcar puntuación por jugador' : 'Mark scored by player'}
+            {'Marcar puntuación por jugador'}
           </p>
           <div className="flex flex-col gap-1.5">
             {players.slice(0, nbPlayers).map((player, idx) => {
@@ -98,8 +97,8 @@ export default function ObjectiveScoringModal({ objectiveId, onClose }: Props) {
                     </p>
                     <p className="text-xs text-gray-400">
                       {isScored
-                        ? `+${obj.points} VP ${lang === 'es' ? 'concedidos' : 'awarded'}`
-                        : (lang === 'es' ? 'Sin puntuar' : 'Not scored')}
+                        ? `+${obj.points} VP ${'concedidos'}`
+                        : ('Sin puntuar')}
                     </p>
                   </div>
                   <span
@@ -120,7 +119,7 @@ export default function ObjectiveScoringModal({ objectiveId, onClose }: Props) {
             onClick={onClose}
             className="px-4 py-2 text-sm border border-gray-600 text-gray-300 hover:border-white rounded"
           >
-            {lang === 'es' ? 'Cerrar' : 'Close'}
+            {'Cerrar'}
           </button>
         </div>
       </div>

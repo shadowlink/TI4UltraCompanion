@@ -13,6 +13,7 @@ import {
   type Technology,
 } from '@/data/technologies';
 import type { MobileCommand } from '@/lib/sync/types';
+import type { NekroModalActions } from './MobileTechSection';
 
 interface Props {
   tech: Technology;
@@ -24,6 +25,8 @@ interface Props {
   exhaustedIds: string[];
   sendCommand: (cmd: MobileCommand) => Promise<{ ok: boolean; error?: string }>;
   onClose: () => void;
+  /** When set, the normal research/prereq logic is replaced by Nekro-specific actions. */
+  nekroActions?: NekroModalActions;
 }
 
 export default function MobileTechDetailsModal({
@@ -33,8 +36,8 @@ export default function MobileTechDetailsModal({
   exhaustedIds,
   sendCommand,
   onClose,
+  nekroActions,
 }: Props) {
-  const lang = useGameStore((s) => s.lang);
   const color = TECH_COLOR_HEX[tech.color];
 
   const researched = researchedIds.includes(tech.id);
@@ -116,17 +119,17 @@ export default function MobileTechDetailsModal({
                 className="text-base text-white truncate"
                 style={{ fontFamily: 'var(--font-audiowide)' }}
               >
-                {lang === 'es' ? tech.nameEs : tech.nameEn}
+                {tech.nameEs}
               </h2>
               <p className="text-[10px] text-gray-400 uppercase tracking-wider">
                 {isUnitUpgrade
-                  ? lang === 'es' ? 'Mejora de Unidad' : 'Unit Upgrade'
-                  : `${lang === 'es' ? 'Nivel' : 'Level'} ${tech.level}`}
+                  ? 'Mejora de Unidad'
+                  : `Nivel ${tech.level}`}
                 {' · '}
                 {tech.expansion === 'base' ? 'Base' : 'PoK'}
                 {tech.factionIdx !== undefined && (
                   <span className="ml-2 text-amber-300 border border-amber-400/60 bg-amber-500/10 px-1 rounded text-[9px] leading-none">
-                    ◆ {lang === 'es' ? 'FACCIÓN' : 'FACTION'}
+                    ◆ {'FACCIÓN'}
                   </span>
                 )}
               </p>
@@ -139,7 +142,7 @@ export default function MobileTechDetailsModal({
             className="text-sm text-gray-100 leading-relaxed"
             style={{ fontFamily: 'var(--font-electrolize)' }}
           >
-            {lang === 'es' ? tech.effectEs : tech.effectEn}
+            {tech.effectEs}
           </p>
 
           {/* Prereqs visualization (mixed-color aware) */}
@@ -149,7 +152,6 @@ export default function MobileTechDetailsModal({
               researchedIds={researchedIds}
               prereqsMet={prereqsMet}
               missing={missing}
-              lang={lang}
             />
           )}
 
@@ -157,7 +159,7 @@ export default function MobileTechDetailsModal({
           {!isUnitUpgrade && (
             <div className="flex items-center gap-1.5 mt-2">
               <span className="text-[10px] text-gray-400 uppercase tracking-wider">
-                {lang === 'es' ? 'Aporta:' : 'Provides:'}
+                {'Aporta:'}
               </span>
               <span
                 className="w-4 h-4 rounded-full border border-black/60"
@@ -170,18 +172,18 @@ export default function MobileTechDetailsModal({
           {isUnitUpgrade && tech.upgradedStats && tech.upgradesUnit && (
             <div className="mt-3 pt-3 border-t border-gray-700">
               <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1.5">
-                {lang === 'es' ? 'Mejora la unidad' : 'Upgrades unit'}
+                {'Mejora la unidad'}
               </p>
               <div className="rounded border border-red-700/60 bg-red-900/10 p-2">
                 <p className="text-xs text-red-300 uppercase tracking-wider">
-                  {UNIT_TYPE_LABELS[tech.upgradesUnit][lang]}
+                  {UNIT_TYPE_LABELS[tech.upgradesUnit].es}
                 </p>
                 <p className="text-sm text-white" style={{ fontFamily: 'var(--font-audiowide)' }}>
-                  {lang === 'es' ? tech.upgradedNameEs : tech.upgradedNameEn}
+                  {tech.upgradedNameEs}
                 </p>
                 {tech.upgradedSubtitleEs && (
                   <p className="text-[11px] text-gray-400 italic">
-                    {lang === 'es' ? tech.upgradedSubtitleEs : tech.upgradedSubtitleEn}
+                    {tech.upgradedSubtitleEs}
                   </p>
                 )}
                 <div className="grid grid-cols-4 gap-1 mt-1.5 text-center">
@@ -193,10 +195,10 @@ export default function MobileTechDetailsModal({
                         ? String(tech.upgradedStats![key])
                         : '—';
                     const label = {
-                      cost: lang === 'es' ? 'Coste' : 'Cost',
-                      combat: lang === 'es' ? 'Combate' : 'Combat',
-                      movement: lang === 'es' ? 'Mov' : 'Mov',
-                      capacity: lang === 'es' ? 'Cap' : 'Cap',
+                      cost: 'Coste',
+                      combat: 'Combate',
+                      movement: 'Mov',
+                      capacity: 'Cap',
                     }[key];
                     return (
                       <div key={key} className="flex flex-col">
@@ -213,7 +215,7 @@ export default function MobileTechDetailsModal({
                 </div>
                 {tech.upgradedStats.abilitiesEs.length > 0 && (
                   <ul className="text-[11px] text-gray-200 mt-1.5 space-y-0.5">
-                    {(lang === 'es' ? tech.upgradedStats.abilitiesEs : tech.upgradedStats.abilitiesEn).map((a, i) => (
+                    {(tech.upgradedStats.abilitiesEs).map((a, i) => (
                       <li key={i}>◆ {a}</li>
                     ))}
                   </ul>
@@ -225,7 +227,7 @@ export default function MobileTechDetailsModal({
           {startingFactions.length > 0 && (
             <div className="mt-3 pt-3 border-t border-gray-700">
               <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1.5">
-                {lang === 'es' ? 'Tecnología inicial de' : 'Starting tech of'}
+                {'Tecnología inicial de'}
               </p>
               <div className="flex flex-wrap gap-1.5">
                 {startingFactions.map((f, i) => (
@@ -246,65 +248,112 @@ export default function MobileTechDetailsModal({
 
         {canToggle && (
           <div className="px-4 py-3 border-t border-gray-700 pointer-events-auto flex flex-col gap-1.5">
-            {researched ? (
-              <>
-                {/* Exhaust toggle — not applicable to unit upgrades (they're passive). */}
-                {!isUnitUpgrade && (
-                  exhausted ? (
-                    <button
-                      onClick={toggleExhausted}
-                      className="w-full py-2.5 rounded border-2 border-yellow-500/60 bg-yellow-500/15 text-yellow-200 text-sm active:bg-yellow-500/30"
-                      style={{ fontFamily: 'var(--font-aldrich)' }}
-                    >
-                      ↻ {lang === 'es' ? 'Enderezar carta' : 'Ready card'}
-                    </button>
-                  ) : (
-                    <button
-                      onClick={toggleExhausted}
-                      className="w-full py-2.5 rounded border-2 border-yellow-500/40 bg-yellow-500/5 text-yellow-300 text-sm active:bg-yellow-500/20"
-                      style={{ fontFamily: 'var(--font-aldrich)' }}
-                    >
-                      ⌀ {lang === 'es' ? 'Marcar como agotada' : 'Mark as exhausted'}
-                    </button>
-                  )
-                )}
-                <button
-                  onClick={toggleResearched}
-                  className="w-full py-2 rounded border border-gray-600 bg-gray-800/40 text-gray-400 text-xs active:bg-gray-700"
-                  style={{ fontFamily: 'var(--font-aldrich)' }}
-                >
-                  {lang === 'es' ? 'Desmarcar (no investigada)' : 'Unmark (not researched)'}
-                </button>
-              </>
-            ) : (
-              <>
-                <button
-                  onClick={toggleResearched}
-                  disabled={!canMarkNow}
-                  className="w-full py-2.5 rounded border-2 border-green-500/60 bg-green-500/15 text-green-200 text-sm active:bg-green-500/30 disabled:opacity-30 disabled:cursor-not-allowed"
-                  style={{ fontFamily: 'var(--font-aldrich)' }}
-                >
-                  {lang === 'es' ? 'Marcar como investigada' : 'Mark as researched'}
-                </button>
-                {canUseBypass && (
+            {nekroActions ? (
+              // ─── Nekro mode: custom actions (assimilate or gain via ability) ───
+              researched ? (
+                <>
+                  {!isUnitUpgrade && (
+                    exhausted ? (
+                      <button
+                        onClick={toggleExhausted}
+                        className="w-full py-2.5 rounded border-2 border-yellow-500/60 bg-yellow-500/15 text-yellow-200 text-sm active:bg-yellow-500/30"
+                        style={{ fontFamily: 'var(--font-aldrich)' }}
+                      >
+                        ↻ {'Enderezar carta'}
+                      </button>
+                    ) : (
+                      <button
+                        onClick={toggleExhausted}
+                        className="w-full py-2.5 rounded border-2 border-yellow-500/40 bg-yellow-500/5 text-yellow-300 text-sm active:bg-yellow-500/20"
+                        style={{ fontFamily: 'var(--font-aldrich)' }}
+                      >
+                        ⌀ {'Marcar como agotada'}
+                      </button>
+                    )
+                  )}
                   <button
-                    onClick={useBypass}
-                    className="w-full py-2 rounded border-2 border-cyan-500/60 bg-cyan-500/15 text-cyan-200 text-xs active:bg-cyan-500/30"
+                    onClick={async () => { await nekroActions.onUnmark(); onClose(); }}
+                    className="w-full py-2 rounded border border-gray-600 bg-gray-800/40 text-gray-400 text-xs active:bg-gray-700"
                     style={{ fontFamily: 'var(--font-aldrich)' }}
                   >
-                    🤖 {lang === 'es'
-                      ? 'Usar Algoritmo IA (ignora 1 prereq + agota)'
-                      : 'Use AI Algorithm (skip 1 prereq + exhaust)'}
+                    {nekroActions.unmarkLabel}
                   </button>
-                )}
-                {!prereqsMet && (
-                  <p className="text-[11px] text-red-300 text-center">
-                    {lang === 'es'
-                      ? `Te faltan ${missing} prerequisitos`
-                      : `You are missing ${missing} prereq${missing === 1 ? '' : 's'}`}
-                  </p>
-                )}
-              </>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={async () => { await nekroActions.onMark(); onClose(); }}
+                    disabled={nekroActions.markDisabled}
+                    className="w-full py-2.5 rounded border-2 border-fuchsia-500/60 bg-fuchsia-500/15 text-fuchsia-200 text-sm active:bg-fuchsia-500/30 disabled:opacity-30 disabled:cursor-not-allowed"
+                    style={{ fontFamily: 'var(--font-aldrich)' }}
+                  >
+                    {nekroActions.markLabel}
+                  </button>
+                  {nekroActions.markDisabled && nekroActions.markDisabledReason && (
+                    <p className="text-[11px] text-red-300 text-center">
+                      {nekroActions.markDisabledReason}
+                    </p>
+                  )}
+                </>
+              )
+            ) : (
+              // ─── Normal mode ───────────────────────────────────────────────────
+              researched ? (
+                <>
+                  {/* Exhaust toggle — not applicable to unit upgrades (they're passive). */}
+                  {!isUnitUpgrade && (
+                    exhausted ? (
+                      <button
+                        onClick={toggleExhausted}
+                        className="w-full py-2.5 rounded border-2 border-yellow-500/60 bg-yellow-500/15 text-yellow-200 text-sm active:bg-yellow-500/30"
+                        style={{ fontFamily: 'var(--font-aldrich)' }}
+                      >
+                        ↻ {'Enderezar carta'}
+                      </button>
+                    ) : (
+                      <button
+                        onClick={toggleExhausted}
+                        className="w-full py-2.5 rounded border-2 border-yellow-500/40 bg-yellow-500/5 text-yellow-300 text-sm active:bg-yellow-500/20"
+                        style={{ fontFamily: 'var(--font-aldrich)' }}
+                      >
+                        ⌀ {'Marcar como agotada'}
+                      </button>
+                    )
+                  )}
+                  <button
+                    onClick={toggleResearched}
+                    className="w-full py-2 rounded border border-gray-600 bg-gray-800/40 text-gray-400 text-xs active:bg-gray-700"
+                    style={{ fontFamily: 'var(--font-aldrich)' }}
+                  >
+                    {'Desmarcar (no investigada)'}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={toggleResearched}
+                    disabled={!canMarkNow}
+                    className="w-full py-2.5 rounded border-2 border-green-500/60 bg-green-500/15 text-green-200 text-sm active:bg-green-500/30 disabled:opacity-30 disabled:cursor-not-allowed"
+                    style={{ fontFamily: 'var(--font-aldrich)' }}
+                  >
+                    {'Marcar como investigada'}
+                  </button>
+                  {canUseBypass && (
+                    <button
+                      onClick={useBypass}
+                      className="w-full py-2 rounded border-2 border-cyan-500/60 bg-cyan-500/15 text-cyan-200 text-xs active:bg-cyan-500/30"
+                      style={{ fontFamily: 'var(--font-aldrich)' }}
+                    >
+                      🤖 {'Usar Algoritmo IA (ignora 1 prereq + agota)'}
+                    </button>
+                  )}
+                  {!prereqsMet && (
+                    <p className="text-[11px] text-red-300 text-center">
+                      {`Te faltan ${missing} prerequisitos`}
+                    </p>
+                  )}
+                </>
+              )
             )}
           </div>
         )}
@@ -314,7 +363,7 @@ export default function MobileTechDetailsModal({
             onClick={onClose}
             className="text-xs text-gray-400 underline pointer-events-auto"
           >
-            {lang === 'es' ? 'Cerrar' : 'Close'}
+            {'Cerrar'}
           </button>
         </div>
       </div>
@@ -329,13 +378,11 @@ function PrereqsRow({
   researchedIds,
   prereqsMet,
   missing,
-  lang,
 }: {
   prereqs: TechColor[];
   researchedIds: string[];
   prereqsMet: boolean;
   missing: number;
-  lang: 'es' | 'en';
 }) {
   // Count haves by color — exclude unit upgrades (they don't contribute color icons)
   const have: Record<TechColor, number> = { red: 0, green: 0, blue: 0, yellow: 0 };
@@ -354,7 +401,7 @@ function PrereqsRow({
   return (
     <div className="flex items-center gap-1.5 mt-3 flex-wrap">
       <span className="text-[10px] text-gray-400 uppercase tracking-wider">
-        {lang === 'es' ? 'Prereqs:' : 'Prereqs:'}
+        {'Prereqs:'}
       </span>
       <div className="flex gap-1">
         {slots.map((s, i) => {

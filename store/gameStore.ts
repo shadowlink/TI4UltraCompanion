@@ -24,7 +24,6 @@ import {
   DEFAULT_OPTIONS,
   type GamePhase,
   type ClockRun,
-  type Lang,
   type ModalType,
   type TransitionText,
   type PlayerData,
@@ -41,6 +40,7 @@ import { saveGame, clearSavedGame } from '@/lib/persistence';
 import { STAGE_I_OBJECTIVES, STAGE_II_OBJECTIVES, OBJECTIVES_BY_ID } from '@/data/publicObjectives';
 import { TECH_BY_ID, canResearch } from '@/data/technologies';
 import { getFactionSheet } from '@/data/factionSheets';
+import { STARTING_TECHS_BY_IDX } from '@/data/factionExtras';
 
 // ─── State shape ─────────────────────────────────────────────────────────────
 
@@ -96,7 +96,6 @@ interface GameState {
   decisionTimerRemaining: number;
 
   // UI
-  lang: Lang;
   activeModal: ModalType;
   showTransition: boolean;
   transitionText: TransitionText;
@@ -182,7 +181,6 @@ interface GameState {
   addInfluence: (playerIdx: number, amount: number) => void;
 
   // UI
-  setLang: (lang: Lang) => void;
   openModal: (modal: ModalType) => void;
   closeModal: () => void;
   setOptions: (opts: Partial<GameOptions>) => void;
@@ -233,7 +231,6 @@ const INITIAL_STATE = {
   currentPlayerTimer: 0,
   lastActivity: 0,
   decisionTimerRemaining: DEFAULT_OPTIONS.decisionTimerLimit,
-  lang: 'es' as Lang,
   activeModal: null as ModalType,
   showTransition: false,
   transitionText: { turn: '', phase: '' },
@@ -281,7 +278,7 @@ export const useGameStore = create<GameState>()((set, get) => ({
   setPhase: (phase, label) => {
     const s = get();
     const turnLabel = `Round ${s.turnCounter}`;
-    const phaseLabel = label ?? getPhaseName(phase, s.lang);
+    const phaseLabel = label ?? getPhaseName(phase);
     set({
       phase,
       showTransition: true,
@@ -293,7 +290,23 @@ export const useGameStore = create<GameState>()((set, get) => ({
   },
 
   startFirstRound: () => {
-    set({ turnCounter: 1 });
+    const s = get();
+    // Build nameEs → id reverse map
+    const nameToId: Record<string, string> = {};
+    for (const [id, tech] of Object.entries(TECH_BY_ID)) {
+      nameToId[tech.nameEs] = id;
+    }
+    // Pre-populate researchedTechs with each player's starting techs
+    const initialResearched: Record<number, string[]> = {};
+    for (let i = 0; i < s.nbPlayers; i++) {
+      const faction = s.players[i]?.faction ?? -1;
+      if (faction < 0) continue;
+      const ids = (STARTING_TECHS_BY_IDX[faction] ?? [])
+        .map((name) => nameToId[name])
+        .filter((id): id is string => id !== undefined);
+      if (ids.length > 0) initialResearched[i] = ids;
+    }
+    set({ turnCounter: 1, researchedTechs: initialResearched });
     get().setPhase(PHASE_STRATEGY);
   },
 
@@ -925,12 +938,6 @@ export const useGameStore = create<GameState>()((set, get) => ({
 
   // ── UI ──────────────────────────────────────────────────────────────────────
 
-  setLang: (lang) => {
-    set({ lang });
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('ti4_lang', lang);
-    }
-  },
 
   openModal: (modal) => set({ activeModal: modal }),
 
@@ -963,7 +970,6 @@ export const useGameStore = create<GameState>()((set, get) => ({
       agendaPhase: saved.agendaPhase,
       statusStep: saved.statusStep,
       options: saved.options,
-      lang: saved.lang,
       objectiveDeck: saved.objectiveDeck ?? [],
       revealedCount: saved.revealedCount ?? 0,
       objectivesScoredBy: saved.objectivesScoredBy ?? {},
@@ -993,7 +999,6 @@ export const useGameStore = create<GameState>()((set, get) => ({
       agendaPhase: synced.agendaPhase,
       statusStep: synced.statusStep,
       options: synced.options,
-      lang: synced.lang,
       votes: synced.votes,
       votingPlayerIdx: synced.votingPlayerIdx,
       clockRun: synced.clockRun,
@@ -1031,7 +1036,6 @@ export const useGameStore = create<GameState>()((set, get) => ({
       agendaPhase: s.agendaPhase,
       statusStep: s.statusStep,
       options: s.options,
-      lang: s.lang,
       votes: s.votes,
       votingPlayerIdx: s.votingPlayerIdx,
       clockRun: s.clockRun,
@@ -1068,7 +1072,6 @@ export const useGameStore = create<GameState>()((set, get) => ({
       agendaPhase: s.agendaPhase,
       statusStep: s.statusStep,
       options: s.options,
-      lang: s.lang,
       objectiveDeck: s.objectiveDeck,
       revealedCount: s.revealedCount,
       objectivesScoredBy: s.objectivesScoredBy,
@@ -1081,16 +1084,16 @@ export const useGameStore = create<GameState>()((set, get) => ({
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function getPhaseName(phase: GamePhase, lang: Lang): string {
-  const names: Record<number, { en: string; es: string }> = {
-    [PHASE_GALAXY]: { en: 'Galaxy Phase', es: 'Fase de la Galaxia' },
-    [PHASE_STRATEGY]: { en: 'Strategy Phase', es: 'Fase de Estrategia' },
-    [PHASE_ACTION]: { en: 'Action Phase', es: 'Fase de Acción' },
-    [PHASE_STATUS]: { en: 'Status Phase', es: 'Fase de Estado' },
-    [PHASE_AGENDA]: { en: 'Agenda Phase', es: 'Fase de Consejo Galáctico' },
-    [PHASE_END]: { en: 'Game ends', es: 'Fin del Juego' },
+function getPhaseName(phase: GamePhase): string {
+  const names: Record<number, string> = {
+    [PHASE_GALAXY]: 'Fase de la Galaxia',
+    [PHASE_STRATEGY]: 'Fase de Estrategia',
+    [PHASE_ACTION]: 'Fase de Acción',
+    [PHASE_STATUS]: 'Fase de Estado',
+    [PHASE_AGENDA]: 'Fase de Consejo Galáctico',
+    [PHASE_END]: 'Fin del Juego',
   };
-  return names[phase]?.[lang] ?? '';
+  return names[phase] ?? '';
 }
 
 function markSecondPicks(strategies: StrategyEntry[], nbPlayers: number): StrategyEntry[] {

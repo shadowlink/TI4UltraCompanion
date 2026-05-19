@@ -11,7 +11,6 @@ interface FactionPickerModalProps {
 }
 
 export default function FactionPickerModal({ playerIdx, onClose }: FactionPickerModalProps) {
-  const lang = useGameStore((s) => s.lang);
   const nbPlayers = useGameStore((s) => s.nbPlayers);
   const players = useGameStore((s) => s.players);
   const setPlayerFaction = useGameStore((s) => s.setPlayerFaction);
@@ -47,17 +46,17 @@ export default function FactionPickerModal({ playerIdx, onClose }: FactionPicker
           className="text-lg text-orange-400 text-center mb-3 text-shadow"
           style={{ fontFamily: 'var(--font-audiowide)' }}
         >
-          {lang === 'es' ? `Jugador ${playerIdx + 1}` : `Player ${playerIdx + 1}`}
+          {`Jugador ${playerIdx + 1}`}
         </h2>
 
         {/* Player name */}
         <div className="mb-4">
-          <p className="text-xs text-gray-400 mb-2">{lang === 'es' ? 'Nombre' : 'Name'}</p>
+          <p className="text-xs text-gray-400 mb-2">{'Nombre'}</p>
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder={lang === 'es' ? 'Nombre del jugador' : 'Player name'}
+            placeholder={'Nombre del jugador'}
             className="w-full max-w-xs px-3 py-2 bg-black/40 border border-gray-600 rounded text-white placeholder-gray-600 focus:border-orange-500 focus:outline-none transition-colors"
             style={{ fontFamily: 'var(--font-electrolize)' }}
           />
@@ -65,7 +64,7 @@ export default function FactionPickerModal({ playerIdx, onClose }: FactionPicker
 
         {/* Color picker */}
         <div className="mb-4">
-          <p className="text-xs text-gray-400 mb-2">{lang === 'es' ? 'Color' : 'Color'}</p>
+          <p className="text-xs text-gray-400 mb-2">{'Color'}</p>
           <div className="flex gap-2 flex-wrap">
             {PLAYER_COLORS.map((colorName, i) => {
               const isUsed = usedColors.includes(i);
@@ -91,7 +90,7 @@ export default function FactionPickerModal({ playerIdx, onClose }: FactionPicker
 
         {/* Faction list */}
         <div className="mb-4">
-          <p className="text-xs text-gray-400 mb-2">{lang === 'es' ? 'Facción' : 'Faction'}</p>
+          <p className="text-xs text-gray-400 mb-2">{'Facción'}</p>
           <div className="grid grid-cols-6 md:grid-cols-10 gap-2">
             {FACTIONS.map((faction, i) => {
               if (!isAllowedFaction(i)) return null;
@@ -114,7 +113,7 @@ export default function FactionPickerModal({ playerIdx, onClose }: FactionPicker
                     <Image src={faction.iconPath} alt={faction.shortName} fill className="object-contain" unoptimized />
                   </div>
                   <span className="text-xs text-white text-shadow leading-tight text-center">
-                    {lang === 'es' ? faction.nameEs : faction.nameEn}
+                    {faction.nameEs}
                   </span>
                 </button>
               );
@@ -129,7 +128,7 @@ export default function FactionPickerModal({ playerIdx, onClose }: FactionPicker
             className="px-4 py-2 text-gray-400 hover:text-white border border-gray-600 rounded transition-colors"
             style={{ fontFamily: 'var(--font-aldrich)' }}
           >
-            {lang === 'es' ? 'Cancelar' : 'Cancel'}
+            {'Cancelar'}
           </button>
           <button
             onClick={handleConfirm}
@@ -141,7 +140,7 @@ export default function FactionPickerModal({ playerIdx, onClose }: FactionPicker
             }`}
             style={{ fontFamily: 'var(--font-aldrich)' }}
           >
-            {lang === 'es' ? 'Confirmar' : 'Confirm'}
+            {'Confirmar'}
           </button>
         </div>
       </div>

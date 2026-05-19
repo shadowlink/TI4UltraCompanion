@@ -30,7 +30,6 @@ interface PlayerVote {
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function AgendaPhase() {
-  const lang = useGameStore((s) => s.lang);
   const nbPlayers = useGameStore((s) => s.nbPlayers);
   const players = useGameStore((s) => s.players);
   const agendaStep = useGameStore((s) => s.agendaStep);
@@ -93,8 +92,8 @@ export default function AgendaPhase() {
 
   const agendaLabel =
     agendaStep === 1
-      ? lang === 'es' ? 'Primera Carta del Consejo' : 'First Agenda'
-      : lang === 'es' ? 'Segunda Carta del Consejo' : 'Second Agenda';
+      ? 'Primera Carta del Consejo'
+      : 'Segunda Carta del Consejo';
 
   // Speaker votes LAST: order is [speakerIdx+1, ..., speakerIdx] (used for display)
   const votingOrder = Array.from(
@@ -129,8 +128,8 @@ export default function AgendaPhase() {
     switch (type) {
       case 'ForAgainst':
         cols = [
-          lang === 'es' ? 'A Favor' : 'For',
-          lang === 'es' ? 'En Contra' : 'Against',
+          'A Favor',
+          'En Contra',
         ];
         break;
       case 'ElectPlayer':
@@ -195,12 +194,10 @@ export default function AgendaPhase() {
             className="text-2xl text-orange-400 text-shadow"
             style={{ fontFamily: 'var(--font-audiowide)' }}
           >
-            {lang === 'es'
-              ? `Ronda ${turnCounter} — ${agendaLabel}`
-              : `Round ${turnCounter} — ${agendaLabel}`}
+            {`Ronda ${turnCounter} — ${agendaLabel}`}
           </h2>
           <p className="text-base text-gray-400 mt-1">
-            {lang === 'es' ? '¿Qué tipo de voto?' : 'What type of vote?'}
+            {'¿Qué tipo de voto?'}
           </p>
         </div>
         <div className="grid grid-cols-2 gap-2">
@@ -211,7 +208,7 @@ export default function AgendaPhase() {
               className="py-5 px-4 text-lg border border-orange-500/40 bg-orange-500/5 hover:bg-orange-500/20 text-orange-300 rounded transition-all text-left"
               style={{ fontFamily: 'var(--font-aldrich)' }}
             >
-              {lang === 'es' ? labelEs : labelEn}
+              {labelEs}
             </button>
           ))}
         </div>
@@ -219,7 +216,7 @@ export default function AgendaPhase() {
           onClick={advanceAgendaStep}
           className="mt-auto px-4 py-3 text-base border border-gray-700 text-gray-500 hover:text-gray-300 rounded transition-colors self-start"
         >
-          {lang === 'es' ? 'Omitir este consejo →' : 'Skip this agenda →'}
+          {'Omitir este consejo →'}
         </button>
       </div>
     );
@@ -230,7 +227,6 @@ export default function AgendaPhase() {
   if (stage === 'results') {
     return (
       <ResultsScreen
-        lang={lang}
         agendaLabel={agendaLabel}
         columns={columns}
         columnTotals={columnTotals}
@@ -259,7 +255,7 @@ export default function AgendaPhase() {
           onClick={() => { resetAgendaContext(); }}
           className="text-base text-gray-600 hover:text-gray-300 transition-colors"
         >
-          ← {lang === 'es' ? 'Cambiar' : 'Change'}
+          ← {'Cambiar'}
         </button>
       </div>
 
@@ -346,12 +342,12 @@ export default function AgendaPhase() {
           </div>
           <div>
             <p className="text-2xl text-white text-shadow" style={{ fontFamily: 'var(--font-aldrich)' }}>
-              {lang === 'es' ? currentFaction.nameEs : currentFaction.nameEn} ({currentPlayer.name})
+              {currentFaction.nameEs} ({currentPlayer.name})
             </p>
             <p className="text-base text-orange-300">
               {isNekro
-                ? lang === 'es' ? 'El Virus Nekro no puede votar' : 'Nekro Virus cannot vote'
-                : lang === 'es' ? 'emite tu voto' : 'cast your vote'}
+                ? 'El Virus Nekro no puede votar'
+                : 'emite tu voto'}
             </p>
           </div>
           <div
@@ -365,7 +361,7 @@ export default function AgendaPhase() {
       <div className="flex-shrink-0">
         <div className="flex items-center gap-3 mb-2">
           <span className="text-base text-gray-500">
-            {lang === 'es' ? 'Influencia:' : 'Influence:'}
+            {'Influencia:'}
           </span>
           <span
             className="text-4xl font-bold text-orange-300"
@@ -406,28 +402,28 @@ export default function AgendaPhase() {
           }`}
           style={{ fontFamily: 'var(--font-aldrich)' }}
         >
-          {lang === 'es' ? 'Confirmar Voto' : 'Confirm Vote'}
+          {'Confirmar Voto'}
         </button>
         <button
           onClick={() => resolveVote(true)}
           className="px-6 py-4 text-lg border border-gray-600 text-gray-400 hover:text-white rounded transition-colors"
           style={{ fontFamily: 'var(--font-aldrich)' }}
         >
-          {lang === 'es' ? 'Abstención' : 'Abstain'}
+          {'Abstención'}
         </button>
         <button
           onClick={advanceAgendaStep}
           className="px-6 py-4 text-lg border border-orange-500/50 bg-orange-500/10 text-orange-300 hover:bg-orange-500/25 rounded transition-colors ml-auto"
           style={{ fontFamily: 'var(--font-aldrich)' }}
         >
-          {lang === 'es' ? 'Fin del Voto →' : 'End Vote →'}
+          {'Fin del Voto →'}
         </button>
       </div>
 
       {/* Picker modals */}
       {pickerOpen === 'planet' && (
         <PickerModal
-          title={lang === 'es' ? 'Elegir Planeta' : 'Choose Planet'}
+          title={'Elegir Planeta'}
           onClose={() => setPickerOpen(null)}
         >
           <div className="flex gap-1 mb-3 flex-wrap">
@@ -461,12 +457,12 @@ export default function AgendaPhase() {
 
       {pickerOpen === 'law' && (
         <PickerModal
-          title={lang === 'es' ? 'Elegir Ley' : 'Choose Law'}
+          title={'Elegir Ley'}
           onClose={() => setPickerOpen(null)}
         >
           <div className="grid grid-cols-1 gap-1 overflow-y-auto max-h-80">
             {LAWS.map((law, i) => {
-              const name = lang === 'es' ? law.es : law.en;
+              const name = law.es;
               return (
                 <button
                   key={i}
@@ -483,12 +479,12 @@ export default function AgendaPhase() {
 
       {pickerOpen === 'obj' && (
         <PickerModal
-          title={lang === 'es' ? 'Elegir Objetivo' : 'Choose Objective'}
+          title={'Elegir Objetivo'}
           onClose={() => setPickerOpen(null)}
         >
           <div className="grid grid-cols-1 gap-1 overflow-y-auto max-h-80">
             {SECRET_OBJECTIVES.map((obj, i) => {
-              const name = lang === 'es' ? obj.es : obj.en;
+              const name = obj.es;
               return (
                 <button
                   key={i}
@@ -505,12 +501,12 @@ export default function AgendaPhase() {
 
       {pickerOpen === 'strategy' && (
         <PickerModal
-          title={lang === 'es' ? 'Elegir Estrategia' : 'Choose Strategy Card'}
+          title={'Elegir Estrategia'}
           onClose={() => setPickerOpen(null)}
         >
           <div className="grid grid-cols-2 gap-2 overflow-y-auto max-h-64">
             {STRATEGY_CARD_NAMES.map((card, i) => {
-              const name = lang === 'es' ? card.es : card.en;
+              const name = card.es;
               return (
                 <button
                   key={i}
@@ -527,12 +523,12 @@ export default function AgendaPhase() {
 
       {pickerOpen === 'other' && (
         <PickerModal
-          title={lang === 'es' ? 'Propuesta' : 'Generic Proposal'}
+          title={'Propuesta'}
           onClose={() => setPickerOpen(null)}
         >
           <div className="grid grid-cols-2 gap-2 overflow-y-auto max-h-64">
             {GENERIC_CHOICES.map((choice, i) => {
-              const name = lang === 'es' ? choice.es : choice.en;
+              const name = choice.es;
               return (
                 <button
                   key={i}
@@ -553,7 +549,6 @@ export default function AgendaPhase() {
 // ─── Results screen ────────────────────────────────────────────────────────────
 
 function ResultsScreen({
-  lang,
   agendaLabel,
   columns,
   columnTotals,
@@ -563,7 +558,6 @@ function ResultsScreen({
   votingOrder,
   onNext,
 }: {
-  lang: string;
   agendaLabel: string;
   columns: string[];
   columnTotals: number[];
@@ -582,7 +576,7 @@ function ResultsScreen({
         className="text-2xl text-orange-400 text-shadow flex-shrink-0"
         style={{ fontFamily: 'var(--font-audiowide)' }}
       >
-        {lang === 'es' ? 'Resultado — ' : 'Result — '}{agendaLabel}
+        {'Resultado — '}{agendaLabel}
       </h2>
 
       {hasVotes ? (
@@ -621,7 +615,7 @@ function ResultsScreen({
           {winners.length > 0 && (
             <div className="px-4 py-3 rounded border border-yellow-400/30 bg-yellow-400/5 flex-shrink-0">
               <p className="text-xl text-yellow-300" style={{ fontFamily: 'var(--font-aldrich)' }}>
-                {lang === 'es' ? '✓ Resultado: ' : '✓ Result: '}{winners.join(', ')}
+                {'✓ Resultado: '}{winners.join(', ')}
               </p>
             </div>
           )}
@@ -634,7 +628,7 @@ function ResultsScreen({
               const colorVal = PLAYER_COLOR_VALUES[PLAYER_COLORS[players[pIdx].color]];
               if (!vote) return null;
               const colName = vote.columnIdx === 'abstain'
-                ? (lang === 'es' ? 'Abstención' : 'Abstain')
+                ? ('Abstención')
                 : columns[vote.columnIdx as number] ?? '?';
               return (
                 <div key={pIdx} className="flex items-center gap-2 text-xs text-gray-400">
@@ -660,7 +654,7 @@ function ResultsScreen({
         </>
       ) : (
         <p className="text-sm text-gray-500 italic">
-          {lang === 'es' ? 'Voto omitido' : 'Vote skipped'}
+          {'Voto omitido'}
         </p>
       )}
 
@@ -669,7 +663,7 @@ function ResultsScreen({
         className="mt-auto px-6 py-4 text-lg border-2 border-orange-500 bg-orange-500/20 hover:bg-orange-500/40 text-orange-300 rounded transition-all self-end"
         style={{ fontFamily: 'var(--font-aldrich)' }}
       >
-        {lang === 'es' ? 'Siguiente →' : 'Next →'}
+        {'Siguiente →'}
       </button>
     </div>
   );

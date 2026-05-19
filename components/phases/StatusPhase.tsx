@@ -28,7 +28,6 @@ const CHECKLIST_ES = [
 ];
 
 export default function StatusPhase() {
-  const lang = useGameStore((s) => s.lang);
   const nbPlayers = useGameStore((s) => s.nbPlayers);
   const players = useGameStore((s) => s.players);
   const strategies = useGameStore((s) => s.strategies);
@@ -61,7 +60,7 @@ export default function StatusPhase() {
 
   const activePlayers = players.slice(0, nbPlayers);
   const hasWinner = activePlayers.some((p) => p.vp >= vpWinGoal);
-  const checklist = lang === 'es' ? CHECKLIST_ES : CHECKLIST_EN;
+  const checklist = CHECKLIST_ES;
 
   // "Next" from step 0: skip Mecatol Rex if agenda already unlocked
   const handleNextFromStep0 = () => {
@@ -76,8 +75,8 @@ export default function StatusPhase() {
 
   const nextLabel =
     agendaPhase === 1
-      ? lang === 'es' ? 'Consejo Galáctico →' : 'Galactic Council →'
-      : lang === 'es' ? 'Mecatol Rex →' : 'Mecatol Rex →';
+      ? 'Consejo Galáctico →'
+      : 'Mecatol Rex →';
 
   return (
     <div className="flex flex-col h-full p-5 gap-5 overflow-y-auto">
@@ -86,9 +85,7 @@ export default function StatusPhase() {
         className="text-2xl text-orange-400 text-shadow flex-shrink-0"
         style={{ fontFamily: 'var(--font-audiowide)' }}
       >
-        {lang === 'es'
-          ? `Ronda ${turnCounter} — Fase de Estado`
-          : `Round ${turnCounter} — Status Phase`}
+        {`Ronda ${turnCounter} — Fase de Estado`}
       </h2>
 
       {statusStep === 0 ? (
@@ -193,7 +190,7 @@ export default function StatusPhase() {
           {/* ── Status checklist ─────────────────────────────────────── */}
           <div className="border border-gray-700/50 rounded p-3 flex-shrink-0">
             <p className="text-sm text-gray-500 uppercase tracking-wider mb-2">
-              {lang === 'es' ? 'Lista de Estado' : 'Status Checklist'}
+              {'Lista de Estado'}
             </p>
             <ol className="space-y-1">
               {checklist.map((step, i) => (
@@ -213,7 +210,7 @@ export default function StatusPhase() {
                 className="flex-1 px-4 py-4 text-xl border-2 border-yellow-400 bg-yellow-400/20 hover:bg-yellow-400/40 text-yellow-200 rounded transition-all"
                 style={{ fontFamily: 'var(--font-aldrich)' }}
               >
-                🏆 {lang === 'es' ? 'Fin del Juego' : 'End Game'}
+                🏆 {'Fin del Juego'}
               </button>
             ) : (
               <div />
@@ -230,7 +227,6 @@ export default function StatusPhase() {
       ) : (
         /* ── Mecatol Rex choice (step 1) ─────────────────────────── */
         <MecatolRexStep
-          lang={lang}
           gameDuration={gameDuration}
           turnCounter={turnCounter}
           onCaptured={() => { setAgendaPhase(1); newAgenda(); }}
@@ -244,13 +240,11 @@ export default function StatusPhase() {
 // ─── Mecatol Rex step ─────────────────────────────────────────────────────────
 
 function MecatolRexStep({
-  lang,
   gameDuration,
   turnCounter,
   onCaptured,
   onNotCaptured,
 }: {
-  lang: string;
   gameDuration: number;
   turnCounter: number;
   onCaptured: () => void;
@@ -266,9 +260,7 @@ function MecatolRexStep({
           Mecatol Rex
         </h3>
         <p className="text-sm text-gray-400">
-          {lang === 'es'
-            ? '¿Los Custodios siguen guardando Mecatol Rex?'
-            : 'Are the Custodians still guarding Mecatol Rex?'}
+          {'¿Los Custodios siguen guardando Mecatol Rex?'}
         </p>
       </div>
 
@@ -279,12 +271,10 @@ function MecatolRexStep({
           style={{ fontFamily: 'var(--font-aldrich)' }}
         >
           <span className="block text-base mb-0.5">
-            {lang === 'es' ? '⚔ Los Custodios han sido derrotados' : '⚔ The Custodians have been defeated'}
+            {'⚔ Los Custodios han sido derrotados'}
           </span>
           <span className="text-xs text-orange-400/70">
-            {lang === 'es'
-              ? '→ Desbloquea el Consejo Galáctico para siempre'
-              : '→ Unlocks the Galactic Council permanently'}
+            {'→ Desbloquea el Consejo Galáctico para siempre'}
           </span>
         </button>
 
@@ -294,12 +284,10 @@ function MecatolRexStep({
           style={{ fontFamily: 'var(--font-aldrich)' }}
         >
           <span className="block text-base mb-0.5">
-            {lang === 'es'
-              ? '🛡 Los Custodios siguen guardando Mecatol Rex'
-              : '🛡 The Custodians are still guarding Mecatol Rex'}
+            {'🛡 Los Custodios siguen guardando Mecatol Rex'}
           </span>
           <span className="text-xs text-gray-500">
-            {lang === 'es' ? '→ Nueva ronda sin agenda' : '→ New round, no agenda'}
+            {'→ Nueva ronda sin agenda'}
           </span>
         </button>
       </div>
@@ -308,7 +296,7 @@ function MecatolRexStep({
         className="text-center text-xs text-gray-600"
         style={{ fontFamily: 'var(--font-share-tech-mono)' }}
       >
-        {lang === 'es' ? 'Ronda' : 'Round'} {turnCounter} ·{' '}
+        {'Ronda'} {turnCounter} ·{' '}
         {formatTime(gameDuration)}
       </div>
     </div>

@@ -6,6 +6,7 @@ import { FACTIONS } from '@/data/factions';
 import { getFactionSheet, TECH_COLOR_HEX } from '@/data/factionSheets';
 import { FACTION_TECHNOLOGIES, getPrereqs } from '@/data/technologies';
 import MobileUnitCard from '@/components/mobile/MobileUnitCard';
+import { FACTION_ART_BY_IDX } from '@/data/factionExtras';
 
 interface Props {
   factionIdx: number;
@@ -21,7 +22,6 @@ function getExpansion(idx: number) {
 }
 
 export default function FactionDetailView({ factionIdx }: Props) {
-  const lang = useGameStore((s) => s.lang);
   const sheet = getFactionSheet(factionIdx);
   const faction = FACTIONS[factionIdx];
   const exp = getExpansion(factionIdx);
@@ -30,15 +30,16 @@ export default function FactionDetailView({ factionIdx }: Props) {
   if (!sheet || !faction) {
     return (
       <div className="p-8 text-center text-gray-500">
-        {lang === 'es' ? 'Facción no encontrada' : 'Faction not found'}
+        {'Facción no encontrada'}
       </div>
     );
   }
 
-  const title = lang === 'es' ? sheet.titleEs : sheet.titleEn;
-  const quote = lang === 'es' ? sheet.quoteEs : sheet.quoteEn;
-  const shortLore = lang === 'es' ? sheet.loreEs : sheet.loreEn;
-  const longLore = lang === 'es' ? sheet.longLoreEs : sheet.longLoreEn;
+  const title = sheet.titleEs;
+  const quote = sheet.quoteEs;
+  const shortLore = sheet.loreEs;
+  const longLore = sheet.longLoreEs;
+  const artPath = FACTION_ART_BY_IDX[factionIdx];
 
   return (
     <div className="max-w-6xl mx-auto px-8 py-8 flex flex-col gap-7">
@@ -69,20 +70,29 @@ export default function FactionDetailView({ factionIdx }: Props) {
             </span>
           </div>
           <p className="text-lg text-gray-400 mt-2" style={{ fontFamily: 'var(--font-electrolize)' }}>
-            {lang === 'es' ? faction.nameEs : faction.nameEn}
+            {faction.nameEs}
           </p>
         </div>
+        {artPath && (
+          <div className="relative w-[120px] h-40 flex-shrink-0 rounded-xl overflow-hidden border border-orange-500/30 bg-black/40">
+            <Image
+              src={artPath}
+              alt={faction.shortName}
+              fill
+              className="object-contain"
+              unoptimized
+            />
+          </div>
+        )}
       </header>
 
       {!sheet.complete && (
         <div className="rounded border border-yellow-500/40 bg-yellow-500/10 p-3 text-center">
           <p className="text-sm text-yellow-300" style={{ fontFamily: 'var(--font-audiowide)' }}>
-            {lang === 'es' ? 'Datos pendientes' : 'Data pending'}
+            {'Datos pendientes'}
           </p>
           <p className="text-[11px] text-gray-400 mt-1">
-            {lang === 'es'
-              ? 'Aún no se han añadido los datos de esta facción.'
-              : "This faction's data hasn't been added yet."}
+            {'Aún no se han añadido los datos de esta facción.'}
           </p>
         </div>
       )}
@@ -111,7 +121,7 @@ export default function FactionDetailView({ factionIdx }: Props) {
       {longLore && (
         <section className="flex flex-col gap-2">
           <h2 className="text-sm text-orange-300 uppercase tracking-wider px-1" style={{ fontFamily: 'var(--font-aldrich)' }}>
-            {lang === 'es' ? 'Historia' : 'Lore'}
+            {'Historia'}
           </h2>
           <div
             className="rounded border border-orange-500/20 bg-black/30 px-5 py-4 text-base text-gray-300 leading-relaxed whitespace-pre-line"
@@ -126,14 +136,14 @@ export default function FactionDetailView({ factionIdx }: Props) {
       {sheet.homeSystemInfo && (
         <section className="flex flex-col gap-2">
           <h2 className="text-sm text-orange-300 uppercase tracking-wider px-1" style={{ fontFamily: 'var(--font-aldrich)' }}>
-            {lang === 'es' ? 'Sistema natal' : 'Home system'}
+            {'Sistema natal'}
           </h2>
           <div className="rounded border border-gray-700/50 bg-gray-900/30 px-5 py-4">
             <p
               className="text-xl text-gray-200 mb-3"
               style={{ fontFamily: 'var(--font-audiowide)' }}
             >
-              {lang === 'es' ? sheet.homeSystemInfo.nameEs : sheet.homeSystemInfo.nameEn}
+              {sheet.homeSystemInfo.nameEs}
             </p>
             <dl className="grid grid-cols-2 md:grid-cols-3 gap-x-5 gap-y-2 text-base">
               {sheet.homeSystemInfo.attributes.map((a, i) => (
@@ -142,7 +152,7 @@ export default function FactionDetailView({ factionIdx }: Props) {
                     className="text-gray-500 uppercase tracking-wider text-xs"
                     style={{ fontFamily: 'var(--font-aldrich)' }}
                   >
-                    {lang === 'es' ? a.keyEs : a.keyEn}
+                    {a.keyEs}
                   </dt>
                   <dd className="text-gray-200" style={{ fontFamily: 'var(--font-electrolize)' }}>
                     {a.value}
@@ -158,16 +168,16 @@ export default function FactionDetailView({ factionIdx }: Props) {
       {sheet.abilities.length > 0 && (
         <section className="flex flex-col gap-3">
           <h2 className="text-sm text-orange-300 uppercase tracking-wider px-1" style={{ fontFamily: 'var(--font-aldrich)' }}>
-            {lang === 'es' ? 'Habilidades de facción' : 'Faction abilities'}
+            {'Habilidades de facción'}
           </h2>
           <div className="grid gap-3 md:grid-cols-2">
             {sheet.abilities.map((ab, i) => (
               <div key={i} className="rounded border border-orange-500/30 bg-orange-500/5 p-4">
                 <p className="text-lg text-orange-300 mb-2" style={{ fontFamily: 'var(--font-audiowide)' }}>
-                  {lang === 'es' ? ab.nameEs : ab.nameEn}
+                  {ab.nameEs}
                 </p>
                 <p className="text-base text-gray-200 leading-relaxed" style={{ fontFamily: 'var(--font-electrolize)' }}>
-                  {lang === 'es' ? ab.descriptionEs : ab.descriptionEn}
+                  {ab.descriptionEs}
                 </p>
               </div>
             ))}
@@ -184,7 +194,7 @@ export default function FactionDetailView({ factionIdx }: Props) {
                 className="text-sm text-cyan-300 uppercase tracking-wider"
                 style={{ fontFamily: 'var(--font-aldrich)' }}
               >
-                {lang === 'es' ? 'Exportaciones máx.' : 'Commodities'}
+                {'Exportaciones máx.'}
               </span>
               <span
                 className="text-6xl font-bold text-cyan-300 mt-2"
@@ -200,7 +210,7 @@ export default function FactionDetailView({ factionIdx }: Props) {
                 className="text-sm text-blue-300 uppercase tracking-wider mb-3"
                 style={{ fontFamily: 'var(--font-aldrich)' }}
               >
-                {lang === 'es' ? 'Flota inicial' : 'Starting fleet'}
+                {'Flota inicial'}
               </p>
               <ul className="text-base text-gray-200 space-y-1" style={{ fontFamily: 'var(--font-electrolize)' }}>
                 {sheet.startingFleet.map((line, i) => (
@@ -215,7 +225,7 @@ export default function FactionDetailView({ factionIdx }: Props) {
                 className="text-sm text-purple-300 uppercase tracking-wider mb-3"
                 style={{ fontFamily: 'var(--font-aldrich)' }}
               >
-                {lang === 'es' ? 'Tecnologías iniciales' : 'Starting tech'}
+                {'Tecnologías iniciales'}
               </p>
               <ul className="text-base text-gray-200 space-y-1" style={{ fontFamily: 'var(--font-electrolize)' }}>
                 {sheet.startingTechs.map((line, i) => (
@@ -231,7 +241,7 @@ export default function FactionDetailView({ factionIdx }: Props) {
       {sheet.units.length > 0 && (
         <section className="flex flex-col gap-3">
           <h2 className="text-sm text-orange-300 uppercase tracking-wider px-1" style={{ fontFamily: 'var(--font-aldrich)' }}>
-            {lang === 'es' ? 'Unidades' : 'Units'}
+            {'Unidades'}
           </h2>
           <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}>
             {sheet.units.map((unit) => (
@@ -245,13 +255,13 @@ export default function FactionDetailView({ factionIdx }: Props) {
       {sheet.leaders && (
         <section className="flex flex-col gap-3">
           <h2 className="text-sm text-orange-300 uppercase tracking-wider px-1" style={{ fontFamily: 'var(--font-aldrich)' }}>
-            {lang === 'es' ? 'Líderes' : 'Leaders'}
+            {'Líderes'}
           </h2>
           <div className="grid gap-3 md:grid-cols-3">
             {([
-              ['agent', '#34d399', lang === 'es' ? 'AGENTE' : 'AGENT'],
-              ['commander', '#60a5fa', lang === 'es' ? 'COMANDANTE' : 'COMMANDER'],
-              ['hero', '#fbbf24', lang === 'es' ? 'HÉROE' : 'HERO'],
+              ['agent', '#34d399', 'AGENTE'],
+              ['commander', '#60a5fa', 'COMANDANTE'],
+              ['hero', '#fbbf24', 'HÉROE'],
             ] as const).map(([key, color, label]) => {
               const ldr = sheet.leaders![key];
               return (
@@ -262,7 +272,7 @@ export default function FactionDetailView({ factionIdx }: Props) {
                 >
                   <div className="flex items-baseline justify-between gap-2 mb-2">
                     <p className="text-lg text-white" style={{ fontFamily: 'var(--font-audiowide)' }}>
-                      {lang === 'es' ? ldr.nameEs : ldr.nameEn}
+                      {ldr.nameEs}
                     </p>
                     <span
                       className="text-xs uppercase tracking-wider"
@@ -271,13 +281,13 @@ export default function FactionDetailView({ factionIdx }: Props) {
                       {label}
                     </span>
                   </div>
-                  {(lang === 'es' ? ldr.unlockEs : ldr.unlockEn) && (
+                  {(ldr.unlockEs) && (
                     <p className="text-sm text-gray-400 italic mb-3">
-                      🔒 {lang === 'es' ? ldr.unlockEs : ldr.unlockEn}
+                      🔒 {ldr.unlockEs}
                     </p>
                   )}
                   <p className="text-base text-gray-200 leading-relaxed" style={{ fontFamily: 'var(--font-electrolize)' }}>
-                    {lang === 'es' ? ldr.abilityEs : ldr.abilityEn}
+                    {ldr.abilityEs}
                   </p>
                 </div>
               );
@@ -290,14 +300,14 @@ export default function FactionDetailView({ factionIdx }: Props) {
       {sheet.promissoryNote && (
         <section className="flex flex-col gap-3">
           <h2 className="text-sm text-orange-300 uppercase tracking-wider px-1" style={{ fontFamily: 'var(--font-aldrich)' }}>
-            {lang === 'es' ? 'Favores' : 'Promissory note'}
+            {'Favores'}
           </h2>
           <div className="rounded border border-pink-500/40 bg-pink-500/5 p-4">
             <p className="text-xl text-pink-300 mb-2" style={{ fontFamily: 'var(--font-audiowide)' }}>
-              {lang === 'es' ? sheet.promissoryNote.nameEs : sheet.promissoryNote.nameEn}
+              {sheet.promissoryNote.nameEs}
             </p>
             <p className="text-base text-gray-200 leading-relaxed" style={{ fontFamily: 'var(--font-electrolize)' }}>
-              {lang === 'es' ? sheet.promissoryNote.descriptionEs : sheet.promissoryNote.descriptionEn}
+              {sheet.promissoryNote.descriptionEs}
             </p>
           </div>
         </section>
@@ -307,7 +317,7 @@ export default function FactionDetailView({ factionIdx }: Props) {
       {factionTechs.length > 0 && (
         <section className="flex flex-col gap-3">
           <h2 className="text-sm text-orange-300 uppercase tracking-wider px-1" style={{ fontFamily: 'var(--font-aldrich)' }}>
-            {lang === 'es' ? 'Tecnologías propias' : 'Faction technologies'}
+            {'Tecnologías propias'}
           </h2>
           <div className="grid gap-3 md:grid-cols-2">
             {factionTechs.map((tech) => {
@@ -328,17 +338,17 @@ export default function FactionDetailView({ factionIdx }: Props) {
                       className="text-xs font-bold text-white px-2 py-0.5 rounded leading-none uppercase"
                       style={{ background: colorHex, fontFamily: 'var(--font-share-tech-mono)' }}
                     >
-                      {isUpgrade ? (lang === 'es' ? 'Mejora' : 'Upgrade') : `L${tech.level}`}
+                      {isUpgrade ? ('Mejora') : `L${tech.level}`}
                     </span>
                     <span
                       className="text-[10px] font-bold text-amber-200 border border-amber-400/60 bg-amber-500/10 px-2 py-0.5 rounded leading-none uppercase"
                       style={{ fontFamily: 'var(--font-aldrich)' }}
-                      title={lang === 'es' ? 'Tecnología de facción' : 'Faction technology'}
+                      title={'Tecnología de facción'}
                     >
-                      ◆ {lang === 'es' ? 'Facción' : 'Faction'}
+                      ◆ {'Facción'}
                     </span>
                     <p className="text-lg text-white flex-1" style={{ fontFamily: 'var(--font-audiowide)' }}>
-                      {lang === 'es' ? tech.nameEs : tech.nameEn}
+                      {tech.nameEs}
                     </p>
                     {prereqs.length > 0 && (
                       <div className="flex gap-1">
@@ -357,7 +367,7 @@ export default function FactionDetailView({ factionIdx }: Props) {
                     )}
                   </div>
                   <p className="text-base text-gray-200 leading-relaxed" style={{ fontFamily: 'var(--font-electrolize)' }}>
-                    {lang === 'es' ? tech.effectEs : tech.effectEn}
+                    {tech.effectEs}
                   </p>
                 </div>
               );

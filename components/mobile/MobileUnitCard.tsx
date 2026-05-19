@@ -72,7 +72,6 @@ export default function MobileUnitCard({
   metPrereqMask,
   size = 'sm',
 }: Props) {
-  const lang = useGameStore((s) => s.lang);
   const [iconFailed, setIconFailed] = useState(false);
   const [showAlt, setShowAlt] = useState(false);
   const s = SIZE[size];
@@ -89,9 +88,9 @@ export default function MobileUnitCard({
       : combatDice > 1
       ? `${stats.combat} ×${combatDice}`
       : `${stats.combat}`;
-  const typeLabel = UNIT_TYPE_LABELS[unit.type][lang];
-  const abilities = lang === 'es' ? stats.abilitiesEs : stats.abilitiesEn;
-  const desc = stats.description ? stats.description[lang] : null;
+  const typeLabel = UNIT_TYPE_LABELS[unit.type].es;
+  const abilities = stats.abilitiesEs;
+  const desc = stats.description ? stats.description.es : null;
   const upgradedStats = unit.upgradedStats ?? [];
   const isUpgradedStat = (key: UnitStatKey) => upgradedStats.includes(key);
 
@@ -127,7 +126,7 @@ export default function MobileUnitCard({
           {upgrades && (
             <span
               className="absolute -top-0.5 -right-1 text-[10px] text-yellow-300 leading-none drop-shadow"
-              title={lang === 'es' ? 'Mejora con upgrade' : 'Improves on upgrade'}
+              title={'Mejora con upgrade'}
             >
               ▲
             </span>
@@ -158,7 +157,7 @@ export default function MobileUnitCard({
         <span
           className={`absolute top-1 right-1 ${s.badgeII} font-bold text-white px-1.5 py-0.5 rounded bg-yellow-600/80 leading-none`}
           style={{ fontFamily: 'var(--font-share-tech-mono)' }}
-          title={lang === 'es' ? 'Mejorada' : 'Upgraded'}
+          title={'Mejorada'}
         >
           II
         </span>
@@ -179,9 +178,9 @@ export default function MobileUnitCard({
             }}
             className={`${s.typeLabel} px-2 py-0.5 rounded border border-cyan-400/60 bg-cyan-500/15 text-cyan-200 uppercase tracking-wider leading-none active:bg-cyan-500/30 pointer-events-auto`}
             style={{ fontFamily: 'var(--font-aldrich)' }}
-            title={lang === 'es' ? 'Voltear carta' : 'Flip card'}
+            title={'Voltear carta'}
           >
-            ⟲ {lang === 'es' ? 'voltear' : 'flip'}
+            ⟲ {'voltear'}
           </button>
         )}
       </div>
@@ -191,7 +190,7 @@ export default function MobileUnitCard({
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={getUnitIconPath(unit.type)}
-            alt={lang === 'es' ? activeFace.nameEs : activeFace.nameEn}
+            alt={activeFace.nameEs}
             className="w-full h-full object-contain"
             onError={() => setIconFailed(true)}
           />
@@ -199,31 +198,31 @@ export default function MobileUnitCard({
       )}
 
       <p className={`${s.name} text-white leading-tight`} style={{ fontFamily: 'var(--font-audiowide)' }}>
-        {lang === 'es' ? activeFace.nameEs : activeFace.nameEn}
+        {activeFace.nameEs}
       </p>
 
       <div className="grid grid-cols-4 gap-1">
         <StatBlock
-          label={lang === 'es' ? 'Coste' : 'Cost'}
+          label={'Coste'}
           value={statValue(stats.cost)}
           color="#9b1c1c"
           upgrades={isUpgradedStat('cost')}
         />
         <StatBlock
-          label={lang === 'es' ? 'Combate' : 'Combat'}
+          label={'Combate'}
           value={combatLabel}
           color="#9b1c1c"
           upgrades={isUpgradedStat('combat')}
         />
         <StatBlock
-          label={lang === 'es' ? 'Mov' : 'Mov'}
+          label={'Mov'}
           value={statValue(stats.movement)}
           color="#c2410c"
           upgrades={isUpgradedStat('movement')}
           hide={hideMovement}
         />
         <StatBlock
-          label={lang === 'es' ? 'Cap' : 'Cap'}
+          label={'Cap'}
           value={statValue(stats.capacity)}
           color="#15803d"
           upgrades={isUpgradedStat('capacity')}
@@ -258,7 +257,7 @@ export default function MobileUnitCard({
             className={`${s.upgradeLabel} text-yellow-300 uppercase tracking-wider`}
             style={{ fontFamily: 'var(--font-aldrich)' }}
           >
-            ▲ {lang === 'es' ? 'mejora' : 'upgrade'}
+            ▲ {'mejora'}
           </span>
           {unit.upgradePrereqs && unit.upgradePrereqs.length > 0 && (
             <div className="flex gap-1">

@@ -13,7 +13,6 @@ interface Props {
 }
 
 export default function MobilePublicObjectivesBar({ myPlayerIdx, sendCommand }: Props) {
-  const lang = useGameStore((s) => s.lang);
   const objectiveDeck = useGameStore((s) => s.objectiveDeck);
   const revealedCount = useGameStore((s) => s.revealedCount);
   const objectivesScoredBy = useGameStore((s) => s.objectivesScoredBy);
@@ -164,7 +163,7 @@ export default function MobilePublicObjectivesBar({ myPlayerIdx, sendCommand }: 
               {scoredBy.length > 0 && (
                 <div className="px-4 py-2 border-t border-gray-700">
                   <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-1.5">
-                    {lang === 'es' ? 'Puntuado por' : 'Scored by'}
+                    {'Puntuado por'}
                   </p>
                   <div className="flex flex-wrap gap-1.5">
                     {scoredBy.map((pIdx) => {
@@ -198,7 +197,7 @@ export default function MobilePublicObjectivesBar({ myPlayerIdx, sendCommand }: 
                       className="w-full py-2.5 rounded border-2 border-gray-600 bg-gray-800/40 text-gray-300 text-sm active:bg-gray-700 disabled:opacity-30"
                       style={{ fontFamily: 'var(--font-aldrich)' }}
                     >
-                      {lang === 'es' ? `Desmarcar (–${openObjective.points} VP)` : `Unmark (–${openObjective.points} VP)`}
+                      {`Desmarcar (–${openObjective.points} VP)`}
                     </button>
                   ) : (
                     <button
@@ -207,7 +206,7 @@ export default function MobilePublicObjectivesBar({ myPlayerIdx, sendCommand }: 
                       className="w-full py-2.5 rounded border-2 border-green-500/60 bg-green-500/15 text-green-200 text-sm active:bg-green-500/30 disabled:opacity-30"
                       style={{ fontFamily: 'var(--font-aldrich)' }}
                     >
-                      {lang === 'es' ? `Marcar como conseguido (+${openObjective.points} VP)` : `Mark as scored (+${openObjective.points} VP)`}
+                      {`Marcar como conseguido (+${openObjective.points} VP)`}
                     </button>
                   )}
                 </div>
@@ -218,7 +217,7 @@ export default function MobilePublicObjectivesBar({ myPlayerIdx, sendCommand }: 
                   onClick={() => setOpenObjective(null)}
                   className="text-xs text-gray-400 underline pointer-events-auto"
                 >
-                  {lang === 'es' ? 'Cerrar' : 'Close'}
+                  {'Cerrar'}
                 </button>
               </div>
             </div>

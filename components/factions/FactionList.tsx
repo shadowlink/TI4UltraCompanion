@@ -11,7 +11,6 @@ interface Props {
 }
 
 export default function FactionList({ selectedIdx, onSelect }: Props) {
-  const lang = useGameStore((s) => s.lang);
 
   return (
     <ul className="flex flex-col py-2">
@@ -37,7 +36,7 @@ export default function FactionList({ selectedIdx, onSelect }: Props) {
                 className={`text-sm leading-tight ${isSelected ? 'text-orange-200' : 'text-gray-300'}`}
                 style={{ fontFamily: 'var(--font-electrolize)' }}
               >
-                {lang === 'es' ? faction.nameEs : faction.nameEn}
+                {faction.nameEs}
               </span>
             </button>
           </li>

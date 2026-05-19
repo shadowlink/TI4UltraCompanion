@@ -19,13 +19,12 @@ for (let i = 0; i <= 16; i++) EXPANSIONS[i] = { es: 'BASE', en: 'BASE', color: '
 for (let i = 17; i <= 23; i++) EXPANSIONS[i] = { es: 'POK', en: 'POK', color: '#a78bfa' };
 EXPANSIONS[24] = { es: 'CODEX', en: 'CODEX', color: '#34d399' };
 
-function expansionLabel(idx: number, lang: 'es' | 'en') {
+function expansionLabel(idx: number) {
   if (idx in EXPANSIONS) return EXPANSIONS[idx];
-  return { es: 'DS', en: 'DS', color: '#fb923c' };
+  return { es: 'DS', color: '#fb923c' };
 }
 
 export default function FactionGrid({ onSelect }: Props) {
-  const lang = useGameStore((s) => s.lang);
 
   return (
     <div className="p-6">
@@ -33,9 +32,7 @@ export default function FactionGrid({ onSelect }: Props) {
         className="text-sm text-gray-400 mb-4 text-center max-w-2xl mx-auto"
         style={{ fontFamily: 'var(--font-electrolize)' }}
       >
-        {lang === 'es'
-          ? 'Pulsa cualquier facción para consultar su ficha completa: cita, lore, habilidades, unidades, mecas, líderes, favores y tecnologías propias.'
-          : 'Click any faction to read its complete sheet: quote, lore, abilities, units, mechs, leaders, promissory notes and faction technologies.'}
+        {'Pulsa cualquier facción para consultar su ficha completa: cita, lore, habilidades, unidades, mecas, líderes, favores y tecnologías propias.'}
       </p>
       <div
         className="grid gap-3"
@@ -45,8 +42,8 @@ export default function FactionGrid({ onSelect }: Props) {
           if (!isAllowedFaction(idx)) return null;
           const sheet = getFactionSheet(idx);
           const isComplete = sheet?.complete ?? false;
-          const quote = lang === 'es' ? sheet?.quoteEs : sheet?.quoteEn;
-          const exp = expansionLabel(idx, lang);
+          const quote = sheet?.quoteEs;
+          const exp = expansionLabel(idx);
           return (
             <button
               key={idx}
@@ -60,7 +57,7 @@ export default function FactionGrid({ onSelect }: Props) {
                 className="absolute top-2 right-2 text-[9px] px-1.5 py-0.5 rounded uppercase tracking-wider border"
                 style={{ borderColor: exp.color, color: exp.color, fontFamily: 'var(--font-aldrich)' }}
               >
-                {exp[lang]}
+                {exp.es}
               </span>
               <div className="w-20 h-20 relative flex-shrink-0 mt-2">
                 <Image
@@ -75,7 +72,7 @@ export default function FactionGrid({ onSelect }: Props) {
                 className="text-sm text-orange-300 text-center leading-tight"
                 style={{ fontFamily: 'var(--font-audiowide)' }}
               >
-                {lang === 'es' ? faction.nameEs : faction.nameEn}
+                {faction.nameEs}
               </span>
               {quote && (
                 <p
@@ -87,7 +84,7 @@ export default function FactionGrid({ onSelect }: Props) {
               )}
               {!isComplete && (
                 <span className="text-[10px] text-yellow-400/80 mt-auto">
-                  {lang === 'es' ? 'Datos pendientes' : 'Data pending'}
+                  {'Datos pendientes'}
                 </span>
               )}
             </button>

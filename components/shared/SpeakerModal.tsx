@@ -11,7 +11,6 @@ interface SpeakerModalProps {
 export default function SpeakerModal({ onClose }: SpeakerModalProps) {
   const nbPlayers = useGameStore((s) => s.nbPlayers);
   const players = useGameStore((s) => s.players);
-  const lang = useGameStore((s) => s.lang);
   const setSpeaker = useGameStore((s) => s.setSpeaker);
   const closeModal = useGameStore((s) => s.closeModal);
 
@@ -33,7 +32,7 @@ export default function SpeakerModal({ onClose }: SpeakerModalProps) {
           className="text-xl text-center text-orange-400 mb-4 text-shadow"
           style={{ fontFamily: 'var(--font-audiowide)' }}
         >
-          {lang === 'es' ? 'Selecciona el Portavoz' : 'Select the Speaker'}
+          {'Selecciona el Portavoz'}
         </h2>
 
         <div className="flex flex-wrap gap-3 justify-center mb-4">
@@ -62,7 +61,7 @@ export default function SpeakerModal({ onClose }: SpeakerModalProps) {
             className="px-4 py-2 bg-orange-500/20 hover:bg-orange-500/40 border border-orange-500/50 text-orange-300 rounded transition-colors"
             style={{ fontFamily: 'var(--font-aldrich)' }}
           >
-            {lang === 'es' ? 'Aleatorio' : 'Random'}
+            {'Aleatorio'}
           </button>
         </div>
       </div>

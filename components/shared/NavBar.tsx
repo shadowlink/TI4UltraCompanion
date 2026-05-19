@@ -21,13 +21,12 @@ export default function NavBar() {
   const clockRun = useGameStore((s) => s.clockRun);
   const phase = useGameStore((s) => s.phase);
   const turnCounter = useGameStore((s) => s.turnCounter);
-  const lang = useGameStore((s) => s.lang);
   const decisionTimerRemaining = useGameStore((s) => s.decisionTimerRemaining);
   const decisionTimerLimit = useGameStore((s) => s.options.decisionTimerLimit);
   const setClock = useGameStore((s) => s.setClock);
   const openModal = useGameStore((s) => s.openModal);
 
-  const phaseLabel = PHASE_LABELS[phase]?.[lang] ?? '';
+  const phaseLabel = PHASE_LABELS[phase]?.es ?? '';
   const progressPct = Math.max(0, (decisionTimerRemaining / decisionTimerLimit) * 100);
   const isDecisionRed = decisionTimerRemaining <= 5;
 
@@ -57,7 +56,7 @@ export default function NavBar() {
             className="text-base text-orange-300 text-shadow"
             style={{ fontFamily: 'var(--font-audiowide)' }}
           >
-            {lang === 'es' ? `Ronda ${turnCounter}` : `Round ${turnCounter}`} — {phaseLabel}
+            {`Ronda ${turnCounter}`} — {phaseLabel}
           </span>
         ) : null}
         {/* Decision timer progress bar */}
@@ -71,7 +70,7 @@ export default function NavBar() {
           className={`text-2xl font-bold ${isDecisionRed ? 'text-red-400' : 'text-gray-300'}`}
           style={{ fontFamily: 'var(--font-share-tech-mono)' }}
         >
-          {decisionTimerRemaining > 0 ? decisionTimerRemaining : lang === 'es' ? '¡Decide!' : 'Decide!'}
+          {decisionTimerRemaining > 0 ? decisionTimerRemaining : '¡Decide!'}
         </span>
       </div>
 
@@ -80,7 +79,7 @@ export default function NavBar() {
         <button
           onClick={() => openModal('broadcast')}
           className="text-orange-400 hover:text-orange-200 text-xl px-2"
-          title={lang === 'es' ? 'Compartir partida' : 'Share game'}
+          title={'Compartir partida'}
         >
           📡
         </button>

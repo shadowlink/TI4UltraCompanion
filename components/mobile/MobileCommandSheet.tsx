@@ -23,7 +23,6 @@ const POOL_LABELS: Record<CommandPool, { es: string; en: string; color: string; 
 const POOL_ORDER: CommandPool[] = ['tactic', 'fleet', 'strategy'];
 
 export default function MobileCommandSheet({ viewingPlayerIdx, myPlayerIdx, sendCommand }: Props) {
-  const lang = useGameStore((s) => s.lang);
   const players = useGameStore((s) => s.players);
   const phase = useGameStore((s) => s.phase);
   const [busy, setBusy] = useState<CommandPool | null>(null);
@@ -48,15 +47,13 @@ export default function MobileCommandSheet({ viewingPlayerIdx, myPlayerIdx, send
         className="text-xs text-gray-400 uppercase tracking-wider px-1"
         style={{ fontFamily: 'var(--font-aldrich)' }}
       >
-        {lang === 'es' ? 'Hoja de Mando' : 'Command Sheet'}
+        {'Hoja de Mando'}
       </h2>
 
       {canEdit && inStatusPhase && (
         <div className="rounded border border-yellow-500/40 bg-yellow-500/10 px-3 py-1.5 text-center">
           <p className="text-[11px] text-yellow-200">
-            🎯 {lang === 'es'
-              ? 'Reparte 2 fichas en tus reservas'
-              : 'Distribute 2 tokens across your pools'}
+            🎯 {'Reparte 2 fichas en tus reservas'}
           </p>
         </div>
       )}
@@ -78,7 +75,7 @@ export default function MobileCommandSheet({ viewingPlayerIdx, myPlayerIdx, send
                 className="text-[10px] uppercase tracking-wider leading-none"
                 style={{ color: meta.color, fontFamily: 'var(--font-aldrich)' }}
               >
-                {meta[lang]}
+                {meta.es}
               </span>
               <div className="flex items-center gap-1 mt-1">
                 {canEdit && (

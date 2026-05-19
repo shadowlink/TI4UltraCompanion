@@ -20,7 +20,6 @@ export default function MobileResourceCounters({
   maxCommodities,
   sendCommand,
 }: Props) {
-  const lang = useGameStore((s) => s.lang);
   const players = useGameStore((s) => s.players);
   const [busy, setBusy] = useState<Counter | null>(null);
 
@@ -111,7 +110,7 @@ export default function MobileResourceCounters({
     <div className="flex gap-2 pointer-events-auto">
       {maxCommodities > 0 && (
         <Box
-          label={lang === 'es' ? 'Exportaciones' : 'Commodities'}
+          label={'Exportaciones'}
           value={commodities}
           max={maxCommodities}
           color="#06b6d4"
@@ -122,7 +121,7 @@ export default function MobileResourceCounters({
         />
       )}
       <Box
-        label={lang === 'es' ? 'Mercancías' : 'Trade Goods'}
+        label={'Mercancías'}
         value={tradeGoods}
         color="#fbbf24"
         bg="#fbbf2420"

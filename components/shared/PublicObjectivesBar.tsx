@@ -8,7 +8,6 @@ import { FACTIONS, PLAYER_COLORS, PLAYER_COLOR_VALUES } from '@/data/factions';
 import ObjectiveScoringModal from './ObjectiveScoringModal';
 
 export default function PublicObjectivesBar() {
-  const lang = useGameStore((s) => s.lang);
   const objectiveDeck = useGameStore((s) => s.objectiveDeck);
   const revealedCount = useGameStore((s) => s.revealedCount);
   const objectivesScoredBy = useGameStore((s) => s.objectivesScoredBy);
@@ -64,7 +63,7 @@ export default function PublicObjectivesBar() {
                     </span>
                   ) : (
                     <span className="text-base text-gray-500 flex-1 italic">
-                      {lang === 'es' ? 'Oculta' : 'Hidden'}
+                      {'Oculta'}
                     </span>
                   )}
                   <span

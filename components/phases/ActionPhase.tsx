@@ -15,7 +15,6 @@ import StrategyCard from '@/components/shared/StrategyCard';
 import SpeakerModal from '@/components/shared/SpeakerModal';
 
 export default function ActionPhase() {
-  const lang = useGameStore((s) => s.lang);
   const nbPlayers = useGameStore((s) => s.nbPlayers);
   const players = useGameStore((s) => s.players);
   const strategies = useGameStore((s) => s.strategies);
@@ -77,16 +76,14 @@ export default function ActionPhase() {
           className="text-2xl text-orange-400 text-shadow"
           style={{ fontFamily: 'var(--font-audiowide)' }}
         >
-          {lang === 'es'
-            ? `Ronda ${turnCounter} — Fase de Acción`
-            : `Round ${turnCounter} — Action Phase`}
+          {`Ronda ${turnCounter} — Fase de Acción`}
         </h2>
         {roundCounter > 1 && (
           <span
             className="text-base text-gray-500"
             style={{ fontFamily: 'var(--font-share-tech-mono)' }}
           >
-            {lang === 'es' ? `sub-ronda ${roundCounter}` : `sub-round ${roundCounter}`}
+            {`sub-ronda ${roundCounter}`}
           </span>
         )}
       </div>
@@ -132,10 +129,10 @@ export default function ActionPhase() {
                       className="text-3xl text-white text-shadow font-bold truncate"
                       style={{ fontFamily: 'var(--font-aldrich)' }}
                     >
-                      {lang === 'es' ? activeFaction.nameEs : activeFaction.nameEn} ({activePlayer.name})
+                      {activeFaction.nameEs} ({activePlayer.name})
                     </p>
                     <p className="text-lg text-orange-300 mt-0.5">
-                      {lang === 'es' ? 'realiza tu Acción' : 'perform your Action'}
+                      {'realiza tu Acción'}
                     </p>
                     {showFactionClock && (
                       <p
@@ -152,7 +149,7 @@ export default function ActionPhase() {
                 <div className="flex flex-col gap-3">
                   {/* Strategy 1 */}
                   <ActionBtn
-                    label={lang === 'es' ? activeStrategy?.nameEs : activeStrategy?.nameEn}
+                    label={activeStrategy?.nameEs}
                     active={s1Active}
                     done={isS1Played}
                     color="orange"
@@ -162,7 +159,7 @@ export default function ActionPhase() {
                   {/* Strategy 2 — ≤4p only */}
                   {secondStrategy && (
                     <ActionBtn
-                      label={`${lang === 'es' ? secondStrategy.nameEs : secondStrategy.nameEn} (2)`}
+                      label={`${secondStrategy.nameEs} (2)`}
                       active={s2Active}
                       done={isS2Played}
                       color="blue"
@@ -172,7 +169,7 @@ export default function ActionPhase() {
 
                   {/* Tactical / Component */}
                   <ActionBtn
-                    label={lang === 'es' ? 'Táctica / Componente' : 'Tactical / Component'}
+                    label={'Táctica / Componente'}
                     active={otherActive}
                     done={false}
                     color="green"
@@ -181,7 +178,7 @@ export default function ActionPhase() {
 
                   {/* Pass */}
                   <ActionBtn
-                    label={lang === 'es' ? 'Pasar' : 'Pass'}
+                    label={'Pasar'}
                     active={passActive}
                     done={false}
                     disabled={!canPass}
@@ -198,14 +195,14 @@ export default function ActionPhase() {
                   className="px-4 py-5 text-2xl border-2 border-orange-500 bg-orange-500/20 hover:bg-orange-500/40 text-orange-300 rounded transition-all"
                   style={{ fontFamily: 'var(--font-aldrich)' }}
                 >
-                  {lang === 'es' ? 'Resolver y Siguiente →' : 'Resolve & Next →'}
+                  {'Resolver y Siguiente →'}
                 </button>
               )}
             </>
           ) : (
             <div className="flex items-center justify-center flex-1">
               <p className="text-gray-600 text-lg">
-                {lang === 'es' ? 'Sin jugador activo' : 'No active player'}
+                {'Sin jugador activo'}
               </p>
             </div>
           )}

@@ -11,7 +11,6 @@ import SpeakerModal from '@/components/shared/SpeakerModal';
 import OptionsPanel from '@/components/shared/OptionsPanel';
 
 export default function SetupScreen() {
-  const lang = useGameStore((s) => s.lang);
   const nbPlayers = useGameStore((s) => s.nbPlayers);
   const players = useGameStore((s) => s.players);
   const setNbPlayers = useGameStore((s) => s.setNbPlayers);
@@ -62,7 +61,7 @@ export default function SetupScreen() {
               onClick={() => openModal('options')}
               className="text-gray-500 hover:text-orange-400 transition-colors text-sm flex items-center gap-1"
             >
-              ⚙ {lang === 'es' ? 'Opciones' : 'Options'}
+              ⚙ {'Opciones'}
             </button>
           </div>
 
@@ -70,13 +69,13 @@ export default function SetupScreen() {
             className="text-2xl md:text-3xl text-orange-400 text-shadow mb-6"
             style={{ fontFamily: 'var(--font-audiowide)' }}
           >
-            {lang === 'es' ? 'Configuración de Partida' : 'Game Setup'}
+            {'Configuración de Partida'}
           </h1>
 
           {/* Player count slider */}
           <div className="mb-6 w-full max-w-md">
             <label className="text-sm text-gray-300 block mb-2">
-              {nbPlayers} {lang === 'es' ? 'jugadores' : 'players'}
+              {nbPlayers} {'jugadores'}
             </label>
             <input
               type="range"
@@ -119,7 +118,7 @@ export default function SetupScreen() {
                     </span>
                   )}
                   <span className="text-xs text-white text-shadow text-center leading-tight">
-                    {lang === 'es' ? faction.nameEs : faction.nameEn}
+                    {faction.nameEs}
                   </span>
                   <div
                     className="w-4 h-4 rounded-full border border-white/30"
@@ -136,7 +135,7 @@ export default function SetupScreen() {
             className="mb-4 px-4 py-2 text-sm border border-yellow-500/50 text-yellow-300 hover:bg-yellow-500/10 rounded transition-colors"
             style={{ fontFamily: 'var(--font-aldrich)' }}
           >
-            👑 {lang === 'es' ? 'Seleccionar Portavoz' : 'Select Speaker'}
+            👑 {'Seleccionar Portavoz'}
             {speakerIdx !== NO_PLAYER && (
               <span className="ml-2 text-white">— {FACTIONS[players[speakerIdx].faction].shortName}</span>
             )}
@@ -145,7 +144,7 @@ export default function SetupScreen() {
           {/* Next */}
           {!allNamed && (
             <p className="text-sm text-red-400">
-              {lang === 'es' ? 'Todos los jugadores necesitan un nombre' : 'All players need a name'}
+              {'Todos los jugadores necesitan un nombre'}
             </p>
           )}
           <button
@@ -158,11 +157,11 @@ export default function SetupScreen() {
             }`}
             style={{ fontFamily: 'var(--font-aldrich)' }}
           >
-            {lang === 'es' ? 'Siguiente' : 'Next'} →
+            {'Siguiente'} →
           </button>
         </div>
       ) : (
-        <GalaxyScreen lang={lang} onStart={handleStartGame} />
+        <GalaxyScreen onStart={handleStartGame} />
       )}
 
       {/* Modals — always in the tree regardless of step */}
@@ -179,7 +178,7 @@ export default function SetupScreen() {
 
 // ─── Galaxy screen ─────────────────────────────────────────────────────────────
 
-function GalaxyScreen({ lang, onStart }: { lang: string; onStart: () => void }) {
+function GalaxyScreen({ onStart }: { onStart: () => void }) {
   const [frame, setFrame] = useState(1);
 
   // Local animation — doesn't depend on game clock which hasn't started yet
@@ -194,7 +193,7 @@ function GalaxyScreen({ lang, onStart }: { lang: string; onStart: () => void }) 
         className="text-2xl text-orange-400 text-shadow mb-6"
         style={{ fontFamily: 'var(--font-audiowide)' }}
       >
-        {lang === 'es' ? 'Construyendo la Galaxia...' : 'Building the Galaxy...'}
+        {'Construyendo la Galaxia...'}
       </h2>
       <div className="relative w-64 h-64 mb-8">
         <Image
@@ -210,7 +209,7 @@ function GalaxyScreen({ lang, onStart }: { lang: string; onStart: () => void }) 
         className="px-8 py-4 text-xl border-2 border-orange-500 bg-orange-500/20 hover:bg-orange-500/40 text-orange-300 rounded transition-all"
         style={{ fontFamily: 'var(--font-aldrich)' }}
       >
-        {lang === 'es' ? '¡Comenzar la primera ronda!' : 'Start the First Round!'}
+        {'¡Comenzar la primera ronda!'}
       </button>
     </div>
   );

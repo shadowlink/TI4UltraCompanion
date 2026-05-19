@@ -27,7 +27,6 @@ const PHASE_LABELS: Record<number, { en: string; es: string }> = {
 };
 
 export default function MobilePhaseHeader() {
-  const lang = useGameStore((s) => s.lang);
   const phase = useGameStore((s) => s.phase);
   const turnCounter = useGameStore((s) => s.turnCounter);
   const players = useGameStore((s) => s.players);
@@ -37,7 +36,7 @@ export default function MobilePhaseHeader() {
   const activeStrategyIdx = useGameStore((s) => s.activeStrategyIdx);
   const votingPlayerIdx = useGameStore((s) => s.votingPlayerIdx);
 
-  const phaseLabel = PHASE_LABELS[phase]?.[lang] ?? '';
+  const phaseLabel = PHASE_LABELS[phase]?.es ?? '';
 
   // Determine active player & verb based on phase
   let activePlayerIdx = NO_PLAYER;
@@ -62,23 +61,23 @@ export default function MobilePhaseHeader() {
     const anyAvailable = strategies.some((st) => st.status === STRATEGY_AVAILABLE && !st.isNaaluSlot);
     const anyPicked = strategies.some((st) => st.status === STRATEGY_PICKED);
     if (activePlayerIdx === NO_PLAYER && (anyPicked || !anyAvailable)) {
-      actionLabel = lang === 'es' ? 'esperando inicio de fase de acción' : 'awaiting action phase';
+      actionLabel = 'esperando inicio de fase de acción';
     } else {
-      actionLabel = lang === 'es' ? 'elige estrategia' : 'choosing strategy';
+      actionLabel = 'elige estrategia';
     }
   } else if (phase === PHASE_ACTION) {
     const activeStrat = strategies[activeStrategyIdx];
     if (activeStrat && activeStrat.playerIdx !== NO_PLAYER && activeStrat.playerIdx < 8) {
       activePlayerIdx = activeStrat.playerIdx;
     }
-    actionLabel = lang === 'es' ? 'su turno' : 'their turn';
+    actionLabel = 'su turno';
   } else if (phase === PHASE_AGENDA) {
     if (votingPlayerIdx !== NO_PLAYER && votingPlayerIdx < nbPlayers) {
       activePlayerIdx = votingPlayerIdx;
     }
-    actionLabel = lang === 'es' ? 'vota' : 'voting';
+    actionLabel = 'vota';
   } else if (phase === PHASE_STATUS) {
-    actionLabel = lang === 'es' ? 'fase de estado' : 'status phase';
+    actionLabel = 'fase de estado';
   }
 
   const activePlayer = activePlayerIdx !== NO_PLAYER ? players[activePlayerIdx] : null;

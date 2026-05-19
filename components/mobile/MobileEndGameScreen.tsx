@@ -5,7 +5,6 @@ import { useGameStore } from '@/store/gameStore';
 import { FACTIONS, PLAYER_COLORS, PLAYER_COLOR_VALUES } from '@/data/factions';
 
 export default function MobileEndGameScreen() {
-  const lang = useGameStore((s) => s.lang);
   const players = useGameStore((s) => s.players);
   const nbPlayers = useGameStore((s) => s.nbPlayers);
 
@@ -23,7 +22,7 @@ export default function MobileEndGameScreen() {
   return (
     <div className="flex flex-col items-center gap-4 p-4">
       <p className="text-xs text-gray-400 uppercase tracking-wider">
-        {lang === 'es' ? 'Fin de la partida' : 'Game over'}
+        {'Fin de la partida'}
       </p>
       {winner && winnerFaction && (
         <>
@@ -34,10 +33,10 @@ export default function MobileEndGameScreen() {
             className="text-2xl text-yellow-300 text-center text-shadow"
             style={{ fontFamily: 'var(--font-audiowide)' }}
           >
-            {lang === 'es' ? '¡Victoria!' : 'Victory!'}
+            {'¡Victoria!'}
           </p>
           <p className="text-lg" style={{ color: winnerColor, fontFamily: 'var(--font-aldrich)' }}>
-            {lang === 'es' ? winnerFaction.nameEs : winnerFaction.nameEn}
+            {winnerFaction.nameEs}
             {winner.p.name ? ` — ${winner.p.name}` : ''}
           </p>
           <p className="text-4xl font-bold text-yellow-400" style={{ fontFamily: 'var(--font-share-tech-mono)' }}>
@@ -48,7 +47,7 @@ export default function MobileEndGameScreen() {
 
       <div className="w-full mt-4">
         <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-1.5 px-1">
-          {lang === 'es' ? 'Clasificación final' : 'Final standings'}
+          {'Clasificación final'}
         </p>
         <div className="flex flex-col gap-1.5">
           {sorted.map(({ p, i }, rank) => {

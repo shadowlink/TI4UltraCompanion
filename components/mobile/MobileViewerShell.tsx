@@ -36,7 +36,6 @@ interface Props {
 }
 
 export default function MobileViewerShell({ viewerCode, connected, error, pairings }: Props) {
-  const lang = useGameStore((s) => s.lang);
   const phase = useGameStore((s) => s.phase);
   const players = useGameStore((s) => s.players);
   const nbPlayers = useGameStore((s) => s.nbPlayers);
@@ -58,7 +57,7 @@ export default function MobileViewerShell({ viewerCode, connected, error, pairin
     return (
       <div className="flex flex-col h-dvh items-center justify-center bg-black p-4">
         <p className="text-orange-300" style={{ fontFamily: 'var(--font-audiowide)' }}>
-          {lang === 'es' ? 'Conectando...' : 'Connecting...'}
+          {'Conectando...'}
         </p>
         <p className="text-xs text-gray-500 mt-2">{viewerCode}</p>
         {error && <p className="text-xs text-red-400 mt-2">{error}</p>}
@@ -74,7 +73,7 @@ export default function MobileViewerShell({ viewerCode, connected, error, pairin
           connected ? 'bg-green-900/40 text-green-300' : 'bg-red-900/40 text-red-300'
         }`}>
           <span className={`w-1.5 h-1.5 rounded-full ${connected ? 'bg-green-400' : 'bg-red-400 animate-pulse'}`} />
-          {connected ? `${lang === 'es' ? 'Sala' : 'Room'} ${viewerCode}` : error ?? (lang === 'es' ? 'Conectando...' : 'Connecting...')}
+          {connected ? `${'Sala'} ${viewerCode}` : error ?? ('Conectando...')}
         </div>
         <div className="flex-1 flex items-center justify-center">
           <MobileSetupPhase />
@@ -127,7 +126,7 @@ export default function MobileViewerShell({ viewerCode, connected, error, pairin
         <div className="flex items-center gap-1 flex-shrink-0 min-w-0">
           <span className={`w-1.5 h-1.5 rounded-full ${connected ? 'bg-green-400' : 'bg-red-400 animate-pulse'}`} />
           <span className="truncate">
-            {connected ? `${lang === 'es' ? 'Sala' : 'Room'} ${viewerCode}` : error ?? (lang === 'es' ? 'Conectando...' : 'Connecting...')}
+            {connected ? `${'Sala'} ${viewerCode}` : error ?? ('Conectando...')}
           </span>
         </div>
         <div className="flex items-center gap-1 pointer-events-auto">
@@ -139,7 +138,7 @@ export default function MobileViewerShell({ viewerCode, connected, error, pairin
                 : 'border border-gray-700 text-gray-400'
             }`}
           >
-            {lang === 'es' ? 'Juego' : 'Game'}
+            {'Juego'}
           </button>
           <button
             onClick={() => setView('faction')}
@@ -149,19 +148,19 @@ export default function MobileViewerShell({ viewerCode, connected, error, pairin
                 : 'border border-gray-700 text-gray-400'
             }`}
           >
-            {lang === 'es' ? 'Facción' : 'Faction'}
+            {'Facción'}
           </button>
         </div>
         <button
           onClick={() => {
-            if (confirm(lang === 'es' ? '¿Cambiar de facción?' : 'Change faction?')) {
+            if (confirm('¿Cambiar de facción?')) {
               unpair();
               setShowSwitchPicker(true);
             }
           }}
           className="text-[10px] text-gray-400 underline pointer-events-auto flex-shrink-0"
         >
-          {lang === 'es' ? 'Cambiar' : 'Switch'}
+          {'Cambiar'}
         </button>
       </div>
 

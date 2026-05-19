@@ -13,7 +13,6 @@ interface Props {
 }
 
 export default function MobileStrategyPhase({ myPlayerIdx, sendCommand }: Props) {
-  const lang = useGameStore((s) => s.lang);
   const players = useGameStore((s) => s.players);
   const strategies = useGameStore((s) => s.strategies);
   const nbPlayers = useGameStore((s) => s.nbPlayers);
@@ -43,7 +42,7 @@ export default function MobileStrategyPhase({ myPlayerIdx, sendCommand }: Props)
       {isMyTurn && (
         <div className="bg-orange-500/15 border-y border-orange-500/40 px-3 py-2 text-center pointer-events-auto">
           <p className="text-sm text-orange-300" style={{ fontFamily: 'var(--font-audiowide)' }}>
-            {lang === 'es' ? '¡Tu turno! Elige una estrategia' : 'Your turn! Pick a strategy'}
+            {'¡Tu turno! Elige una estrategia'}
           </p>
         </div>
       )}
@@ -57,7 +56,7 @@ export default function MobileStrategyPhase({ myPlayerIdx, sendCommand }: Props)
           const player = isAssigned ? players[st.playerIdx] : null;
           const faction = player ? FACTIONS[player.faction] : null;
           const playerColor = player ? PLAYER_COLOR_VALUES[PLAYER_COLORS[player.color]] : undefined;
-          const stratName = lang === 'es' ? st.nameEs : st.nameEn;
+          const stratName = st.nameEs;
           const canClick = isMyTurn && isAvailable;
 
           return (

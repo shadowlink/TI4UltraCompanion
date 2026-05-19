@@ -4,10 +4,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { useGameStore } from '@/store/gameStore';
 
 export default function OptionsPanel() {
-  const lang = useGameStore((s) => s.lang);
   const options = useGameStore((s) => s.options);
   const setOptions = useGameStore((s) => s.setOptions);
-  const setLang = useGameStore((s) => s.setLang);
   const closeModal = useGameStore((s) => s.closeModal);
 
   // Local state so inputs feel responsive before committing
@@ -38,8 +36,6 @@ export default function OptionsPanel() {
     return () => window.removeEventListener('keydown', onKey);
   }, [handleClose]);
 
-  const t = (en: string, es: string) => (lang === 'es' ? es : en);
-
   return (
     <div
       className="modal-overlay"
@@ -52,7 +48,7 @@ export default function OptionsPanel() {
             className="text-base text-orange-400 text-shadow"
             style={{ fontFamily: 'var(--font-audiowide)' }}
           >
-            {t('Options', 'Opciones')}
+            {'Opciones'}
           </h2>
           <button
             onClick={handleClose}
@@ -64,51 +60,28 @@ export default function OptionsPanel() {
         </div>
 
         <div className="px-5 py-4 flex flex-col gap-5">
-          {/* ── Language ── */}
-          <section>
-            <p className="text-xs text-gray-400 uppercase tracking-wider mb-2">
-              {t('Language', 'Idioma')}
-            </p>
-            <div className="flex gap-2">
-              {(['en', 'es'] as const).map((l) => (
-                <button
-                  key={l}
-                  onClick={() => setLang(l)}
-                  className={`flex-1 py-1.5 text-sm rounded border transition-all ${
-                    lang === l
-                      ? 'border-orange-400 bg-orange-500/20 text-orange-200'
-                      : 'border-gray-600 text-gray-400 hover:border-gray-500 hover:text-white'
-                  }`}
-                  style={{ fontFamily: 'var(--font-aldrich)' }}
-                >
-                  {l === 'en' ? '🇬🇧 English' : '🇪🇸 Español'}
-                </button>
-              ))}
-            </div>
-          </section>
-
           {/* ── Numeric settings ── */}
           <section>
             <p className="text-xs text-gray-400 uppercase tracking-wider mb-3">
-              {t('Game Rules', 'Reglas de Juego')}
+              {'Reglas de Juego'}
             </p>
             <div className="flex flex-col gap-3">
               <NumericOption
-                label={t('VP to win', 'VP para ganar')}
+                label={'VP para ganar'}
                 value={vpWinGoal}
                 min={1}
                 max={20}
                 onChange={setVpWinGoal}
               />
               <NumericOption
-                label={t('Decision timer (s)', 'Temporizador de decisión (s)')}
+                label={'Temporizador de decisión (s)'}
                 value={decisionTimer}
                 min={10}
                 max={600}
                 onChange={setDecisionTimer}
               />
               <NumericOption
-                label={t('Inactivity warning (min)', 'Aviso de inactividad (min)')}
+                label={'Aviso de inactividad (min)'}
                 value={inactivityTimer}
                 min={1}
                 max={120}
@@ -120,21 +93,21 @@ export default function OptionsPanel() {
           {/* ── Toggles ── */}
           <section>
             <p className="text-xs text-gray-400 uppercase tracking-wider mb-3">
-              {t('Display', 'Visualización')}
+              {'Visualización'}
             </p>
             <div className="flex flex-col gap-2.5">
               <Toggle
-                label={t('Show VP bar', 'Mostrar barra de VP')}
+                label={'Mostrar barra de VP'}
                 checked={options.showVPBar}
                 onChange={(v) => setOptions({ showVPBar: v })}
               />
               <Toggle
-                label={t('Show player timer', 'Mostrar temporizador por jugador')}
+                label={'Mostrar temporizador por jugador'}
                 checked={options.showFactionClock}
                 onChange={(v) => setOptions({ showFactionClock: v })}
               />
               <Toggle
-                label={t('Detailed agenda', 'Agenda detallada')}
+                label={'Agenda detallada'}
                 checked={options.detailedAgenda}
                 onChange={(v) => setOptions({ detailedAgenda: v })}
               />
@@ -148,7 +121,7 @@ export default function OptionsPanel() {
               className="w-full py-2 text-sm border border-gray-600 text-gray-300 hover:border-orange-500/50 hover:text-orange-200 rounded transition-all"
               style={{ fontFamily: 'var(--font-aldrich)' }}
             >
-              ⛶ {t('Toggle Fullscreen', 'Pantalla completa')}
+              ⛶ {'Pantalla completa'}
             </button>
           </section>
         </div>
@@ -160,7 +133,7 @@ export default function OptionsPanel() {
             className="px-5 py-2 text-sm border border-orange-500 bg-orange-500/10 hover:bg-orange-500/30 text-orange-300 rounded transition-all"
             style={{ fontFamily: 'var(--font-aldrich)' }}
           >
-            {t('Done', 'Hecho')}
+            {'Hecho'}
           </button>
         </div>
       </div>

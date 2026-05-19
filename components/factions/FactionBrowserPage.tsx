@@ -9,7 +9,6 @@ import FactionDetailView from './FactionDetailView';
 export default function FactionBrowserPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const lang = useGameStore((s) => s.lang);
 
   const factionParam = searchParams.get('faction');
   const selectedIdx = factionParam !== null ? parseInt(factionParam, 10) : null;
@@ -28,13 +27,13 @@ export default function FactionBrowserPage() {
           className="text-orange-300 hover:text-orange-200 transition-colors text-sm"
           style={{ fontFamily: 'var(--font-aldrich)' }}
         >
-          ← {hasSelection ? (lang === 'es' ? 'Lista' : 'List') : (lang === 'es' ? 'Menú' : 'Menu')}
+          ← {hasSelection ? ('Lista') : ('Menú')}
         </button>
         <h1
           className="text-xl text-orange-300 flex-1 text-center text-shadow"
           style={{ fontFamily: 'var(--font-audiowide)' }}
         >
-          {lang === 'es' ? 'Explorador de Facciones' : 'Faction Explorer'}
+          {'Explorador de Facciones'}
         </h1>
         <div className="w-16" />
       </header>

@@ -5,7 +5,6 @@ import { QRCodeSVG } from 'qrcode.react';
 import { useGameStore } from '@/store/gameStore';
 
 export default function HostPanel() {
-  const lang = useGameStore((s) => s.lang);
   const closeModal = useGameStore((s) => s.closeModal);
   const roomCode = useGameStore((s) => s.roomCode);
   const setRoomCode = useGameStore((s) => s.setRoomCode);
@@ -29,7 +28,7 @@ export default function HostPanel() {
       setRoomCode(code);
       setWatchUrl(url);
     } catch {
-      setError(lang === 'es' ? 'Error al crear sala' : 'Failed to create room');
+      setError('Error al crear sala');
     } finally {
       setCreating(false);
     }
@@ -63,7 +62,7 @@ export default function HostPanel() {
             className="text-lg text-orange-400 text-shadow"
             style={{ fontFamily: 'var(--font-audiowide)' }}
           >
-            {lang === 'es' ? 'Compartir Partida' : 'Share Game'}
+            {'Compartir Partida'}
           </h2>
           <button
             onClick={closeModal}
@@ -80,16 +79,14 @@ export default function HostPanel() {
 
           {creating && !watchUrl && (
             <p className="text-gray-400 text-sm">
-              {lang === 'es' ? 'Creando sala...' : 'Creating room...'}
+              {'Creando sala...'}
             </p>
           )}
 
           {watchUrl && displayCode && (
             <>
               <p className="text-gray-300 text-sm text-center">
-                {lang === 'es'
-                  ? 'Escanea el QR desde tu móvil para ver la partida en directo'
-                  : 'Scan the QR from your phone to watch the game live'}
+                {'Escanea el QR desde tu móvil para ver la partida en directo'}
               </p>
 
               <div className="bg-white p-4 rounded-lg">
@@ -114,7 +111,7 @@ export default function HostPanel() {
 
               <div className="flex items-center gap-2 text-sm text-green-400">
                 <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-                {lang === 'es' ? 'Transmitiendo en directo' : 'Broadcasting live'}
+                {'Transmitiendo en directo'}
               </div>
             </>
           )}

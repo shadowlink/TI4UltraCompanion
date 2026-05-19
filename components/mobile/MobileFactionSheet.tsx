@@ -11,6 +11,7 @@ import MobileTechSection from './MobileTechSection';
 import MobileCommandSheet from './MobileCommandSheet';
 import MobileResourceCounters from './MobileResourceCounters';
 import MobileTechDetailsModal from './MobileTechDetailsModal';
+import { FACTION_ART_BY_IDX } from '@/data/factionExtras';
 import type { MobileCommand } from '@/lib/sync/types';
 
 interface Props {
@@ -66,7 +67,6 @@ export default function MobileFactionSheet({
   myPlayerIdx,
   sendCommand,
 }: Props) {
-  const lang = useGameStore((s) => s.lang);
   const sheet = getFactionSheet(factionIdx);
   const faction = FACTIONS[factionIdx];
   const researchedTechs = useGameStore((s) => s.researchedTechs);
@@ -79,19 +79,20 @@ export default function MobileFactionSheet({
   if (!sheet || !faction) {
     return (
       <div className="p-6 text-center text-gray-500 text-sm">
-        {lang === 'es' ? 'Facción no encontrada' : 'Faction not found'}
+        {'Facción no encontrada'}
       </div>
     );
   }
 
-  const title = lang === 'es' ? sheet.titleEs : sheet.titleEn;
-  const quote = lang === 'es' ? sheet.quoteEs : sheet.quoteEn;
+  const title = sheet.titleEs;
+  const quote = sheet.quoteEs;
+  const artPath = FACTION_ART_BY_IDX[factionIdx];
 
   return (
     <div className="flex flex-col gap-4 p-3 pb-8">
       {/* Header */}
       <div className="flex items-center gap-3 pb-3 border-b border-orange-500/30">
-        <div className="w-20 h-20 relative flex-shrink-0">
+        <div className="w-16 h-16 relative flex-shrink-0">
           <Image src={faction.iconPath} alt={faction.shortName} fill className="object-contain" unoptimized />
         </div>
         <div className="flex-1 min-w-0">
@@ -102,20 +103,29 @@ export default function MobileFactionSheet({
             {title}
           </h1>
           <p className="text-xs text-gray-400 mt-1">
-            {lang === 'es' ? faction.nameEs : faction.nameEn}
+            {faction.nameEs}
           </p>
         </div>
+        {artPath && (
+          <div className="relative w-[72px] h-24 flex-shrink-0 rounded-lg overflow-hidden border border-orange-500/30 bg-black/40">
+            <Image
+              src={artPath}
+              alt={faction.shortName}
+              fill
+              className="object-contain"
+              unoptimized
+            />
+          </div>
+        )}
       </div>
 
       {!sheet.complete && (
         <div className="rounded border border-yellow-500/40 bg-yellow-500/10 p-3 text-center">
           <p className="text-sm text-yellow-300" style={{ fontFamily: 'var(--font-audiowide)' }}>
-            {lang === 'es' ? 'Datos pendientes' : 'Data pending'}
+            {'Datos pendientes'}
           </p>
           <p className="text-[11px] text-gray-400 mt-1">
-            {lang === 'es'
-              ? 'Aún no se han añadido los datos de esta facción.'
-              : "This faction's data hasn't been added yet."}
+            {'Aún no se han añadido los datos de esta facción.'}
           </p>
         </div>
       )}
@@ -131,32 +141,32 @@ export default function MobileFactionSheet({
               — {sheet.quoteAuthor}
             </p>
           )}
-          {(lang === 'es' ? sheet.loreEs : sheet.loreEn) && (
+          {(sheet.loreEs) && (
             <p
               className="text-[11px] text-gray-400 leading-relaxed mt-2 pt-2 border-t border-orange-500/20"
               style={{ fontFamily: 'var(--font-electrolize)' }}
             >
-              {lang === 'es' ? sheet.loreEs : sheet.loreEn}
+              {sheet.loreEs}
             </p>
           )}
         </div>
       )}
 
       {/* Long lore (collapsible, full faction background) */}
-      {(lang === 'es' ? sheet.longLoreEs : sheet.longLoreEn) && (
+      {(sheet.longLoreEs) && (
         <details className="rounded border border-orange-500/20 bg-black/30">
           <summary
             className="text-[11px] text-orange-300 uppercase tracking-wider px-3 py-1.5 cursor-pointer flex items-center justify-between"
             style={{ fontFamily: 'var(--font-aldrich)' }}
           >
-            <span>{lang === 'es' ? 'Historia' : 'Lore'}</span>
+            <span>{'Historia'}</span>
             <span className="text-[10px] text-gray-500">▾</span>
           </summary>
           <div
             className="px-3 pb-3 pt-1 text-[11px] text-gray-300 leading-relaxed whitespace-pre-line"
             style={{ fontFamily: 'var(--font-electrolize)' }}
           >
-            {lang === 'es' ? sheet.longLoreEs : sheet.longLoreEn}
+            {sheet.longLoreEs}
           </div>
         </details>
       )}
@@ -169,10 +179,10 @@ export default function MobileFactionSheet({
             style={{ fontFamily: 'var(--font-aldrich)' }}
           >
             <span>
-              {lang === 'es' ? sheet.homeSystemInfo.nameEs : sheet.homeSystemInfo.nameEn}
+              {sheet.homeSystemInfo.nameEs}
             </span>
             <span className="text-[10px] text-gray-500">
-              {lang === 'es' ? 'Ficha del sistema ▾' : 'System info ▾'}
+              {'Ficha del sistema ▾'}
             </span>
           </summary>
           <div className="px-3 pb-2 pt-1 grid grid-cols-2 gap-x-3 gap-y-0.5 text-[11px]">
@@ -182,7 +192,7 @@ export default function MobileFactionSheet({
                   className="text-gray-500 uppercase tracking-wider text-[10px] min-w-[120px]"
                   style={{ fontFamily: 'var(--font-aldrich)' }}
                 >
-                  {lang === 'es' ? a.keyEs : a.keyEn}
+                  {a.keyEs}
                 </span>
                 <span className="text-gray-200 flex-1" style={{ fontFamily: 'var(--font-electrolize)' }}>
                   {a.value}
@@ -219,7 +229,7 @@ export default function MobileFactionSheet({
             className="text-xs text-gray-400 uppercase tracking-wider px-1"
             style={{ fontFamily: 'var(--font-aldrich)' }}
           >
-            {lang === 'es' ? 'Habilidades' : 'Abilities'}
+            {'Habilidades'}
           </h2>
           {sheet.abilities.map((ab, i) => (
             <div key={i} className="rounded border border-orange-500/30 bg-orange-500/5 p-3">
@@ -227,10 +237,10 @@ export default function MobileFactionSheet({
                 className="text-sm text-orange-300 mb-1"
                 style={{ fontFamily: 'var(--font-audiowide)' }}
               >
-                {lang === 'es' ? ab.nameEs : ab.nameEn}
+                {ab.nameEs}
               </p>
               <p className="text-xs text-gray-200 leading-snug" style={{ fontFamily: 'var(--font-electrolize)' }}>
-                {lang === 'es' ? ab.descriptionEs : ab.descriptionEn}
+                {ab.descriptionEs}
               </p>
             </div>
           ))}
@@ -246,7 +256,7 @@ export default function MobileFactionSheet({
                 className="text-[10px] text-blue-300 uppercase tracking-wider mb-2"
                 style={{ fontFamily: 'var(--font-aldrich)' }}
               >
-                {lang === 'es' ? 'Flota inicial' : 'Starting fleet'}
+                {'Flota inicial'}
               </p>
               <ul className="text-[11px] text-gray-200 space-y-0.5" style={{ fontFamily: 'var(--font-electrolize)' }}>
                 {sheet.startingFleet.map((line, i) => (
@@ -261,7 +271,7 @@ export default function MobileFactionSheet({
                 className="text-[10px] text-purple-300 uppercase tracking-wider mb-2"
                 style={{ fontFamily: 'var(--font-aldrich)' }}
               >
-                {lang === 'es' ? 'Tecnologías iniciales' : 'Starting tech'}
+                {'Tecnologías iniciales'}
               </p>
               <ul className="text-[11px] text-gray-200 space-y-0.5" style={{ fontFamily: 'var(--font-electrolize)' }}>
                 {sheet.startingTechs.map((line, i) => (
@@ -280,7 +290,7 @@ export default function MobileFactionSheet({
             className="text-xs text-gray-400 uppercase tracking-wider px-1"
             style={{ fontFamily: 'var(--font-aldrich)' }}
           >
-            {lang === 'es' ? 'Unidades' : 'Units'}
+            {'Unidades'}
           </h2>
           <div className="grid grid-cols-2 gap-2">
             {sheet.units.map((unit) => {
@@ -311,12 +321,12 @@ export default function MobileFactionSheet({
             className="text-xs text-gray-400 uppercase tracking-wider px-1"
             style={{ fontFamily: 'var(--font-aldrich)' }}
           >
-            {lang === 'es' ? 'Líderes' : 'Leaders'}
+            {'Líderes'}
           </h2>
           {([
-            ['agent',     '#34d399', lang === 'es' ? 'AGENTE'     : 'AGENT'],
-            ['commander', '#60a5fa', lang === 'es' ? 'COMANDANTE' : 'COMMANDER'],
-            ['hero',      '#fbbf24', lang === 'es' ? 'HÉROE'      : 'HERO'],
+            ['agent',     '#34d399', 'AGENTE'],
+            ['commander', '#60a5fa', 'COMANDANTE'],
+            ['hero',      '#fbbf24', 'HÉROE'],
           ] as const).map(([key, color, label]) => {
             const ldr = sheet.leaders![key];
             return (
@@ -330,7 +340,7 @@ export default function MobileFactionSheet({
                     className="text-sm text-white"
                     style={{ fontFamily: 'var(--font-audiowide)' }}
                   >
-                    {lang === 'es' ? ldr.nameEs : ldr.nameEn}
+                    {ldr.nameEs}
                   </p>
                   <span
                     className="text-[10px] uppercase tracking-wider"
@@ -339,13 +349,13 @@ export default function MobileFactionSheet({
                     {label}
                   </span>
                 </div>
-                {(lang === 'es' ? ldr.unlockEs : ldr.unlockEn) && (
+                {(ldr.unlockEs) && (
                   <p className="text-[10px] text-gray-400 italic mb-1">
-                    🔒 {lang === 'es' ? ldr.unlockEs : ldr.unlockEn}
+                    🔒 {ldr.unlockEs}
                   </p>
                 )}
                 <p className="text-[11px] text-gray-200 leading-snug" style={{ fontFamily: 'var(--font-electrolize)' }}>
-                  {lang === 'es' ? ldr.abilityEs : ldr.abilityEn}
+                  {ldr.abilityEs}
                 </p>
               </div>
             );
@@ -360,17 +370,17 @@ export default function MobileFactionSheet({
             className="text-xs text-gray-400 uppercase tracking-wider px-1"
             style={{ fontFamily: 'var(--font-aldrich)' }}
           >
-            {lang === 'es' ? 'Favores' : 'Promissory note'}
+            {'Favores'}
           </h2>
           <div className="rounded border border-pink-500/40 bg-pink-500/5 p-3">
             <p
               className="text-sm text-pink-300 mb-1"
               style={{ fontFamily: 'var(--font-audiowide)' }}
             >
-              {lang === 'es' ? sheet.promissoryNote.nameEs : sheet.promissoryNote.nameEn}
+              {sheet.promissoryNote.nameEs}
             </p>
             <p className="text-[11px] text-gray-200 leading-snug" style={{ fontFamily: 'var(--font-electrolize)' }}>
-              {lang === 'es' ? sheet.promissoryNote.descriptionEs : sheet.promissoryNote.descriptionEn}
+              {sheet.promissoryNote.descriptionEs}
             </p>
           </div>
         </div>

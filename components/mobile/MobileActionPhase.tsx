@@ -13,7 +13,6 @@ interface Props {
 }
 
 export default function MobileActionPhase({ myPlayerIdx, sendCommand }: Props) {
-  const lang = useGameStore((s) => s.lang);
   const players = useGameStore((s) => s.players);
   const strategies = useGameStore((s) => s.strategies);
   const activeStrategyIdx = useGameStore((s) => s.activeStrategyIdx);
@@ -27,7 +26,7 @@ export default function MobileActionPhase({ myPlayerIdx, sendCommand }: Props) {
   const activePlayer = activePlayerIdx !== NO_PLAYER ? players[activePlayerIdx] : null;
   const activeFaction = activePlayer ? FACTIONS[activePlayer.faction] : null;
   const activeColor = activePlayer ? PLAYER_COLOR_VALUES[PLAYER_COLORS[activePlayer.color]] : undefined;
-  const stratName = activeStrat ? (lang === 'es' ? activeStrat.nameEs : activeStrat.nameEn) : '';
+  const stratName = activeStrat ? (activeStrat.nameEs) : '';
   const isMyTurn = myPlayerIdx >= 0 && activePlayerIdx === myPlayerIdx;
   const stratIsPlayed = activeStrat?.status === STRATEGY_PLAYED;
 
@@ -80,13 +79,13 @@ export default function MobileActionPhase({ myPlayerIdx, sendCommand }: Props) {
           }}
         >
           <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
-            {isMyTurn ? (lang === 'es' ? '¡Tu turno!' : 'Your turn!') : (lang === 'es' ? 'Turno activo' : 'Active turn')}
+            {isMyTurn ? ('¡Tu turno!') : ('Turno activo')}
           </p>
           <div className="w-20 h-20 relative">
             <Image src={activeFaction.iconPath} alt={activeFaction.shortName} fill className="object-contain" unoptimized />
           </div>
           <p className="text-base text-white mt-2 text-center" style={{ fontFamily: 'var(--font-audiowide)' }}>
-            {lang === 'es' ? activeFaction.nameEs : activeFaction.nameEn}
+            {activeFaction.nameEs}
           </p>
           {activePlayer.name && (
             <p className="text-xs" style={{ color: activeColor, fontFamily: 'var(--font-aldrich)' }}>
@@ -118,7 +117,7 @@ export default function MobileActionPhase({ myPlayerIdx, sendCommand }: Props) {
               className="py-3 text-sm rounded border-2 border-blue-500/60 bg-blue-500/15 text-blue-200 active:bg-blue-500/30 disabled:opacity-30"
               style={{ fontFamily: 'var(--font-aldrich)' }}
             >
-              {lang === 'es' ? 'Estratégica 1' : 'Strategic 1'}
+              {'Estratégica 1'}
             </button>
             {mySecondStrategy ? (
               <button
@@ -127,7 +126,7 @@ export default function MobileActionPhase({ myPlayerIdx, sendCommand }: Props) {
                 className="py-3 text-sm rounded border-2 border-blue-500/60 bg-blue-500/15 text-blue-200 active:bg-blue-500/30 disabled:opacity-30"
                 style={{ fontFamily: 'var(--font-aldrich)' }}
               >
-                {lang === 'es' ? 'Estratégica 2' : 'Strategic 2'}
+                {'Estratégica 2'}
               </button>
             ) : (
               <div />
@@ -138,7 +137,7 @@ export default function MobileActionPhase({ myPlayerIdx, sendCommand }: Props) {
               className="py-3 text-sm rounded border-2 border-green-500/60 bg-green-500/15 text-green-200 active:bg-green-500/30 disabled:opacity-30"
               style={{ fontFamily: 'var(--font-aldrich)' }}
             >
-              {lang === 'es' ? 'Táctica' : 'Tactical'}
+              {'Táctica'}
             </button>
             <button
               onClick={() => handleAction('pass')}
@@ -146,14 +145,12 @@ export default function MobileActionPhase({ myPlayerIdx, sendCommand }: Props) {
               className="py-3 text-sm rounded border-2 border-red-500/60 bg-red-500/15 text-red-200 active:bg-red-500/30 disabled:opacity-30"
               style={{ fontFamily: 'var(--font-aldrich)' }}
             >
-              {lang === 'es' ? 'Pasar' : 'Pass'}
+              {'Pasar'}
             </button>
           </div>
           {!canPass && (
             <p className="text-[11px] text-gray-500 text-center">
-              {lang === 'es'
-                ? 'Juega tu(s) carta(s) de estrategia antes de pasar'
-                : 'Play your strategy card(s) before passing'}
+              {'Juega tu(s) carta(s) de estrategia antes de pasar'}
             </p>
           )}
         </div>
@@ -161,7 +158,7 @@ export default function MobileActionPhase({ myPlayerIdx, sendCommand }: Props) {
 
       <div>
         <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-1.5 px-1">
-          {lang === 'es' ? 'Orden de iniciativa' : 'Initiative order'}
+          {'Orden de iniciativa'}
         </p>
         <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
           {remainingPlayers.map(({ strategy, slotIdx }) => {
@@ -188,7 +185,7 @@ export default function MobileActionPhase({ myPlayerIdx, sendCommand }: Props) {
             );
           })}
           {remainingPlayers.length === 0 && (
-            <p className="text-xs text-gray-500 italic">{lang === 'es' ? 'Todos pasaron' : 'All passed'}</p>
+            <p className="text-xs text-gray-500 italic">{'Todos pasaron'}</p>
           )}
         </div>
       </div>

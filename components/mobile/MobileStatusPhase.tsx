@@ -34,7 +34,6 @@ interface Props {
 }
 
 export default function MobileStatusPhase({ myPlayerIdx, sendCommand }: Props) {
-  const lang = useGameStore((s) => s.lang);
   const players = useGameStore((s) => s.players);
   const nbPlayers = useGameStore((s) => s.nbPlayers);
   const vpGoal = useGameStore((s) => s.options.vpWinGoal);
@@ -42,7 +41,7 @@ export default function MobileStatusPhase({ myPlayerIdx, sendCommand }: Props) {
   const [showChecklist, setShowChecklist] = useState(false);
   const [busy, setBusy] = useState(false);
 
-  const items = lang === 'es' ? CHECKLIST_ITEMS_ES : CHECKLIST_ITEMS_EN;
+  const items = CHECKLIST_ITEMS_ES;
 
   const adjustVP = async (delta: 1 | -1) => {
     if (busy) return;
@@ -57,14 +56,14 @@ export default function MobileStatusPhase({ myPlayerIdx, sendCommand }: Props) {
         <div className="rounded border border-yellow-500/40 bg-yellow-500/10 p-3 text-center">
           <p className="text-sm text-yellow-300" style={{ fontFamily: 'var(--font-audiowide)' }}>Mecatol Rex</p>
           <p className="text-xs text-gray-400 mt-1">
-            {lang === 'es' ? 'Eligiendo bonus de objetivo' : 'Choosing objective bonus'}
+            {'Eligiendo bonus de objetivo'}
           </p>
         </div>
       )}
 
       <div className="flex flex-col gap-1.5">
         <p className="text-[10px] text-gray-500 uppercase tracking-wider px-1">
-          {lang === 'es' ? 'Puntos de Victoria' : 'Victory Points'}
+          {'Puntos de Victoria'}
         </p>
         {players.slice(0, nbPlayers)
           .map((p, i) => ({ p, i }))
@@ -130,8 +129,8 @@ export default function MobileStatusPhase({ myPlayerIdx, sendCommand }: Props) {
         className="text-xs text-gray-400 underline self-start pointer-events-auto"
       >
         {showChecklist
-          ? lang === 'es' ? 'Ocultar checklist ▲' : 'Hide checklist ▲'
-          : lang === 'es' ? 'Ver checklist de fase ▼' : 'Show phase checklist ▼'}
+          ? 'Ocultar checklist ▲'
+          : 'Ver checklist de fase ▼'}
       </button>
       {showChecklist && (
         <ul className="text-xs text-gray-300 space-y-1 pl-3">

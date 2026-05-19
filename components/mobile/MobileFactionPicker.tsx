@@ -13,7 +13,6 @@ interface Props {
 }
 
 export default function MobileFactionPicker({ serverPairings, myDeviceId, onPick }: Props) {
-  const lang = useGameStore((s) => s.lang);
   const players = useGameStore((s) => s.players);
   const nbPlayers = useGameStore((s) => s.nbPlayers);
   const [busy, setBusy] = useState(false);
@@ -40,12 +39,10 @@ export default function MobileFactionPicker({ serverPairings, myDeviceId, onPick
           className="text-2xl text-orange-300"
           style={{ fontFamily: 'var(--font-audiowide)' }}
         >
-          {lang === 'es' ? 'Escoge tu Facción' : 'Pick your Faction'}
+          {'Escoge tu Facción'}
         </h1>
         <p className="text-xs text-gray-400 mt-2">
-          {lang === 'es'
-            ? 'Te emparejarás con esta facción para controlarla desde tu móvil'
-            : 'You will be paired with this faction to control it from your phone'}
+          {'Te emparejarás con esta facción para controlarla desde tu móvil'}
         </p>
       </div>
 
@@ -82,7 +79,7 @@ export default function MobileFactionPicker({ serverPairings, myDeviceId, onPick
               </p>
               {taken && (
                 <p className="text-[10px] text-red-400 mt-1">
-                  {lang === 'es' ? 'Ocupada' : 'Taken'}
+                  {'Ocupada'}
                 </p>
               )}
             </button>

@@ -15,7 +15,6 @@ import StrategyCard from '@/components/shared/StrategyCard';
 import SpeakerModal from '@/components/shared/SpeakerModal';
 
 export default function StrategyPhase() {
-  const lang = useGameStore((s) => s.lang);
   const nbPlayers = useGameStore((s) => s.nbPlayers);
   const players = useGameStore((s) => s.players);
   const strategies = useGameStore((s) => s.strategies);
@@ -92,16 +91,14 @@ export default function StrategyPhase() {
           className="text-2xl text-orange-400 text-shadow"
           style={{ fontFamily: 'var(--font-audiowide)' }}
         >
-          {lang === 'es'
-            ? `Ronda ${turnCounter} — Fase de Estrategia`
-            : `Round ${turnCounter} — Strategy Phase`}
+          {`Ronda ${turnCounter} — Fase de Estrategia`}
         </h2>
         <div className="flex gap-2">
           <button
             onClick={resetStrategyPhase}
             className="text-sm px-4 py-2 border border-gray-600 text-gray-400 hover:text-white rounded transition-colors"
           >
-            {lang === 'es' ? 'Reiniciar' : 'Reset'}
+            {'Reiniciar'}
           </button>
           {allPicked && !swapMode && (
             <button
@@ -109,7 +106,7 @@ export default function StrategyPhase() {
               className="text-sm px-4 py-2 border border-orange-500 bg-orange-500/20 text-orange-300 hover:bg-orange-500/40 rounded transition-colors"
               style={{ fontFamily: 'var(--font-aldrich)' }}
             >
-              {lang === 'es' ? 'Efectos de Fase ⚡' : 'Phase Effects ⚡'}
+              {'Efectos de Fase ⚡'}
             </button>
           )}
         </div>
@@ -129,10 +126,10 @@ export default function StrategyPhase() {
           </div>
           <div>
             <p className="text-2xl text-white text-shadow">
-              {lang === 'es' ? currentFaction.nameEs : currentFaction.nameEn} ({currentPicker!.name})
+              {currentFaction.nameEs} ({currentPicker!.name})
             </p>
             <p className="text-base text-orange-300">
-              {lang === 'es' ? 'selecciona tu Estrategia' : 'select your Strategy'}
+              {'selecciona tu Estrategia'}
             </p>
           </div>
         </div>
@@ -143,12 +140,8 @@ export default function StrategyPhase() {
         <div className="flex items-center justify-between px-3 py-2 rounded border border-blue-500/40 bg-blue-500/10">
           <p className="text-sm text-blue-300">
             {swapFirstIdx !== null
-              ? lang === 'es'
-                ? 'Selecciona la segunda carta para intercambiar'
-                : 'Select the second card to swap'
-              : lang === 'es'
-              ? 'Selecciona la primera carta para intercambiar'
-              : 'Select the first card to swap'}
+              ? 'Selecciona la segunda carta para intercambiar'
+              : 'Selecciona la primera carta para intercambiar'}
           </p>
           <button
             onClick={() => {
@@ -158,7 +151,7 @@ export default function StrategyPhase() {
             }}
             className="text-xs px-3 py-1 border border-blue-500/50 text-blue-300 hover:bg-blue-500/20 rounded"
           >
-            {lang === 'es' ? 'Hecho' : 'Done'}
+            {'Hecho'}
           </button>
         </div>
       )}
@@ -196,7 +189,7 @@ export default function StrategyPhase() {
           onClick={() => openModal('speaker')}
           className="mt-2 px-4 py-2 text-sm border border-yellow-500/50 text-yellow-300 hover:bg-yellow-500/10 rounded"
         >
-          👑 {lang === 'es' ? 'Seleccionar Portavoz' : 'Select Speaker'}
+          👑 {'Seleccionar Portavoz'}
         </button>
       )}
 
@@ -216,7 +209,7 @@ export default function StrategyPhase() {
                 className="text-base text-orange-400 text-shadow"
                 style={{ fontFamily: 'var(--font-audiowide)' }}
               >
-                {lang === 'es' ? 'Efectos de Fin de Fase' : 'End of Strategy Phase'}
+                {'Efectos de Fin de Fase'}
               </h2>
             </div>
             <div className="px-5 py-4 flex flex-col gap-3">
@@ -226,12 +219,10 @@ export default function StrategyPhase() {
                   className="w-full py-2.5 text-sm border border-purple-500/50 bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 rounded transition-all flex items-center justify-center gap-2"
                   style={{ fontFamily: 'var(--font-aldrich)' }}
                 >
-                  <span>🧠 {lang === 'es' ? 'Naalu Telepática' : 'Naalu Telepathic'}</span>
+                  <span>🧠 {'Naalu Telepática'}</span>
                   {telephaticPlayerIdx !== NO_PLAYER && (
                     <span className="text-xs text-green-400">
-                      ✓ {lang === 'es'
-                        ? FACTIONS[players[telephaticPlayerIdx].faction].nameEs
-                        : FACTIONS[players[telephaticPlayerIdx].faction].nameEn}
+                      ✓ {FACTIONS[players[telephaticPlayerIdx].faction].nameEs}
                     </span>
                   )}
                 </button>
@@ -246,14 +237,12 @@ export default function StrategyPhase() {
                   className="w-full py-2.5 text-sm border border-blue-500/50 bg-blue-500/10 hover:bg-blue-500/20 text-blue-300 rounded transition-all"
                   style={{ fontFamily: 'var(--font-aldrich)' }}
                 >
-                  🔄 {lang === 'es' ? 'Intercambiar Estrategias' : 'Swap Strategies'}
+                  🔄 {'Intercambiar Estrategias'}
                 </button>
               )}
               {!naaluInGame && !swapInGame && (
                 <p className="text-sm text-gray-400 text-center py-2">
-                  {lang === 'es'
-                    ? 'No hay efectos especiales disponibles.'
-                    : 'No special effects available.'}
+                  {'No hay efectos especiales disponibles.'}
                 </p>
               )}
             </div>
@@ -263,7 +252,7 @@ export default function StrategyPhase() {
                 className="px-5 py-2 text-sm border border-orange-500 bg-orange-500/10 hover:bg-orange-500/30 text-orange-300 rounded transition-all"
                 style={{ fontFamily: 'var(--font-aldrich)' }}
               >
-                {lang === 'es' ? 'Iniciar Fase de Acción →' : 'Start Action Phase →'}
+                {'Iniciar Fase de Acción →'}
               </button>
             </div>
           </div>
@@ -279,12 +268,10 @@ export default function StrategyPhase() {
                 className="text-base text-purple-400 text-shadow"
                 style={{ fontFamily: 'var(--font-audiowide)' }}
               >
-                {lang === 'es' ? 'Telepática: Elegir Objetivo' : 'Telepathic: Choose Target'}
+                {'Telepática: Elegir Objetivo'}
               </h2>
               <p className="text-xs text-gray-400 mt-1">
-                {lang === 'es'
-                  ? 'El jugador elegido actuará con iniciativa 0'
-                  : 'Chosen player will act at initiative 0'}
+                {'El jugador elegido actuará con iniciativa 0'}
               </p>
             </div>
             <div className="px-5 py-4 flex flex-col gap-2 max-h-80 overflow-y-auto">
@@ -324,10 +311,10 @@ export default function StrategyPhase() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-white truncate">
-                        {lang === 'es' ? faction.nameEs : faction.nameEn}
+                        {faction.nameEs}
                       </p>
                       <p className="text-xs text-gray-400 truncate">
-                        {lang === 'es' ? playerStrat.nameEs : playerStrat.nameEn}
+                        {playerStrat.nameEs}
                       </p>
                     </div>
                     {isSelected && <span className="text-purple-400 text-lg">✓</span>}
@@ -340,7 +327,7 @@ export default function StrategyPhase() {
                 onClick={() => openModal('strategyEnd')}
                 className="px-5 py-2 text-sm border border-gray-600 text-gray-300 hover:border-white rounded"
               >
-                {lang === 'es' ? 'Cancelar' : 'Cancel'}
+                {'Cancelar'}
               </button>
             </div>
           </div>
