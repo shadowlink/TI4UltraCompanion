@@ -23,7 +23,9 @@ export type MobileCommand =
   | { type: 'adjustCommodities'; delta: number }
   | { type: 'adjustTradeGoods'; delta: number }
   | { type: 'assimilateTech'; techId: string }
-  | { type: 'unassimilateTech'; techId: string };
+  | { type: 'unassimilateTech'; techId: string }
+  | { type: 'nekroGainTech'; techId: string }
+  | { type: 'nekroUngainTech'; techId: string };
 
 export interface PendingCommand {
   deviceId: string;

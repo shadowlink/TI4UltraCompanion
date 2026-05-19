@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useGameStore } from '@/store/gameStore';
 import { TECH_COLOR_HEX, type TechColor } from '@/data/factionSheets';
 import {
+  BASIC_TECHNOLOGIES,
   FACTION_TECHNOLOGIES,
   canResearch,
   getAvailableTechsForFaction,
@@ -258,6 +259,7 @@ function NekroAssimilatorPanel({
   viewingPlayerIdx: _viewingPlayerIdx,
   canToggle,
   players,
+  myResearched,
   myExhausted,
   myAssimilated,
   sendCommand,
@@ -413,6 +415,77 @@ function NekroAssimilatorPanel({
           })}
         </div>
       )}
+
+      {/* Basic technologies — obtained via Galactic Threat / Technological Singularity */}
+      <div className="flex flex-col gap-2 mt-1">
+        <p
+          className="text-[10px] uppercase tracking-wider text-gray-400 px-1"
+          style={{ fontFamily: 'var(--font-aldrich)' }}
+        >
+          {lang === 'es'
+            ? '── Tecnologías estándar (Amenaza Galáctica / Singularidad) ──'
+            : '── Standard Technologies (Galactic Threat / Singularity) ──'}
+        </p>
+        {COLOR_ORDER.map((color) => {
+          const techs = BASIC_TECHNOLOGIES.filter(
+            (t) => t.color === color && t.category !== 'unitUpgrade',
+          );
+          if (techs.length === 0) return null;
+          return (
+            <div key={color} className="flex flex-col gap-0.5">
+              <span
+                className="text-[10px] font-bold px-1 leading-none mb-0.5"
+                style={{ color: TECH_COLOR_HEX[color], fontFamily: 'var(--font-share-tech-mono)' }}
+              >
+                ● {COLOR_LABELS[color][lang]}
+              </span>
+              {techs.map((tech) => {
+                const isOwned = myResearched.includes(tech.id);
+                const isExhausted = isOwned && myExhausted.includes(tech.id);
+                return (
+                  <button
+                    key={tech.id}
+                    type="button"
+                    onClick={async () => {
+                      if (!canToggle) { setOpenTech(tech); return; }
+                      if (isOwned) {
+                        await sendCommand({ type: 'nekroUngainTech', techId: tech.id });
+                      } else {
+                        await sendCommand({ type: 'nekroGainTech', techId: tech.id });
+                      }
+                    }}
+                    className={`flex items-center gap-2 px-2 py-1.5 rounded border text-left pointer-events-auto active:scale-[0.98] ${
+                      isOwned
+                        ? isExhausted
+                          ? 'opacity-55 border-gray-500/40 bg-gray-700/20'
+                          : 'border-gray-400/60 bg-gray-700/25'
+                        : 'border-gray-700/50 bg-gray-900/20'
+                    }`}
+                  >
+                    <span
+                      className="text-[10px] font-bold px-1.5 py-0.5 rounded leading-none shrink-0"
+                      style={{ background: TECH_COLOR_HEX[color], fontFamily: 'var(--font-share-tech-mono)' }}
+                    >
+                      L{tech.level}
+                    </span>
+                    <span
+                      className={`flex-1 text-xs leading-tight truncate ${
+                        isExhausted ? 'text-gray-500 italic' : isOwned ? 'text-white' : 'text-gray-400'
+                      }`}
+                      style={{ fontFamily: 'var(--font-electrolize)' }}
+                    >
+                      {lang === 'es' ? tech.nameEs : tech.nameEn}
+                    </span>
+                    {isOwned && (
+                      <span className="text-[11px] text-green-400 leading-none shrink-0">✓</span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          );
+        })}
+      </div>
 
       {!canToggle && (
         <p className="text-[10px] text-gray-500 italic text-center mt-1">

@@ -191,6 +191,18 @@ function processCommand(cmd: PendingCommand): void {
       store.unassimilateTech(playerIdx, techId);
       return;
     }
+    case 'nekroGainTech': {
+      const player = store.players[playerIdx];
+      if (!player || player.faction !== 10) return;
+      store.forceResearchTech(playerIdx, cmd.command.techId);
+      return;
+    }
+    case 'nekroUngainTech': {
+      const player = store.players[playerIdx];
+      if (!player || player.faction !== 10) return;
+      store.unresearchTech(playerIdx, cmd.command.techId);
+      return;
+    }
   }
 }
 
