@@ -304,42 +304,6 @@ export default function MobileFactionSheet({
         </div>
       )}
 
-      {/* Mech */}
-      {sheet.mech && (
-        <div className="flex flex-col gap-2">
-          <h2
-            className="text-xs text-gray-400 uppercase tracking-wider px-1"
-            style={{ fontFamily: 'var(--font-aldrich)' }}
-          >
-            {lang === 'es' ? 'Meca' : 'Mech'}
-          </h2>
-          <div className="rounded border border-red-700/60 bg-gradient-to-b from-red-900/20 to-black/60 p-3">
-            <div className="flex items-center gap-3 mb-2">
-              <p
-                className="text-sm text-white flex-1"
-                style={{ fontFamily: 'var(--font-audiowide)' }}
-              >
-                {lang === 'es' ? sheet.mech.nameEs : sheet.mech.nameEn}
-              </p>
-              <div className="flex gap-2 text-[11px] text-gray-300" style={{ fontFamily: 'var(--font-share-tech-mono)' }}>
-                <span>{lang === 'es' ? 'Coste' : 'Cost'} {sheet.mech.stats.cost ?? '—'}</span>
-                <span>{lang === 'es' ? 'Combate' : 'Combat'} {sheet.mech.stats.combat ?? '—'}</span>
-              </div>
-            </div>
-            {(lang === 'es' ? sheet.mech.stats.abilitiesEs : sheet.mech.stats.abilitiesEn).length > 0 && (
-              <ul className="text-[11px] text-yellow-200 mb-1 space-y-0.5">
-                {(lang === 'es' ? sheet.mech.stats.abilitiesEs : sheet.mech.stats.abilitiesEn).map((a, i) => (
-                  <li key={i}>◆ {a}</li>
-                ))}
-              </ul>
-            )}
-            <p className="text-[11px] text-gray-200 leading-snug" style={{ fontFamily: 'var(--font-electrolize)' }}>
-              {lang === 'es' ? sheet.mech.descriptionEs : sheet.mech.descriptionEn}
-            </p>
-          </div>
-        </div>
-      )}
-
       {/* Leaders (Agent / Commander / Hero) */}
       {sheet.leaders && (
         <div className="flex flex-col gap-2">

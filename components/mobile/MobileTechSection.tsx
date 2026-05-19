@@ -4,13 +4,17 @@ import { useState } from 'react';
 import { useGameStore } from '@/store/gameStore';
 import { TECH_COLOR_HEX, type TechColor } from '@/data/factionSheets';
 import {
+  FACTION_TECHNOLOGIES,
   canResearch,
   getAvailableTechsForFaction,
   getTechsByColorForFaction,
   type Technology,
 } from '@/data/technologies';
+import { FACTIONS } from '@/data/factions';
 import type { MobileCommand } from '@/lib/sync/types';
 import MobileTechDetailsModal from './MobileTechDetailsModal';
+
+const NEKRO_FACTION_IDX = 10;
 
 interface Props {
   /** playerIdx of the faction whose sheet is currently shown. */
@@ -36,10 +40,13 @@ export default function MobileTechSection({ viewingPlayerIdx, myPlayerIdx, sendC
   const [expanded, setExpanded] = useState(false);
   const [openTech, setOpenTech] = useState<Technology | null>(null);
 
+  const nekroAssimilated = useGameStore((s) => s.nekroAssimilated);
   const myResearched = researchedTechs[viewingPlayerIdx] ?? [];
   const myExhausted = exhaustedTechs[viewingPlayerIdx] ?? [];
+  const myAssimilated = nekroAssimilated[viewingPlayerIdx] ?? [];
   const viewingFactionIdx =
     viewingPlayerIdx >= 0 ? players[viewingPlayerIdx]?.faction ?? null : null;
+  const isNekro = viewingFactionIdx === NEKRO_FACTION_IDX;
   // Counter only reflects basic techs (unit upgrades are handled from the unit cards)
   const basicTechsAll = getAvailableTechsForFaction(viewingFactionIdx).filter(
     (t) => t.category !== 'unitUpgrade',
@@ -84,7 +91,21 @@ export default function MobileTechSection({ viewingPlayerIdx, myPlayerIdx, sendC
           </div>
         </button>
 
-        {expanded && (
+        {expanded && isNekro && (
+          <NekroAssimilatorPanel
+            viewingPlayerIdx={viewingPlayerIdx}
+            canToggle={canToggle}
+            players={players}
+            myResearched={myResearched}
+            myExhausted={myExhausted}
+            myAssimilated={myAssimilated}
+            sendCommand={sendCommand}
+            setOpenTech={setOpenTech}
+            lang={lang}
+          />
+        )}
+
+        {expanded && !isNekro && (
           <div className="flex flex-col gap-3 px-2 py-3">
             {COLOR_ORDER.map((color) => {
               const colorHex = TECH_COLOR_HEX[color];
@@ -158,6 +179,14 @@ export default function MobileTechSection({ viewingPlayerIdx, myPlayerIdx, sendC
                           >
                             {lang === 'es' ? tech.nameEs : tech.nameEn}
                           </span>
+                          {tech.factionIdx !== undefined && (
+                            <span
+                              className="text-[9px] text-amber-200 border border-amber-400/60 bg-amber-500/10 px-1 rounded leading-none"
+                              title={lang === 'es' ? 'Tecnología de facción' : 'Faction technology'}
+                            >
+                              ◆ {lang === 'es' ? 'FACCIÓN' : 'FACTION'}
+                            </span>
+                          )}
                           {tech.expansion === 'pok' && (
                             <span className="text-[9px] text-purple-300 border border-purple-500/40 px-1 rounded leading-none">
                               PoK
@@ -208,5 +237,190 @@ export default function MobileTechSection({ viewingPlayerIdx, myPlayerIdx, sendC
         />
       )}
     </>
+  );
+}
+
+// ─── Nekro Virus — Valefar Assimilator panel ──────────────────────────────────
+
+interface NekroPanelProps {
+  viewingPlayerIdx: number;
+  canToggle: boolean;
+  players: { faction: number }[];
+  myResearched: string[];
+  myExhausted: string[];
+  myAssimilated: string[];
+  sendCommand: (cmd: MobileCommand) => Promise<{ ok: boolean; error?: string }>;
+  setOpenTech: (t: Technology | null) => void;
+  lang: 'es' | 'en';
+}
+
+function NekroAssimilatorPanel({
+  viewingPlayerIdx: _viewingPlayerIdx,
+  canToggle,
+  players,
+  myExhausted,
+  myAssimilated,
+  sendCommand,
+  setOpenTech,
+  lang,
+}: NekroPanelProps) {
+  void _viewingPlayerIdx;
+  // Factions of all OTHER players currently in the game (excluding Nekro itself).
+  const otherFactionIdxs = new Set<number>();
+  for (const p of players) {
+    if (p.faction !== NEKRO_FACTION_IDX && p.faction >= 0) otherFactionIdxs.add(p.faction);
+  }
+  // All faction-specific techs whose owner is in the game.
+  const availableTechs = FACTION_TECHNOLOGIES.filter(
+    (t) => t.factionIdx !== undefined && otherFactionIdxs.has(t.factionIdx),
+  );
+
+  const slots: Array<{ label: string; tech: Technology | null }> = [
+    { label: 'X', tech: myAssimilated[0] ? FACTION_TECHNOLOGIES.find((t) => t.id === myAssimilated[0]) ?? null : null },
+    { label: 'Y', tech: myAssimilated[1] ? FACTION_TECHNOLOGIES.find((t) => t.id === myAssimilated[1]) ?? null : null },
+  ];
+  const slotsFull = myAssimilated.length >= 2;
+
+  const onTapTech = async (tech: Technology) => {
+    if (!canToggle) {
+      setOpenTech(tech);
+      return;
+    }
+    if (myAssimilated.includes(tech.id)) {
+      await sendCommand({ type: 'unassimilateTech', techId: tech.id });
+      return;
+    }
+    if (slotsFull) {
+      setOpenTech(tech);
+      return;
+    }
+    await sendCommand({ type: 'assimilateTech', techId: tech.id });
+  };
+
+  const onClearSlot = async (techId: string) => {
+    if (!canToggle) return;
+    await sendCommand({ type: 'unassimilateTech', techId });
+  };
+
+  return (
+    <div className="flex flex-col gap-3 px-2 py-3">
+      {/* Assimilator slots */}
+      <div className="grid grid-cols-2 gap-2">
+        {slots.map((slot) => (
+          <div
+            key={slot.label}
+            className="rounded-lg border-2 border-fuchsia-500/60 bg-gradient-to-b from-fuchsia-900/30 to-black/60 p-2 flex flex-col gap-1"
+          >
+            <span
+              className="text-[10px] uppercase tracking-wider text-fuchsia-300 leading-none"
+              style={{ fontFamily: 'var(--font-aldrich)' }}
+            >
+              ◇ Asimilador Valefar {slot.label}
+            </span>
+            {slot.tech ? (
+              <button
+                type="button"
+                onClick={() => setOpenTech(slot.tech!)}
+                className="text-left text-sm text-white leading-tight pointer-events-auto active:scale-[0.98]"
+                style={{ fontFamily: 'var(--font-electrolize)' }}
+              >
+                {lang === 'es' ? slot.tech.nameEs : slot.tech.nameEn}
+              </button>
+            ) : (
+              <span className="text-xs text-gray-500 italic">
+                {lang === 'es' ? 'Vacío' : 'Empty'}
+              </span>
+            )}
+            {slot.tech && canToggle && (
+              <button
+                type="button"
+                onClick={() => onClearSlot(slot.tech!.id)}
+                className="text-[10px] px-2 py-0.5 rounded border border-red-500/60 bg-red-500/15 text-red-200 active:bg-red-500/30 pointer-events-auto self-start"
+                style={{ fontFamily: 'var(--font-aldrich)' }}
+              >
+                ✕ {lang === 'es' ? 'Liberar' : 'Release'}
+              </button>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <p className="text-[11px] text-fuchsia-200/80 italic px-1">
+        {lang === 'es'
+          ? 'Nekro no investiga tecnologías: asimila hasta 2 tecnologías específicas del resto de jugadores.'
+          : 'Nekro does not research: it assimilates up to 2 faction-specific technologies from other players.'}
+      </p>
+
+      {/* List of assimilable techs */}
+      {availableTechs.length === 0 ? (
+        <p className="text-xs text-gray-400 italic text-center">
+          {lang === 'es'
+            ? 'No hay tecnologías específicas disponibles (faltan oponentes).'
+            : 'No faction-specific techs available (no opponents).'}
+        </p>
+      ) : (
+        <div className="flex flex-col gap-1">
+          {availableTechs.map((tech) => {
+            const isAssimilated = myAssimilated.includes(tech.id);
+            const isExhausted = isAssimilated && myExhausted.includes(tech.id);
+            const ownerFaction =
+              tech.factionIdx !== undefined ? FACTIONS[tech.factionIdx] : null;
+            const disabled = !isAssimilated && slotsFull;
+            return (
+              <button
+                key={tech.id}
+                onClick={() => onTapTech(tech)}
+                disabled={!canToggle ? false : disabled}
+                className={`flex items-center gap-2 px-2 py-1.5 rounded border text-left pointer-events-auto active:scale-[0.98] ${
+                  isAssimilated
+                    ? isExhausted
+                      ? 'opacity-55 border-fuchsia-500/40 bg-fuchsia-500/5'
+                      : 'border-fuchsia-400 bg-fuchsia-500/15'
+                    : disabled
+                    ? 'opacity-40 border-gray-700 bg-gray-900/40'
+                    : 'border-gray-600 bg-gray-900/30'
+                }`}
+              >
+                <span
+                  className="text-[10px] font-bold text-white px-1.5 py-0.5 rounded leading-none"
+                  style={{ background: '#a21caf', fontFamily: 'var(--font-share-tech-mono)' }}
+                >
+                  L{tech.level}
+                </span>
+                <span
+                  className={`flex-1 text-xs leading-tight truncate ${
+                    isExhausted ? 'text-gray-400 italic' : 'text-white'
+                  }`}
+                  style={{ fontFamily: 'var(--font-electrolize)' }}
+                >
+                  {lang === 'es' ? tech.nameEs : tech.nameEn}
+                </span>
+                {ownerFaction && (
+                  <span className="text-[9px] text-amber-200/80 italic truncate max-w-[70px]">
+                    {ownerFaction.shortName}
+                  </span>
+                )}
+                {isAssimilated && (
+                  <span
+                    className="text-[10px] text-fuchsia-300 leading-none"
+                    title={lang === 'es' ? 'Asimilada' : 'Assimilated'}
+                  >
+                    ◇
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {!canToggle && (
+        <p className="text-[10px] text-gray-500 italic text-center mt-1">
+          {lang === 'es'
+            ? 'Solo el jugador emparejado con esta facción puede asimilar tecnologías.'
+            : 'Only the device paired with this faction can assimilate technologies.'}
+        </p>
+      )}
+    </div>
   );
 }

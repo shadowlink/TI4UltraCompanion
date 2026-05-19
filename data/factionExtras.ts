@@ -23,190 +23,296 @@ const mechStatsDefault: UnitStats = {
   abilitiesEn: ["Sustain Damage"],
 };
 
-function mech(
-  nameEs: string,
-  nameEn: string,
-  descriptionEs: string,
-  descriptionEn: string,
-  statsOverride?: Partial<UnitStats>,
-): FactionMech {
+interface MechSpec {
+  nameEs: string;
+  nameEn: string;
+  descriptionEs: string;
+  descriptionEn: string;
+  statsOverride?: Partial<UnitStats>;
+  altSide?: {
+    nameEs: string;
+    nameEn: string;
+    descriptionEs: string;
+    descriptionEn: string;
+    stats: UnitStats;
+  };
+}
+
+function mech(spec: MechSpec): FactionMech {
+  const { nameEs, nameEn, descriptionEs, descriptionEn, statsOverride, altSide } = spec;
   return {
     nameEs,
     nameEn,
     descriptionEs,
     descriptionEn,
     stats: { ...mechStatsDefault, ...statsOverride },
+    altSide,
   };
 }
 
 export const MECHS_BY_IDX: Record<number, FactionMech> = {
-  0: mech(
-    "Behemoth Letani",
-    "Letani Behemoth",
-    "DESPLIEGUE: Cuando vayas a usar tu capacidad de facción Mitosis, puedes sustituir 1 de tus unidades de Infantería por 1 Meca de tus refuerzos.",
-    "DEPLOY: When you would use your Mitosis faction ability, you may replace 1 of your infantry with 1 mech from your reinforcements instead.",
-    {
-      abilitiesEs: ["Resistencia al daño", "Producción 2", "Escudo planetario"],
-      abilitiesEn: ["Sustain Damage", "Production 2", "Planetary Shield"],
+  0: mech({
+    nameEs: "Letani Gigante",
+    nameEn: "Letani Behemoth",
+    descriptionEs:
+      "DESPLIEGUE: Cuando vayas a utilizar tu capacidad de facción MITOSIS, en vez de eso puedes sustituir 1 de tus unidades de infantería por 1 Meca de tus refuerzos.",
+    descriptionEn:
+      "DEPLOY: When you would use your Mitosis faction ability, you may replace 1 of your infantry with 1 mech from your reinforcements instead.",
+    statsOverride: {
+      abilitiesEs: ["Resistencia al daño", "Escudo planetario", "Producción 2"],
+      abilitiesEn: ["Sustain Damage", "Planetary Shield", "Production 2"],
     },
-  ),
-  1: mech(
-    "Segadora Dunlain",
-    "Dunlain Reaper",
-    "DESPLIEGUE: Al inicio de una ronda de combate terrestre, puedes gastar 2 Recursos para sustituir 1 de tus unidades de Infantería en ese combate por 1 Meca.",
-    "DEPLOY: At the start of a round of ground combat, you may spend 2 resources to replace 1 of your infantry in that combat with 1 mech.",
-  ),
-  2: mech(
-    "Saqueador Zeta",
-    "Scavenger Zeta",
-    "DESPLIEGUE: Tras tomar el control de un planeta, puedes gastar 1 Bien de comercio para colocar 1 Meca en ese planeta.",
-    "DEPLOY: After you gain control of a planet, you may spend 1 trade good to place 1 mech on that planet.",
-  ),
-  3: mech(
-    "Coloso de Brasas",
-    "Ember Colossus",
-    "Cuando uses tu capacidad de facción Gestación Estelar en este sistema o uno adyacente, puedes colocar 1 Infantería de tus refuerzos junto a esta unidad.",
-    "When you use your Star Forge faction ability in this system or an adjacent system, you may place 1 infantry from your reinforcements with this unit.",
-  ),
-  4: mech(
-    "Orgullo de Kenara",
-    "Pride of Kenara",
-    "La carta de este planeta puede intercambiarse como parte de una transacción; si lo haces, mueve todas tus unidades en este planeta a otro planeta que controles.",
-    "This planet's planet card may be traded as part of a transaction; if you do, move all of your units from this planet to another planet you control.",
-  ),
-  5: mech(
-    "ZS Thunderbolt M2",
-    "ZS Thunderbolt M2",
-    "DESPLIEGUE: Tras usar tu capacidad de facción Descenso Orbital, puedes gastar 3 Recursos para colocar 1 Meca en ese planeta.",
-    "DEPLOY: After you use your Orbital Drop faction ability, you may spend 3 resources to place 1 mech on that planet.",
-  ),
-  6: mech(
-    "Propulsor Ícaro",
-    "Icarus Drive",
-    "Tras la activación de un sistema por cualquier jugador, puedes retirar esta unidad del tablero para colocar o mover una ficha de Agujero de gusano Creuss a este sistema.",
-    "After any player activates a system, you may remove this unit from the game board to place or move a Creuss wormhole token into this system.",
-  ),
-  7: mech(
-    "Annihilator",
-    "Annihilator",
-    "DESPLIEGUE: Tras usar la capacidad de facción Asimilación de L1Z1X en un planeta, puedes colocar 1 Meca en ese planeta.",
-    "DEPLOY: After you use your Assimilate faction ability on a planet, you may place 1 mech on that planet.",
-  ),
-  8: mech(
-    "Moll Terminus",
-    "Moll Terminus",
-    "Las fuerzas terrestres de otros jugadores en este planeta no pueden usar la capacidad Resistencia al daño.",
-    "Other players' ground forces on this planet cannot use Sustain Damage.",
-  ),
-  9: mech(
-    "Iconoclasta",
-    "Iconoclast",
-    "DESPLIEGUE: Cuando otro jugador obtenga una Reliquia, coloca 1 Meca en un planeta que controles.",
-    "DEPLOY: When another player gains a relic, place 1 mech on any planet you control.",
-  ),
-  10: mech(
-    "Mordred",
-    "Mordred",
-    "Durante el combate contra un adversario que tenga una ficha 'X' o 'Y' en alguna de sus tecnologías, aplica +2 al resultado de cada una de las tiradas de combate de esta unidad.",
-    "During combat against an opponent who has an 'X' or 'Y' token on 1 or more of their technologies, apply +2 to the result of each of this unit's combat rolls.",
-  ),
-  11: mech(
-    "Exoesqueleto Valquiria",
-    "Valkyrie Exoskeleton",
-    "Tras usar esta unidad su capacidad Resistencia al daño durante un combate terrestre, produce 1 impacto contra las fuerzas terrestres del adversario en este planeta.",
-    "After this unit uses its Sustain Damage ability during ground combat, it produces 1 hit against your opponent's ground forces on this planet.",
-  ),
-  12: mech(
-    "Paliada Escudo",
-    "Shield Paling",
-    "Tus Infanterías en este planeta no se ven afectadas por tu capacidad de facción Fragilidad.",
-    "Your infantry on this planet are not affected by your Fragile faction ability.",
-  ),
-  13: mech(
-    "Reclamador",
-    "Reclaimer",
-    "Tras resolver una acción táctica durante la cual hayas obtenido el control de este planeta, puedes colocar 1 SDP o 1 Puerto espacial de tus refuerzos en este planeta.",
-    "After you resolve a tactical action during which you gained control of this planet, you may place 1 PDS or 1 space dock from your reinforcements on this planet.",
-  ),
-  14: mech(
-    "Indomitus",
-    "Indomitus",
-    "Puedes usar el CAÑÓN ESPACIAL de esta unidad contra naves de sistemas adyacentes.",
-    "You may use this unit's SPACE CANNON against ships that are in adjacent systems.",
-    {
+  }),
+  1: mech({
+    nameEs: "Segador de Dunlain",
+    nameEn: "Dunlain Reaper",
+    descriptionEs:
+      "DESPLIEGUE: Al comienzo de una ronda de combate terrestre, puedes gastar 2 Recursos para sustituir 1 unidad de Infantería que tengas en ese combate por 1 Meca.",
+    descriptionEn:
+      "DEPLOY: At the start of a round of ground combat, you may spend 2 resources to replace 1 of your infantry in that combat with 1 mech.",
+  }),
+  2: mech({
+    nameEs: "Carroñero Zeta",
+    nameEn: "Scavenger Zeta",
+    descriptionEs:
+      "DESPLIEGUE: Después de que tomes el control de un planeta, puedes gastar 1 Mercancía para colocar 1 Meca en ese planeta.",
+    descriptionEn:
+      "DEPLOY: After you gain control of a planet, you may spend 1 trade good to place 1 mech on that planet.",
+  }),
+  3: mech({
+    nameEs: "Coloso Incandescente",
+    nameEn: "Ember Colossus",
+    descriptionEs:
+      "Cuando utilices tu capacidad de facción FORJA ESTELAR en este sistema o en un sistema adyacente, puedes coger 1 Infantería de tus refuerzos y colocarla junto a esta unidad.",
+    descriptionEn:
+      "When you use your Star Forge faction ability in this system or an adjacent system, you may place 1 infantry from your reinforcements with this unit.",
+  }),
+  4: mech({
+    nameEs: "Orgullo de Kenara",
+    nameEn: "Pride of Kenara",
+    descriptionEs:
+      "La carta de Planeta de este planeta puede intercambiarse como parte de una transacción; si lo haces, mueve todas las unidades que tengas en este planeta hasta otro planeta que controles.",
+    descriptionEn:
+      "This planet's planet card may be traded as part of a transaction; if you do, move all of your units from this planet to another planet you control.",
+  }),
+  5: mech({
+    nameEs: "ZS Trueno M2",
+    nameEn: "ZS Thunderbolt M2",
+    descriptionEs:
+      "DESPLIEGUE: Después de que utilices tu capacidad de facción DESEMBARCO ORBITAL, puedes gastar 3 Recursos para colocar 1 Meca en ese planeta.",
+    descriptionEn:
+      "DEPLOY: After you use your Orbital Drop faction ability, you may spend 3 resources to place 1 mech on that planet.",
+  }),
+  6: mech({
+    nameEs: "Ícaro",
+    nameEn: "Icarus Drive",
+    descriptionEs:
+      "Después de que cualquier jugador active un sistema, puedes quitar esta unidad del tablero para colocar o mover una ficha de Agujero de gusano Creuss hasta este sistema.",
+    descriptionEn:
+      "After any player activates a system, you may remove this unit from the game board to place or move a Creuss wormhole token into this system.",
+  }),
+  7: mech({
+    nameEs: "Aniquilador",
+    nameEn: "Annihilator",
+    descriptionEs:
+      "Mientras no esté participando en un combate terrestre, esta unidad puede utilizar su BOMBARDEO en planetas situados en su mismo sistema como si fuera una nave.",
+    descriptionEn:
+      "While not participating in ground combat, this unit may use its Bombardment ability against planets in its system as if it were a ship.",
+    statsOverride: {
+      abilitiesEs: ["Resistencia al daño", "Bombardeo 8"],
+      abilitiesEn: ["Sustain Damage", "Bombardment 8"],
+    },
+  }),
+  8: mech({
+    nameEs: "Moll Terminus",
+    nameEn: "Moll Terminus",
+    descriptionEs:
+      "Las fuerzas terrestres que tengan los demás jugadores en este planeta no pueden utilizar su RESISTENCIA AL DAÑO.",
+    descriptionEn:
+      "Other players' ground forces on this planet cannot use Sustain Damage.",
+  }),
+  9: mech({
+    nameEs: "Iconoclasta",
+    nameEn: "Iconoclast",
+    descriptionEs:
+      "Durante un combate contra un adversario que tenga al menos 1 fragmento de reliquia, suma +2 a los resultados de las tiradas de combate de esta unidad.",
+    descriptionEn:
+      "During combat against an opponent who has at least 1 relic fragment, apply +2 to the result of this unit's combat rolls.",
+  }),
+  10: mech({
+    nameEs: "Mordred",
+    nameEn: "Mordred",
+    descriptionEs:
+      "Durante un combate contra un adversario que tenga una ficha \"X\" o \"Y\" por lo menos en 1 de sus Tecnologías, suma +2 al resultado de todas las tiradas de combate de esta unidad.",
+    descriptionEn:
+      "During combat against an opponent who has an 'X' or 'Y' token on 1 or more of their technologies, apply +2 to the result of each of this unit's combat rolls.",
+  }),
+  11: mech({
+    nameEs: "Exoesqueleto Valquiria",
+    nameEn: "Valkyrie Exoskeleton",
+    descriptionEs:
+      "Después de que esta unidad utilice su RESISTENCIA AL DAÑO durante un combate terrestre, inflige 1 impacto a las fuerzas terrestres que tenga tu adversario en este planeta.",
+    descriptionEn:
+      "After this unit uses its Sustain Damage ability during ground combat, it produces 1 hit against your opponent's ground forces on this planet.",
+  }),
+  12: mech({
+    nameEs: "Escudero",
+    nameEn: "Shield Paling",
+    descriptionEs:
+      "La Infantería que tengas en este planeta no se ve afectada por tu capacidad de facción FRAGILIDAD.",
+    descriptionEn:
+      "Your infantry on this planet are not affected by your Fragile faction ability.",
+  }),
+  13: mech({
+    nameEs: "Reclamador",
+    nameEn: "Reclaimer",
+    descriptionEs:
+      "Después de que completes una acción táctica durante la cual hayas tomado el control de este planeta, puedes coger 1 SDP o 1 Puerto espacial de tus refuerzos y colocarlo en este planeta.",
+    descriptionEn:
+      "After you resolve a tactical action during which you gained control of this planet, you may place 1 PDS or 1 space dock from your reinforcements on this planet.",
+  }),
+  14: mech({
+    nameEs: "Indómito",
+    nameEn: "Indomitus",
+    descriptionEs:
+      "Puedes utilizar el CAÑÓN ESPACIAL de esta unidad contra naves situadas en sistemas adyacentes.",
+    descriptionEn:
+      "You may use this unit's SPACE CANNON against ships that are in adjacent systems.",
+    statsOverride: {
       abilitiesEs: ["Resistencia al daño", "Cañón espacial 8"],
       abilitiesEn: ["Sustain Damage", "Space Cannon 8"],
     },
-  ),
-  15: mech(
-    "Cenizas de Moyin",
-    "Moyin's Ashes",
-    "DESPLIEGUE: Cuando uses tu capacidad de facción Adoctrinamiento, puedes gastar 1 Influencia adicional para sustituir la unidad del adversario por 1 Meca en lugar de 1 Infantería.",
-    "DEPLOY: When you use your Indoctrination faction ability, you may spend 1 additional influence to replace your opponent's unit with 1 mech instead of 1 infantry.",
-  ),
-  16: mech(
-    "Infiltrador Sombranegra",
-    "Blackshade Infiltrator",
-    "DESPLIEGUE: Tras usar tu capacidad de facción Tácticas Dilatorias, puedes colocar 1 Meca en un planeta que controles.",
-    "DEPLOY: After you use your Stall Tactics faction ability, you may place 1 mech on a planet you control.",
-  ),
-  17: mech(
-    "Centinela del Aeri",
-    "Aerie Sentinel",
-    "Esta unidad no cuenta para la Capacidad si está siendo transportada o si está en un sistema con al menos 1 de tus naves con valor de Capacidad.",
-    "This unit does not count against capacity if it is being transported or if it is in a space area with 1 or more of your ships that have capacity values.",
-  ),
-  18: mech(
-    "Vigilante",
-    "Watcher",
-    "Puedes retirar esta unidad de un sistema que contenga o sea adyacente a unidades de otro jugador para cancelar una carta de Acción jugada por ese jugador.",
-    "You may remove this unit from a system that contains or is adjacent to another player's units to cancel an action card played by that player.",
-  ),
-  19: mech(
-    "Lanza Estelar",
-    "Starlancer",
-    "Tras un jugador cuya ficha de Mando esté en tu reserva de Flota active este sistema, puedes gastar esa ficha para finalizar su turno; ese jugador recupera la ficha.",
-    "After a player whose command token is in your fleet pool activates this system, you may spend their token from your fleet pool to end their turn; they gain that token.",
-  ),
-  20: mech(
-    "Eidolon",
-    "Eidolon",
-    "Si esta unidad está en el espacio del sistema activo al inicio de un combate espacial, gírala. Z-Grav Eidolon: si está en el espacio del sistema activo, también es nave.",
-    "If this unit is in the space area of the active system at the start of a space combat, flip this card. Z-Grav Eidolon: If this unit is in the space area of the active system, it is also a ship.",
-    {
-      cost: "2",
-      combat: 8,
-      combatDice: 2,
-      movement: null,
-      capacity: null,
-      abilitiesEs: ["Resistencia al daño"],
-      abilitiesEn: ["Sustain Damage"],
+  }),
+  15: mech({
+    nameEs: "Cenizas de Moyin",
+    nameEn: "Moyin's Ashes",
+    descriptionEs:
+      "DESPLIEGUE: Cuando utilices tu capacidad de facción ADOCTRINAMIENTO, puedes gastar 1 de Influencia adicional para sustituir la unidad de tu adversario por 1 Meca en vez de por 1 unidad de Infantería.",
+    descriptionEn:
+      "DEPLOY: When you use your Indoctrination faction ability, you may spend 1 additional influence to replace your opponent's unit with 1 mech instead of 1 infantry.",
+  }),
+  16: mech({
+    nameEs: "Infiltrador Sombranegra",
+    nameEn: "Blackshade Infiltrator",
+    descriptionEs:
+      "DESPLIEGUE: Después de que utilices tu capacidad de facción TÁCTICAS DILATORIAS, puedes colocar 1 Meca en un planeta que controles.",
+    descriptionEn:
+      "DEPLOY: After you use your Stall Tactics faction ability, you may place 1 mech on a planet you control.",
+  }),
+  17: mech({
+    nameEs: "Centinela Alado",
+    nameEn: "Aerie Sentinel",
+    descriptionEs:
+      "Esta unidad no se cuenta de cara a la Capacidad de transporte si está siendo transportada o si se encuentra en una zona de espacio con alguna nave tuya que posea el atributo Capacidad de transporte.",
+    descriptionEn:
+      "This unit does not count against capacity if it is being transported or if it is in a space area with 1 or more of your ships that have capacity values.",
+  }),
+  18: mech({
+    nameEs: "Vigilante",
+    nameEn: "Watcher",
+    descriptionEs:
+      "Puedes quitar esta unidad de un sistema que contenga o esté adyacente a unidades de otro jugador para anular una carta de Acción usada por dicho jugador.",
+    descriptionEn:
+      "You may remove this unit from a system that contains or is adjacent to another player's units to cancel an action card played by that player.",
+  }),
+  19: mech({
+    nameEs: "Lancero Estelar",
+    nameEn: "Starlancer",
+    descriptionEs:
+      "Después de que un jugador cuya ficha de Mando esté en tu reserva de Flota active este sistema, puedes gastar esa ficha para finalizar su turno; el jugador gana la ficha.",
+    descriptionEn:
+      "After a player whose command token is in your fleet pool activates this system, you may spend their token from your fleet pool to end their turn; they gain that token.",
+  }),
+  20: mech({
+    nameEs: "Eidolón",
+    nameEn: "Eidolon",
+    descriptionEs:
+      "Si esta unidad está en la zona de espacio del sistema activo al comienzo de un combate espacial, dale la vuelta a esta carta. Esta carta empieza la partida con esta cara boca arriba.",
+    descriptionEn:
+      "If this unit is in the space area of the active system at the start of a space combat, flip this card. This card starts the game on this side face-up.",
+    statsOverride: { combatDice: 2 },
+    altSide: {
+      nameEs: "Eidolón Cero G",
+      nameEn: "Zero-G Eidolon",
+      descriptionEs:
+        "Si esta unidad está en la zona de espacio del sistema activo, es también una nave. Al final de un combate espacial librado en el sistema activo, dale la vuelta a esta carta. Esta carta empieza la partida con esta cara boca abajo.",
+      descriptionEn:
+        "If this unit is in the space area of the active system, it is also a ship. At the end of a space combat in the active system, flip this card. This card starts the game on this side face-down.",
+      stats: {
+        cost: "2",
+        combat: 8,
+        combatDice: 2,
+        movement: null,
+        capacity: null,
+        abilitiesEs: [],
+        abilitiesEn: [],
+      },
     },
-  ),
-  21: mech(
-    "Manipulador Cuántico",
-    "Quantum Manipulator",
-    "Mientras esta unidad esté en el espacio durante un combate, puedes usar su Resistencia al daño para cancelar un impacto producido contra tus naves en este sistema.",
-    "While this unit is in a space area during combat, you may use its Sustain Damage ability to cancel a hit that is produced against your ships in this system.",
-  ),
-  22: mech(
-    "Hecatonquiro",
-    "Hecatoncheires",
-    "DESPLIEGUE: Cuando vayas a colocar un SDP en un planeta, puedes colocar 1 Meca y 1 Infantería en ese planeta en su lugar.",
-    "DEPLOY: When you would place a PDS on a planet, you may place 1 mech and 1 infantry on that planet instead.",
-  ),
-  23: mech(
-    "Reanimador",
-    "Reanimator",
-    "Cuando tus Infanterías en este planeta sean destruidas, colócalas en tu hoja de facción; esas unidades quedan capturadas.",
-    "When your infantry on this planet are destroyed, place them on your faction sheet; those units are captured.",
-  ),
-  24: mech(
-    "Omiopiares",
-    "Omiopiares",
-    "Los demás jugadores deben gastar 1 Influencia para destinar Fuerzas terrestres al planeta que contiene esta unidad.",
-    "Other players must spend 1 influence to commit ground forces to the planet that contains this unit.",
-  ),
+  }),
+  21: mech({
+    nameEs: "Manipulador Cuántico",
+    nameEn: "Quantum Manipulator",
+    descriptionEs:
+      "Mientras esta unidad esté en una zona de espacio durante un combate, puedes utilizar su RESISTENCIA AL DAÑO para anular un impacto obtenido contra las naves que tengas en este sistema.",
+    descriptionEn:
+      "While this unit is in a space area during combat, you may use its Sustain Damage ability to cancel a hit that is produced against your ships in this system.",
+  }),
+  22: mech({
+    nameEs: "Hecatónquiro",
+    nameEn: "Hecatoncheires",
+    descriptionEs:
+      "DESPLIEGUE: Cuando vayas a colocar un SDP en un planeta, en vez de eso puedes colocar 1 Meca y 1 Infantería en ese planeta.",
+    descriptionEn:
+      "DEPLOY: When you would place a PDS on a planet, you may place 1 mech and 1 infantry on that planet instead.",
+  }),
+  23: mech({
+    nameEs: "Reanimador",
+    nameEn: "Reanimator",
+    descriptionEs:
+      "Cuando la infantería que tengas en este planeta sea destruida, colócala sobre tu hoja de facción; esas unidades son capturadas.",
+    descriptionEn:
+      "When your infantry on this planet are destroyed, place them on your faction sheet; those units are captured.",
+  }),
+  24: mech({
+    nameEs: "Omiopiares",
+    nameEn: "Omiopiares",
+    descriptionEs:
+      "Los demás jugadores deben gastar 1 Influencia para destinar Fuerzas terrestres al planeta que contiene esta unidad.",
+    descriptionEn:
+      "Other players must spend 1 influence to commit ground forces to the planet that contains this unit.",
+  }),
+  36: mech({
+    nameEs: "Portarunas",
+    nameEn: "Rune Bearer",
+    descriptionEs:
+      "Este sistema es una anomalía 'Sigil'. Coloca un token Sigil bajo esta unidad como recordatorio. Los efectos del juego no pueden impedirte usar esta habilidad.",
+    descriptionEn:
+      "This system is a 'Sigil' anomaly. Place a Sigil token beneath this unit as a reminder. Game effects cannot prevent you from using this ability.",
+  }),
+  53: mech({
+    nameEs: "Amandia Pholdis",
+    nameEn: "Amandia Pholdis",
+    descriptionEs:
+      "Después de que esta unidad sea destruida, tira 1 dado. Si el resultado es 6 o más, coloca la unidad sobre esta carta. Al comienzo de tu turno, puedes sustituir 1 unidad de Infantería que controles por una unidad que haya sobre esta carta.",
+    descriptionEn:
+      "After this unit is destroyed, roll a die. If the result is 6 or greater, place the unit on this card. At the start of your turn, you may replace 1 infantry you control with a unit that is on this card.",
+  }),
+  38: mech({
+    nameEs: "Liberador",
+    nameEn: "Liberator",
+    descriptionEs:
+      "DESPLIEGUE: Después de que utilices tu capacidad de facción UNIRSE A LA CAUSA en un sistema, puedes gastar 1 Mercancía para colocar 1 Meca en un planeta que controles adyacente a ese sistema.",
+    descriptionEn:
+      "DEPLOY: After you use your RALLY TO THE CAUSE faction ability in a system, you may spend 1 trade good to place 1 mech on a planet you control adjacent to that system.",
+  }),
+  43: mech({
+    nameEs: "Skald",
+    nameEn: "Skald",
+    descriptionEs:
+      "Cuando pases, coloca 1 Infantería de tus refuerzos en este planeta si hay un token de Gloria en o adyacente a este sistema.",
+    descriptionEn:
+      "When you pass, place 1 infantry from your reinforcements on this planet if there is a Glory token in or adjacent to this system.",
+  }),
 };
 
 export const LEADERS_BY_IDX: Record<number, FactionLeaders> = {
@@ -976,6 +1082,128 @@ export const LEADERS_BY_IDX: Record<number, FactionLeaders> = {
         "Artemiris Ascendant — At the start of a round of space combat in a system that contains a planet you control, place your flagship and up to a total of 2 cruisers and/or destroyers from your reinforcements in the active system. Then, purge this card.",
     },
   },
+  36: {
+    agent: {
+      nameEs: "Allant — Voz Anciana",
+      nameEn: "Allant — Elder Voice",
+      abilityEs:
+        "Después de que un jugador pase: Puedes agotar esta carta para elegir 1 jugador; ese jugador puede realizar hasta 1 acción. Después, mira la carta superior del mazo de Consejo Galáctico; puedes descartar esa carta.",
+      abilityEn:
+        "After a player passes: You may exhaust this card to choose 1 player; that player may perform up to 1 action. Then, look at the top card of the agenda deck; you may discard that agenda card.",
+    },
+    commander: {
+      nameEs: "Kadryn — La Gracia Suprema",
+      nameEn: "Kadryn — Highest Grace",
+      unlockEs: "Ten 1 o más Leyes en juego.",
+      unlockEn: "Have 1 or more laws in play.",
+      abilityEs:
+        "Cuando cualquier efecto del juego te permita puntuar un Objetivo público, puedes en cambio robar 1 Objetivo secreto.",
+      abilityEn:
+        "When any game effect would allow you to score a public objective, you may instead draw 1 secret objective.",
+    },
+    hero: {
+      nameEs: "Midir — Voluntad Viviente",
+      nameEn: "Midir — Living Will",
+      unlockEs: "Ten 3 Objetivos puntuados.",
+      unlockEn: "Have 3 scored objectives.",
+      abilityEs:
+        "ORDEN DE ORO — PAZ ETERNA: ACCIÓN: Por cada Sigil en el tablero, roba 1 carta de Consejo Galáctico. Revela y resuelve cada carta en cualquier orden como si hubieras emitido 1 voto por un resultado de tu elección. Los demás jugadores no pueden resolver capacidades durante esta acción. Después, purga esta carta.",
+      abilityEn:
+        "GOLDEN ORDER — PEACE ETERNAL: ACTION: For each Sigil on the game board, draw 1 agenda. Reveal and resolve each agenda in any order as if you had cast 1 vote for an outcome of your choice. Other players cannot resolve abilities during this action. Then, purge this card.",
+    },
+  },
+  38: {
+    agent: {
+      nameEs: "Cordo Haved — Diplomático Cordial",
+      nameEn: "Cordo Haved — Friendly Diplomat",
+      abilityEs:
+        "Mientras esté preparada, esta carta tiene el texto de capacidad de cada carta de planeta Legendario que controle cualquier jugador, aunque dicha carta esté agotada. Puedes permitir a otro jugador utilizar la capacidad de esta carta.",
+      abilityEn:
+        "While ready, this card has the text ability of each legendary planet ability card any player controls, even if that card is exhausted. You may allow another player to use this card's ability.",
+    },
+    commander: {
+      nameEs: "Presidente Cyhn — Líder de la Crisis",
+      nameEn: "President Cyhn — Crisis Leader",
+      unlockEs:
+        "Todos los planetas no-Legendarios del tablero están controlados.",
+      unlockEn:
+        "Each non-legendary planet on the game board is controlled.",
+      abilityEs:
+        "Después de que ganes el control de un planeta que no sea de origen durante una acción táctica: si tienes 1 o más naves en el sistema activo, puedes producir 1 nave en ese sistema.",
+      abilityEn:
+        "After you gain control of a non-home planet during a tactical action: if you have 1 or more ships in the active system, you may produce 1 ship in that system.",
+    },
+    hero: {
+      nameEs: "Conde Otto P'may — Retórico Inspirador",
+      nameEn: "Count Otto P'may — Inspiring Rhetorician",
+      unlockEs: "Ten 3 Objetivos puntuados.",
+      unlockEn: "Have 3 scored objectives.",
+      abilityEs:
+        "CORAZÓN DE LA REBELIÓN — LIBERTAD O MUERTE: ACCIÓN: Prepara un planeta que no sea de origen ni Mecatol Rex y que controles, retira todas las unidades de ese planeta y adjunta esta carta a él. Las unidades no pueden destinarse a, ser producidas en ni colocarse en ese planeta.",
+      abilityEn:
+        "HEART OF REBELLION — FREEDOM OR DEATH: ACTION: Ready a non-home planet other than Mecatol Rex that you control, remove all units on that planet and attach this card to it. Units cannot be committed to, produced on, or placed on this planet.",
+    },
+  },
+  43: {
+    agent: {
+      nameEs: "Merkismathr Asvand — Mariscal de Comercio",
+      nameEn: "Merkismathr Asvand — Marshal of Trade",
+      abilityEs:
+        "Al comienzo de un combate: Agota esta carta para mover un token de Gloria al sistema activo, si es posible. Después, el jugador activo puede ganar un número de Exportaciones igual al número de vecinos que tenga.",
+      abilityEn:
+        "At the start of a combat: Exhaust this card to move a Glory token to the active system, if able. Then, the active player may gain a number of commodities equal to the number of neighbors they have.",
+    },
+    commander: {
+      nameEs: "Sdallari Tvungovot — Mariscal Ingeniero",
+      nameEn: "Sdallari Tvungovot — Marshal Engineer",
+      unlockEs: "Ten 2 tokens de Gloria en el tablero.",
+      unlockEn: "Have 2 Glory tokens on the game board.",
+      abilityEs:
+        "Al investigar una tecnología de mejora de unidad, cada una de tus tecnologías de mejora de unidad puede satisfacer 1 requisito que comparta con la tecnología que estás investigando.",
+      abilityEn:
+        "When researching a unit upgrade technology, each of your unit upgrade technologies may satisfy 1 prerequisite it shares with the technology you are researching.",
+    },
+    hero: {
+      nameEs: "Ygegnad, El Trueno — Skald Honorífico",
+      nameEn: "Ygegnad, The Thunder — Honorary Skald",
+      unlockEs: "Ten 3 Objetivos puntuados.",
+      unlockEn: "Have 3 scored objectives.",
+      abilityEs:
+        "UN CUENTO DE LEYENDAS — POR LA GLORIA ETERNA: ACCIÓN: Por cada sistema que contenga un token de Gloria, retira hasta 1 ficha de Mando en o adyacente a ese sistema del tablero y gana 1 ficha de Mando, si es posible. Después, purga esta carta.",
+      abilityEn:
+        "A TALE OF LEGENDS — FOR ETERNAL GLORY: ACTION: For each system that contains a Glory token, remove up to 1 command token in or adjacent to that system from the game board and gain 1 command token, if able. Then, purge this card.",
+    },
+  },
+  53: {
+    agent: {
+      nameEs: "Lactarius Indigo — Invocador de Presagios",
+      nameEn: "Lactarius Indigo — Omen Caller",
+      abilityEs:
+        "Antes de que un jugador tire un dado, puedes agotar esta carta y elegir 1 dado de Presagio junto a la hoja de facción del jugador Myko-Mentori; resuelve esa tirada como si hubiese salido el resultado de ese dado de Presagio.",
+      abilityEn:
+        "Before a player rolls a die, you may instead exhaust this card and choose 1 Omen die near the Myko-Mentori player's faction sheet; resolve that die roll as if it had the result of that Omen die.",
+    },
+    commander: {
+      nameEs: "Amanita Muscaria — Crecimiento Desbocado",
+      nameEn: "Amanita Muscaria — Rampant Growth",
+      unlockEs: "Ten 4 Exportaciones en tu hoja de facción.",
+      unlockEn: "Have 4 commodities on your faction sheet.",
+      abilityEs:
+        "Después de que otro jugador produzca 1 o más impactos contra tus unidades durante un combate espacial, puedes gastar 1 Exportación o 1 Mercancía para anular 1 de esos impactos.",
+      abilityEn:
+        "After another player produces 1 or more hits against your units during space combat, you may spend 1 commodity or 1 trade good to cancel 1 of those hits.",
+    },
+    hero: {
+      nameEs: "Coprinus Comatus — Nigromante",
+      nameEn: "Coprinus Comatus — Necromancer",
+      unlockEs: "Ten 3 Objetivos puntuados.",
+      unlockEn: "Have 3 scored objectives.",
+      abilityEs:
+        "JAULA DEL ALMA — RESURGIR: Cuando el héroe de otro jugador vaya a ser purgado, en vez de eso adjúntalo a esta carta. Puedes resolver esta carta como si tuviera el texto de cualquier héroe adjunto a esta carta. Cuando esta carta sea purgada, purga también todos sus adjuntos.",
+      abilityEn:
+        "SOUL CAGE — RISE AGAIN: When another player's hero would be purged, instead attach it to this card. You may resolve this card as if it instead had the text of any single hero attached to this card. When this card is purged, purge each of its attachments as well.",
+    },
+  },
 };
 
 export const PROMISSORY_BY_IDX: Record<number, PromissoryNote> = {
@@ -1179,6 +1407,38 @@ export const PROMISSORY_BY_IDX: Record<number, PromissoryNote> = {
     descriptionEn:
       "After an agenda is revealed, you cannot vote on this agenda. Predict aloud an outcome of this agenda. If your prediction is correct, draw 1 action card and gain 2 trade goods. Then, return this card.",
   },
+  36: {
+    nameEs: "Jinete Edyn",
+    nameEn: "Edyn Rider",
+    descriptionEs:
+      "Después de que se revele una agenda: no puedes votar en esta agenda. Predice en voz alta un resultado de esta agenda. Si tu predicción es correcta, coloca 1 ficha de Mando de los refuerzos de otro jugador en un sistema que contenga tus unidades. Después, devuelve esta carta al jugador Edyn.",
+    descriptionEn:
+      "After an agenda is revealed: You cannot vote on this agenda. Predict aloud an outcome of this agenda. If your prediction is correct, place 1 command token from another player's reinforcements in a system that contains your units. Then, return this card to the Edyn player.",
+  },
+  38: {
+    nameEs: "Equipos de Difusión",
+    nameEn: "Broadcast Teams",
+    descriptionEs:
+      "Cuando ganes el control de un planeta durante una acción táctica: si el sistema activo no contiene naves de otro jugador, puedes producir hasta 2 naves en ese sistema. Después, devuelve esta carta al jugador de Sistemas Libres.",
+    descriptionEn:
+      "When you gain control of a planet during a tactical action: if the active system does not contain another player's ships, you may produce up to 2 ships in that system. Then, return this card to the Free Systems player.",
+  },
+  43: {
+    nameEs: "Vasallaje",
+    nameEn: "Vassalage",
+    descriptionEs:
+      "Al comienzo de un combate: aplica +1 a los resultados de cada tirada de combate de tus Cazas durante este combate. El jugador Kjalengard captura todos tus Cazas destruidos durante este combate. Después, devuelve esta carta al jugador Kjalengard.",
+    descriptionEn:
+      "At the start of combat: Apply +1 to the results of each of your fighters' combat rolls during this combat. The Kjalengard player captures each of your fighters destroyed during this combat. Then, return this card to the Kjalengard player.",
+  },
+  53: {
+    nameEs: "Don de Clarividencia",
+    nameEn: "Gift of Insight",
+    descriptionEs:
+      "ACCIÓN: Coloca esta carta boca arriba en tu zona de juego. Mientras esté ahí, una vez por turno, después de tirar un dado, puedes volver a tirar ese dado. Si activas un sistema que contenga al menos 1 unidad del jugador Myko-Mentori, devuelve esta carta a su dueño.",
+    descriptionEn:
+      "ACTION: Place this card face up in your play area. While this card is in your play area, once per turn, after you roll a die, you may reroll that die. If you activate a system that contains 1 or more of the Myko-Mentori player's units, return this card to the Myko-Mentori player.",
+  },
 };
 
 const F = (s: string) => s; // marker para futuras traducciones de items de flota
@@ -1209,6 +1469,10 @@ export const STARTING_FLEET_BY_IDX: Record<number, string[]> = {
   22: [F("1 Súper Acorazado"), F("2 Cruceros"), F("2 Cazas"), F("3 Infantería"), F("1 Puerto espacial")],
   23: [F("1 Súper Acorazado"), F("1 Transporte"), F("1 Crucero"), F("3 Cazas"), F("3 Infantería"), F("1 Puerto espacial")],
   24: [F("2 Transportes"), F("1 Crucero"), F("2 Cazas"), F("2 Infantería"), F("1 Puerto espacial")],
+  36: [F("1 Transporte"), F("2 Destructores"), F("4 Cazas"), F("3 Infantería"), F("1 Puerto espacial"), F("1 SDP")],
+  38: [F("1 Transporte"), F("2 Cruceros"), F("2 Cazas"), F("4 Infantería"), F("1 Puerto espacial"), F("1 SDP")],
+  43: [F("2 Transportes"), F("1 Destructor"), F("4 Cazas"), F("4 Infantería"), F("1 Puerto espacial"), F("1 SDP")],
+  53: [F("2 Transportes"), F("1 Crucero"), F("1 Caza"), F("6 Infantería"), F("1 Puerto espacial")],
 };
 
 export const STARTING_TECHS_BY_IDX: Record<number, string[]> = {
@@ -1237,6 +1501,10 @@ export const STARTING_TECHS_BY_IDX: Record<number, string[]> = {
   22: ["Pantallas de Antimateria", "Red de Drones de Reconocimiento"],
   23: ["Rutinas de Autoensamblaje"],
   24: ["Elige 2 tecnologías no-de-facción de otros jugadores"],
+  36: ["Elige 3 tecnologías de colores distintos sin requisitos"],
+  38: ["Psicoarqueología"],
+  43: ["Elige una tecnología de mejora de unidad no específica de facción"],
+  53: ["Inteligencia Predictiva"],
 };
 
 // ─── Quotes (flavor + author) ─────────────────────────────────────────────────
@@ -1666,5 +1934,33 @@ export const HOME_SYSTEM_BY_IDX: Record<number, HomeSystemInfo> = {
     { keyEs: "Agentes", keyEn: "Agents", value: "Clasificado" },
     { keyEs: "Personal de apoyo", keyEn: "Support Staff", value: "~5000" },
     { keyEs: "Operaciones en curso", keyEn: "Ongoing Ops", value: "Clasificado" },
+  ]),
+  36: hs("Sistema Edyn", "Edyn System", [
+    { keyEs: "Planetas", keyEn: "Planets", value: "Edyn (3/3), Ekko (0/1), Okke (0/1)" },
+    { ...GOVERNMENT, value: "Mandato Imperial" },
+    { ...LEADERSHIP, value: "Midir" },
+    { ...DISPOSITION, value: "Política" },
+    { ...TENDENCIES, value: "Diplomática" },
+  ]),
+  38: hs("Sistemas Libres", "Free Systems", [
+    { keyEs: "Planetas", keyEn: "Planets", value: "Idyn (1/0), Kroll (1/1), Cyrra (0/1)" },
+    { ...GOVERNMENT, value: "Confederación electa" },
+    { ...LEADERSHIP, value: "Conde Otto P'may" },
+    { ...DISPOSITION, value: "Liberadora" },
+    { ...TENDENCIES, value: "Diplomática" },
+  ]),
+  43: hs("Sistema Kjalengard", "Kjalengard System", [
+    { keyEs: "Planetas", keyEn: "Planets", value: "Kjalengard (3/2), Hulgade (1/0)" },
+    { ...GOVERNMENT, value: "Confederación de clanes" },
+    { ...LEADERSHIP, value: "Ygegnad, El Trueno" },
+    { ...DISPOSITION, value: "Guerrera" },
+    { ...TENDENCIES, value: "Expansionista" },
+  ]),
+  53: hs("Sistema Shi-Halaum", "Shi-Halaum System", [
+    { keyEs: "Planeta principal", keyEn: "Main planet", value: "Shi-Halaum (4 / 0)" },
+    { ...GOVERNMENT, value: "Conciencia colectiva fúngica" },
+    { ...LEADERSHIP, value: "Los Mentori" },
+    { ...DISPOSITION, value: "Visionaria" },
+    { ...TENDENCIES, value: "Prescientes" },
   ]),
 };

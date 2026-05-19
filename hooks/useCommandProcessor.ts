@@ -174,6 +174,23 @@ function processCommand(cmd: PendingCommand): void {
       store.adjustTradeGoods(playerIdx, delta);
       return;
     }
+    case 'assimilateTech': {
+      const { techId } = cmd.command;
+      // Only Nekro Virus (factionIdx 10) can assimilate.
+      const player = store.players[playerIdx];
+      if (!player || player.faction !== 10) return;
+      const tech = TECH_BY_ID[techId];
+      if (!tech || tech.factionIdx === undefined) return;
+      store.assimilateTech(playerIdx, techId);
+      return;
+    }
+    case 'unassimilateTech': {
+      const { techId } = cmd.command;
+      const player = store.players[playerIdx];
+      if (!player || player.faction !== 10) return;
+      store.unassimilateTech(playerIdx, techId);
+      return;
+    }
   }
 }
 

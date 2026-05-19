@@ -70,6 +70,12 @@ export interface FactionUnit {
   upgradePrereqs?: TechColor[];
   /** Stats whose value improves when the unit is upgraded (visual ▲ marker). */
   upgradedStats?: UnitStatKey[];
+  /** Alternate face for double-sided units (Naaz mech). */
+  altSide?: {
+    nameEs: string;
+    nameEn: string;
+    stats: UnitStats;
+  };
 }
 
 export interface FactionAbility {
@@ -86,6 +92,14 @@ export interface FactionMech {
   stats: UnitStats;
   descriptionEs: string;
   descriptionEn: string;
+  /** Optional second face for double-sided mechs (Naaz Eidolón). */
+  altSide?: {
+    nameEs: string;
+    nameEn: string;
+    stats: UnitStats;
+    descriptionEs: string;
+    descriptionEn: string;
+  };
 }
 
 /** Faction leader (Agent / Commander / Hero, PoK). */
@@ -130,8 +144,6 @@ export interface FactionSheet {
   commodities: number;
   abilities: FactionAbility[];
   units: FactionUnit[];
-  /** PoK mech (optional — only PoK and Codex factions). */
-  mech?: FactionMech;
   /** PoK leaders trio (optional). */
   leaders?: FactionLeaders;
   /** Faction-specific promissory note. */
@@ -601,7 +613,7 @@ const ARBOREC_SHEET: FactionSheet = {
       nameEs: "MITOSIS",
       nameEn: "MITOSIS",
       descriptionEs:
-        "Tus Puertos espaciales no pueden producir Infantería. Al inicio de la fase de Estado, coloca 1 Infantería de tus refuerzos en cualquier planeta que controles.",
+        "Tus Puertos espaciales no pueden producir Infantería. Al comienzo de la fase de Estado, coge 1 Infantería de tus refuerzos y colócala en cualquier planeta que controles.",
       descriptionEn:
         "Your space docks cannot produce infantry. At the start of the status phase, place 1 infantry from your reinforcements on any planet you control.",
     },
@@ -619,7 +631,7 @@ const ARBOREC_SHEET: FactionSheet = {
         abilitiesEs: ["Resistencia al daño"],
         abilitiesEn: ["Sustain Damage"],
         description: {
-          es: "Tras activar este sistema, puedes producir hasta 5 unidades en este sistema.",
+          es: "Después de que actives este sistema, puedes producir hasta 5 unidades en él.",
           en: "After you activate this system, you may produce up to 5 units in this system.",
         },
       },
@@ -629,7 +641,7 @@ const ARBOREC_SHEET: FactionSheet = {
       nameEs: "Guerrero Letani I",
       nameEn: "Letani Warrior I",
       stats: {
-        cost: "1 (×2)",
+        cost: "1",
         combat: 8,
         movement: null,
         capacity: null,
@@ -651,17 +663,18 @@ const LETNEV_SHEET: FactionSheet = {
   commodities: 2,
   abilities: [
     {
-      nameEs: "RESERVAS DE MUNICIÓN",
+      nameEs: "DEPÓSITOS DE MUNICIONES",
       nameEn: "MUNITIONS RESERVES",
       descriptionEs:
-        "Al inicio de cada ronda de combate espacial, puedes gastar 2 Exportaciones para volver a tirar cualquier número de tus dados durante esa ronda de combate.",
+        "Al comienzo de cada ronda de combate espacial, puedes gastar 2 Mercancías para volver a tirar cualquier cantidad de tus dados durante esa ronda de combate.",
       descriptionEn:
         "At the start of each round of space combat, you may spend 2 trade goods; you may reroll any number of your dice during that combat round.",
     },
     {
       nameEs: "ARMADA",
       nameEn: "ARMADA",
-      descriptionEs: "El máximo de tu reserva de Flota se incrementa en 2.",
+      descriptionEs:
+        "La cantidad máxima de naves (exceptuando los Cazas) que puedes tener en cada sistema es igual a 2 más que el número de fichas que haya en tu reserva de Flota.",
       descriptionEn: "The maximum size of your fleet pool is increased by 2.",
     },
   ],
@@ -677,7 +690,7 @@ const LETNEV_SHEET: FactionSheet = {
       abilitiesEs: ["Resistencia al daño", "Bombardeo 5 (×3)"],
       abilitiesEn: ["Sustain Damage", "Bombardment 5 (×3)"],
       description: {
-        es: "Otras unidades de jugadores en este sistema pierden la capacidad ESCUDO PLANETARIO. Al final de un combate espacial en este sistema, repara esta unidad.",
+        es: "Las unidades que los demás jugadores tengan en este sistema pierden su ESCUDO PLANETARIO. Al comienzo de cada ronda de combate espacial, esta nave se repara.",
         en: "Other players' units in this system lose PLANETARY SHIELD. At the end of a space combat in this system, repair this unit.",
       },
     },
@@ -692,36 +705,57 @@ const SAAR_SHEET: FactionSheet = {
   quoteEs: "",
   quoteEn: "",
   quoteAuthor: "",
-  commodities: 4,
+  commodities: 3,
   abilities: [
     {
-      nameEs: "EXPOLIO",
+      nameEs: "CARROÑEROS",
       nameEn: "SCAVENGE",
-      descriptionEs: "Tras tomar el control de un planeta, ganas 1 Mercancía.",
+      descriptionEs:
+        "Después de que tomes el control de un planeta, ganas 1 Mercancía.",
       descriptionEn: "After you gain control of a planet, gain 1 trade good.",
     },
     {
       nameEs: "NÓMADAS",
       nameEn: "NOMADIC",
       descriptionEs:
-        "Puedes producir tus unidades en sistemas que contengan tus Puertos espaciales en lugar de planetas. Tus Puertos espaciales se colocan en el espacio.",
+        "Puedes anotarte puntos por Objetivos incluso aunque no controles los planetas de tu sistema de origen.",
       descriptionEn:
         "You may produce your units in systems that contain your space docks rather than on planets. Your space docks are placed in the space area.",
     },
   ],
-  units: withOverride(makeStandardUnits(), "flagship", {
-    nameEs: "Conjeturadora Hyperia",
-    nameEn: "Son of Ragh",
-    stats: {
-      cost: "8",
-      combat: 5,
-      combatDice: 2,
-      movement: 1,
-      capacity: 3,
-      abilitiesEs: ["Resistencia al daño", "Artillería anti-Cazas 6 (×4)"],
-      abilitiesEn: ["Sustain Damage", "Anti-Fighter Barrage 6 (×4)"],
+  units: withOverride(
+    withOverride(makeStandardUnits(), "flagship", {
+      nameEs: "Hijo de Ragh",
+      nameEn: "Son of Ragh",
+      stats: {
+        cost: "8",
+        combat: 5,
+        combatDice: 2,
+        movement: 1,
+        capacity: 3,
+        abilitiesEs: ["Resistencia al daño", "Artillería anti-Cazas 6 (×4)"],
+        abilitiesEn: ["Sustain Damage", "Anti-Fighter Barrage 6 (×4)"],
+        description: { es: "", en: "" },
+      },
+    }),
+    "spaceDock",
+    {
+      nameEs: "Factoría Orbital I",
+      nameEn: "Floating Factory I",
+      stats: {
+        cost: null,
+        combat: null,
+        movement: 1,
+        capacity: 4,
+        abilitiesEs: ["Producción 5"],
+        abilitiesEn: ["Production 5"],
+        description: {
+          es: "Esta unidad se coloca en una zona de espacio en vez de en un planeta. Esta unidad puede moverse y retirarse como si fuera una nave. Si esta unidad queda bloqueada, es destruida.",
+          en: "",
+        },
+      },
     },
-  }),
+  ),
   complete: true,
 };
 
@@ -735,47 +769,58 @@ const MUAAT_SHEET: FactionSheet = {
   commodities: 4,
   abilities: [
     {
-      nameEs: "GESTACIÓN ESTELAR",
+      nameEs: "FORJA ESTELAR",
       nameEn: "STAR FORGE",
       descriptionEs:
-        "ACCIÓN: Gasta 1 ficha de Estrategia para producir 2 Cazas o bien 1 Destructor desde tus refuerzos y colócalos en un sistema que contenga una de tus Estrellas de Guerra.",
+        "ACCIÓN: Gasta 1 ficha de tu reserva de Estrategia para coger 2 Cazas o bien 1 Destructor de tus refuerzos y colocarlos en un sistema que contenga al menos 1 de tus Estrellas de guerra.",
       descriptionEn:
         "ACTION: Spend 1 strategy token to produce 2 fighters or 1 destroyer from your reinforcements and place them in a system that contains 1 of your war suns.",
     },
     {
-      nameEs: "GLORIA",
+      nameEs: "FISIOLOGÍA GASHLAI",
       nameEn: "GASHLAI MANUFACTURING",
-      descriptionEs:
-        "Tus Estrellas de Guerra cuestan 10 Recursos en lugar de 12. Los demás jugadores no pueden producir Estrellas de Guerra.",
+      descriptionEs: "Tus naves pueden moverse a través de Supernovas.",
       descriptionEn:
         "Your war suns cost 10 resources instead of 12. Other players cannot produce war suns.",
     },
-    {
-      nameEs: "EMBLEMA ESTELAR",
-      nameEn: "EMBERS OF MUAAT START",
-      descriptionEs:
-        "Comienzas la partida con 1 Estrella de Guerra ya construida en tu sistema de origen.",
-      descriptionEn:
-        "You begin the game with 1 war sun already built in your home system.",
-    },
   ],
-  units: withOverride(makeStandardUnits(), "flagship", {
-    nameEs: "El Inferno",
-    nameEn: "The Inferno",
-    stats: {
-      cost: "8",
-      combat: 5,
-      combatDice: 2,
-      movement: 1,
-      capacity: 3,
-      abilitiesEs: ["Resistencia al daño"],
-      abilitiesEn: ["Sustain Damage"],
-      description: {
-        es: "ACCIÓN: Gasta 1 ficha de Estrategia para colocar 1 Caza de tus refuerzos en este sistema.",
-        en: "ACTION: Spend 1 strategy token to place 1 fighter from your reinforcements in this system.",
+  units: withOverride(
+    withOverride(makeStandardUnits(), "flagship", {
+      nameEs: "El Infierno",
+      nameEn: "The Inferno",
+      stats: {
+        cost: "8",
+        combat: 5,
+        combatDice: 2,
+        movement: 1,
+        capacity: 3,
+        abilitiesEs: ["Resistencia al daño"],
+        abilitiesEn: ["Sustain Damage"],
+        description: {
+          es: "ACCIÓN: Gasta 1 ficha de tu reserva de Estrategia para colocar 1 Crucero en el sistema de esta unidad.",
+          en: "ACTION: Spend 1 strategy token to place 1 fighter from your reinforcements in this system.",
+        },
+      },
+    }),
+    "warSun",
+    {
+      nameEs: "Prototipo de Estrella de Guerra I",
+      nameEn: "Prototype War Sun I",
+      stats: {
+        cost: "12",
+        combat: 3,
+        combatDice: 3,
+        movement: 1,
+        capacity: 6,
+        abilitiesEs: ["Resistencia al daño", "Bombardeo 3 (×3)"],
+        abilitiesEn: ["Sustain Damage", "Bombardment 3 (×3)"],
+        description: {
+          es: "Las unidades que los demás jugadores tengan en este sistema pierden la capacidad ESCUDO PLANETARIO.",
+          en: "",
+        },
       },
     },
-  }),
+  ),
   complete: true,
 };
 
@@ -789,32 +834,32 @@ const HACAN_SHEET: FactionSheet = {
   commodities: 6,
   abilities: [
     {
-      nameEs: "MAESTROS DEL COMERCIO",
+      nameEs: "EXPERTOS MERCADERES",
       nameEn: "MASTERS OF TRADE",
       descriptionEs:
-        "No tienes que agotar las cartas de Estrategia verdes para cumplir su capacidad secundaria.",
+        "No tienes que gastar una ficha de Mando para utilizar la capacidad secundaria de la carta de Estrategia «Comercio».",
       descriptionEn:
         "You do not have to exhaust green strategy cards to resolve their secondary abilities.",
     },
     {
-      nameEs: "NAVES DEL GREMIO",
+      nameEs: "NAVES GREMIALES",
       nameEn: "GUILD SHIPS",
       descriptionEs:
-        "Puedes negociar transacciones con jugadores que no sean tus vecinos.",
+        "Puedes negociar transacciones con jugadores que no sean vecinos tuyos.",
       descriptionEn:
         "You can negotiate transactions with players who are not your neighbor.",
     },
     {
-      nameEs: "ÁRBITROS",
+      nameEs: "INTERMEDIARIOS",
       nameEn: "ARBITERS",
       descriptionEs:
-        "Cuando otros jugadores intercambien Exportaciones y Mercancías, puedes participar en sus transacciones.",
+        "Cuando negocias una transacción, pueden intercambiarse cartas de Acción como parte de dicha transacción.",
       descriptionEn:
         "When other players exchange commodities and trade goods, you may participate in those transactions.",
     },
   ],
   units: withOverride(makeStandardUnits(), "flagship", {
-    nameEs: "Wrath of Kenara",
+    nameEs: "Ira de Kenara",
     nameEn: "Wrath of Kenara",
     stats: {
       cost: "8",
@@ -825,7 +870,7 @@ const HACAN_SHEET: FactionSheet = {
       abilitiesEs: ["Resistencia al daño"],
       abilitiesEn: ["Sustain Damage"],
       description: {
-        es: "Tras realizar una tirada de combate por esta unidad, puedes gastar cualquier número de Mercancías para aplicar +1 al resultado por cada uno gastado.",
+        es: "Después de que tires un dado en un combate espacial que tenga lugar en este sistema, puedes gastar 1 Mercancía para aplicar un +1 al resultado.",
         en: "After you make a combat roll for this ship, you may spend any number of trade goods to apply +1 to the result of each die for each trade good spent.",
       },
     },
@@ -946,7 +991,7 @@ const MENTAK_SHEET: FactionSheet = {
       nameEs: "EMBOSCADA",
       nameEn: "AMBUSH",
       descriptionEs:
-        "Al inicio de un combate espacial, puedes tirar 1 dado por cada uno de tus Cruceros o Destructores en el sistema (hasta 2 dados). Por cada resultado de 6 o más, produces 1 impacto; tu adversario debe destruir 1 de sus naves.",
+        "Al comienzo de un combate espacial, puedes tirar 1 dado por cada Destructor o Crucero que tengas en el sistema (máximo 2 dados). Por cada resultado obtenido que sea igual o superior al atributo de Combate de esa nave, causas 1 impacto que tu adversario deberá asignar a 1 de sus naves.",
       descriptionEn:
         "At the start of a space combat, you may roll 1 die for each of your cruisers or destroyers in the system (up to 2 dice). For each result of 6 or greater, produce 1 hit; your opponent must destroy 1 of their ships.",
     },
@@ -954,13 +999,13 @@ const MENTAK_SHEET: FactionSheet = {
       nameEs: "SAQUEO",
       nameEn: "PILLAGE",
       descriptionEs:
-        "Después de que un vecino tuyo gane una Mercancía o Bien de comercio, si tiene 3 o más Exportaciones y Mercancías combinados, puedes robarle 1 Mercancía o Bien de comercio.",
+        "Después de que 1 de tus vecinos gane Mercancías o complete una transacción, si tiene al menos 3 Mercancías puedes coger 1 de sus Mercancías o Exportaciones.",
       descriptionEn:
         "After a neighbor of yours gains trade goods or commodities, if they have 3 or more commodities or trade goods, you may take 1 of their commodities or trade goods.",
     },
   ],
   units: withOverride(makeStandardUnits(), "flagship", {
-    nameEs: "Joya de las Edades",
+    nameEs: "Cuarta Luna",
     nameEn: "Fourth Moon",
     stats: {
       cost: "8",
@@ -971,7 +1016,7 @@ const MENTAK_SHEET: FactionSheet = {
       abilitiesEs: ["Resistencia al daño"],
       abilitiesEn: ["Sustain Damage"],
       description: {
-        es: "Las naves de otros jugadores no pueden retirarse de un combate espacial en este sistema.",
+        es: "Las naves que los demás jugadores tengan en este sistema no pueden utilizar su RESISTENCIA AL DAÑO.",
         en: "Other players' ships cannot retreat from a space combat in this system.",
       },
     },
@@ -992,15 +1037,15 @@ const NAALU_SHEET: FactionSheet = {
       nameEs: "TELEPATÍA",
       nameEn: "TELEPATHIC",
       descriptionEs:
-        "Al inicio de la fase de Estado, recibes la ficha de Iniciativa Naalu '0'. Tu iniciativa pasa a ser '0' hasta el final de la siguiente fase de Estrategia.",
+        "Al final de la fase de Estrategia, coloca la ficha de «0» encima de tu carta de Estrategia; tú ocupas el primer puesto en el orden de Iniciativas.",
       descriptionEn:
         "At the start of the agenda phase, you receive the Naalu '0' token. Your initiative is 0 until the end of the next strategy phase.",
     },
     {
-      nameEs: "PREMONICIÓN",
+      nameEs: "VATICINIO",
       nameEn: "FORESIGHT",
       descriptionEs:
-        "Tras la propagación de movimientos de naves de otro jugador, puedes retirar cualquier número de tus naves de ese sistema y colocarlas en sistemas adyacentes que no contengan unidades de otros jugadores.",
+        "Después de que otro jugador mueva naves a un sistema que contenga al menos 1 de tus naves, puedes coger 1 ficha de tu reserva de Estrategia y colocarla en un sistema adyacente que no contenga naves de otro jugador; mueve a ese sistema las naves que tengas en el sistema activo.",
       descriptionEn:
         "After another player moves ships into a system that contains 1 or more of your ships, you may remove any number of your ships from that system and place them in adjacent systems that do not contain other players' units.",
     },
@@ -1018,22 +1063,22 @@ const NAALU_SHEET: FactionSheet = {
         abilitiesEs: ["Resistencia al daño"],
         abilitiesEn: ["Sustain Damage"],
         description: {
-          es: "Durante una invasión en este sistema, puedes desembarcar Cazas como si fueran Fuerzas terrestres; al final de la invasión devuélvelos al espacio.",
+          es: "Durante una invasión en este sistema, puedes desplegar Cazas en planetas como si fueran fuerzas terrestres. Cuando termine el combate, esas unidades regresan a la zona de espacio.",
           en: "During an invasion in this system, you may commit fighters to planets as if they were ground forces; at the end of the invasion, return those fighters to the space area.",
         },
       },
     }),
     "fighter",
     {
-      nameEs: "Caza de Cristal Híbrido I",
+      nameEs: "Caza Cristalino Híbrido I",
       nameEn: "Hybrid Crystal Fighter I",
       stats: {
         cost: "1 (×2)",
-        combat: 8,
+        combat: 9,
         movement: null,
         capacity: null,
-        abilitiesEs: [],
-        abilitiesEn: [],
+        abilitiesEs: ["Artillería anti-Cazas 9 (×2)"],
+        abilitiesEn: ["Anti-Fighter Barrage 9 (×2)"],
       },
     },
   ),
@@ -1104,31 +1149,46 @@ const SARDAKK_SHEET: FactionSheet = {
   commodities: 3,
   abilities: [
     {
-      nameEs: "LEGIÓN TEKKLAR",
+      nameEs: "IMPLACABLES",
       nameEn: "TEKKLAR LEGION",
       descriptionEs:
-        "Aplica un +1 al resultado de cada una de tus tiradas de combate durante el combate terrestre.",
+        "Aplica un +1 al resultado de las tiradas de combate de todas tus unidades.",
       descriptionEn:
         "Apply +1 to the result of each of your unit's combat rolls during ground combat.",
     },
   ],
-  units: withOverride(makeStandardUnits(), "flagship", {
-    nameEs: "C'morran N'orr",
-    nameEn: "C'morran N'orr",
-    stats: {
-      cost: "8",
-      combat: 5,
-      combatDice: 2,
-      movement: 1,
-      capacity: 3,
-      abilitiesEs: ["Resistencia al daño"],
-      abilitiesEn: ["Sustain Damage"],
-      description: {
-        es: "Aplica +1 al resultado de cada una de las tiradas de combate de tus otras naves en este sistema.",
-        en: "Apply +1 to the result of each of your other ships' combat rolls in this system.",
+  units: withOverride(
+    withOverride(makeStandardUnits(), "flagship", {
+      nameEs: "C'morran N'orr",
+      nameEn: "C'morran N'orr",
+      stats: {
+        cost: "8",
+        combat: 6,
+        combatDice: 2,
+        movement: 1,
+        capacity: 3,
+        abilitiesEs: ["Resistencia al daño"],
+        abilitiesEn: ["Sustain Damage"],
+        description: {
+          es: "Aplica un +1 al resultado de las tiradas de combate de todas las demás naves que tengas en este sistema.",
+          en: "Apply +1 to the result of each of your other ships' combat rolls in this system.",
+        },
+      },
+    }),
+    "dreadnought",
+    {
+      nameEs: "Exotrirreme I",
+      nameEn: "Exotrireme I",
+      stats: {
+        cost: "4",
+        combat: 5,
+        movement: 1,
+        capacity: 1,
+        abilitiesEs: ["Resistencia al daño", "Bombardeo 4 (×2)"],
+        abilitiesEn: ["Sustain Damage", "Bombardment 4 (×2)"],
       },
     },
-  }),
+  ),
   complete: true,
 };
 
@@ -1145,23 +1205,23 @@ const JOLNAR_SHEET: FactionSheet = {
       nameEs: "FRAGILIDAD",
       nameEn: "FRAGILE",
       descriptionEs:
-        "Aplica un -1 al resultado de cada una de tus tiradas de combate.",
+        "Aplica un -1 al resultado de las tiradas de combate de todas tus unidades.",
       descriptionEn:
         "Apply -1 to the result of each of your unit's combat rolls.",
     },
     {
-      nameEs: "BRILLANTEZ",
+      nameEs: "GENIALIDAD",
       nameEn: "BRILLIANT",
       descriptionEs:
-        "Cuando uses la capacidad secundaria de la carta de Estrategia 'Tecnología', no gastas las fichas de Estrategia.",
+        "Cuando gastes una ficha de Mando para utilizar la capacidad secundaria de la carta de Estrategia «Tecnología», en vez de eso puedes utilizar su capacidad principal.",
       descriptionEn:
         "When using the Technology strategy card's secondary ability, you do not need to spend a command token.",
     },
     {
-      nameEs: "ANALÍTICA",
+      nameEs: "MENTE ANALÍTICA",
       nameEn: "ANALYTICAL",
       descriptionEs:
-        "Al investigar una Tecnología que no sea una mejora de unidad, puedes investigar una segunda Tecnología que tampoco sea una mejora de unidad.",
+        "Cuando investigues una Tecnología que no sea una mejora de unidad, puedes ignorar 1 de sus requisitos.",
       descriptionEn:
         "When you research a non-unit-upgrade technology, you may research 1 additional non-unit-upgrade technology.",
     },
@@ -1171,14 +1231,14 @@ const JOLNAR_SHEET: FactionSheet = {
     nameEn: "J.N.S. Hylarim",
     stats: {
       cost: "8",
-      combat: 5,
-      combatDice: 3,
+      combat: 6,
+      combatDice: 2,
       movement: 1,
       capacity: 3,
       abilitiesEs: ["Resistencia al daño"],
       abilitiesEn: ["Sustain Damage"],
       description: {
-        es: "Cuando esta unidad realice su tirada de combate, los resultados de 9 o más cuentan como impactos adicionales.",
+        es: "Cuando hagas una tirada de combate por esta nave, cada resultado de 9 o 10 obtenido (antes de aplicar modificadores) produce 2 impactos adicionales.",
         en: "When making a combat roll for this ship, each result of 9 or 10 produces 2 additional hits.",
       },
     },
@@ -1196,10 +1256,10 @@ const WINNU_SHEET: FactionSheet = {
   commodities: 3,
   abilities: [
     {
-      nameEs: "VÍNCULOS DE SANGRE",
+      nameEs: "LAZOS DE SANGRE",
       nameEn: "BLOOD TIES",
       descriptionEs:
-        "No tienes que gastar Influencia para retirar la ficha de Custodios de Mecatol Rex.",
+        "No tienes que gastar Influencia para retirar el indicador de Custodios de Mecatol Rex.",
       descriptionEn:
         "You do not have to spend influence to remove the custodians token from Mecatol Rex.",
     },
@@ -1207,24 +1267,23 @@ const WINNU_SHEET: FactionSheet = {
       nameEs: "RECLAMACIÓN",
       nameEn: "RECLAMATION",
       descriptionEs:
-        "Tras resolver una acción táctica durante la cual ganaste el control de Mecatol Rex, puedes colocar 1 SDP y 1 Puerto Espacial de tus refuerzos en Mecatol Rex.",
+        "Después de que completes una acción táctica durante la cual hayas tomado el control de Mecatol Rex, puedes coger 1 SDP y 1 Puerto espacial de tus refuerzos y colocarlos en Mecatol Rex.",
       descriptionEn:
         "After you resolve a tactical action during which you gained control of Mecatol Rex, you may place 1 PDS and 1 space dock from your reinforcements on Mecatol Rex.",
     },
   ],
   units: withOverride(makeStandardUnits(), "flagship", {
-    nameEs: "Salaí Sai Corian",
+    nameEs: "Salai Sai Corian",
     nameEn: "Salai Sai Corian",
     stats: {
       cost: "8",
       combat: 7,
-      combatDice: 1,
       movement: 1,
       capacity: 3,
       abilitiesEs: ["Resistencia al daño"],
       abilitiesEn: ["Sustain Damage"],
       description: {
-        es: "Tira un dado adicional por cada nave que no sea Caza de tu adversario en este sistema cuando esta unidad realice tiradas de combate.",
+        es: "Cuando esta unidad realice una tirada de combate, lanzará tantos dados como el número de naves que tenga tu adversario en este sistema (sin contar sus Cazas).",
         en: "When making a combat roll for this ship, roll 1 die for each non-fighter ship your opponent has in this system.",
       },
     },
@@ -1234,7 +1293,7 @@ const WINNU_SHEET: FactionSheet = {
 
 const XXCHA_SHEET: FactionSheet = {
   factionIdx: 14,
-  titleEs: "EL REINO DE XXCHA",
+  titleEs: "EL REINO XXCHA",
   titleEn: "THE XXCHA KINGDOM",
   quoteEs: "",
   quoteEn: "",
@@ -1242,18 +1301,18 @@ const XXCHA_SHEET: FactionSheet = {
   commodities: 4,
   abilities: [
     {
-      nameEs: "ACUERDOS DE PAZ",
+      nameEs: "TRATADOS DE PAZ",
       nameEn: "PEACE ACCORDS",
       descriptionEs:
-        "Cuando uses la capacidad principal de la carta de Estrategia 'Diplomacia', puedes elegir 1 planeta de otro jugador en un sistema (excepto Mecatol Rex) y tomar el control de ese planeta.",
+        "Después de que utilices la capacidad principal o la capacidad secundaria de la carta de Estrategia «Diplomacia», puedes tomar el control de 1 planeta que no sea Mecatol Rex, en el que no haya ninguna unidad y que se encuentre en un sistema adyacente a un planeta controlado por ti.",
       descriptionEn:
         "When you resolve the primary ability of the 'Diplomacy' strategy card, you may also choose 1 non-home planet other than Mecatol Rex in a non-home system that does not contain another player's units. You gain control of that planet.",
     },
     {
-      nameEs: "DECRETO",
+      nameEs: "REVOCACIÓN",
       nameEn: "QUASH",
       descriptionEs:
-        "Cuando se revele una agenda, puedes gastar 1 ficha de Estrategia para descartarla y revelar otra; los jugadores que dispongan de habilidades parecidas no pueden contestar este efecto.",
+        "Cuando se muestre una carta de Consejo Galáctico, puedes gastar 1 ficha de tu reserva de Estrategia para descartarla y mostrar 1 carta de Consejo Galáctico de la parte superior del mazo. Los jugadores votarán por esta segunda carta en lugar de la primera.",
       descriptionEn:
         "When an agenda is revealed, you may spend 1 strategy token to discard that agenda and reveal another.",
     },
@@ -1270,7 +1329,7 @@ const XXCHA_SHEET: FactionSheet = {
       abilitiesEs: ["Resistencia al daño", "Cañón espacial 5 (×3)"],
       abilitiesEn: ["Sustain Damage", "Space Cannon 5 (×3)"],
       description: {
-        es: "Puedes usar el CAÑÓN ESPACIAL de esta unidad contra naves de sistemas adyacentes.",
+        es: "Puedes utilizar el CAÑÓN ESPACIAL de esta unidad contra naves situadas en sistemas adyacentes.",
         en: "You may use this unit's SPACE CANNON ability against ships in adjacent systems.",
       },
     },
@@ -1285,13 +1344,13 @@ const YIN_SHEET: FactionSheet = {
   quoteEs: "",
   quoteEn: "",
   quoteAuthor: "",
-  commodities: 4,
+  commodities: 2,
   abilities: [
     {
       nameEs: "ADOCTRINAMIENTO",
       nameEn: "INDOCTRINATION",
       descriptionEs:
-        "Al inicio de un combate terrestre, puedes gastar 2 Influencia para sustituir 1 unidad de Infantería de tu adversario por 1 unidad de Infantería tuya de tus refuerzos.",
+        "Al comienzo de un combate terrestre, puedes gastar 2 de Influencia para sustituir 1 unidad de Infantería participante de tu adversario por 1 unidad de Infantería de tus refuerzos.",
       descriptionEn:
         "At the start of a ground combat, you may spend 2 influence to replace 1 of your opponent's participating infantry with 1 infantry from your reinforcements.",
     },
@@ -1299,7 +1358,7 @@ const YIN_SHEET: FactionSheet = {
       nameEs: "DEVOCIÓN",
       nameEn: "DEVOTION",
       descriptionEs:
-        "Tras producir tus unidades, puedes destruir 1 de tus Cruceros o Destructores en un sistema para producir 2 Cazas en ese sistema sin coste alguno.",
+        "Después de cada ronda de combate espacial, puedes destruir 1 de tus Cruceros o Destructores en el sistema activo para causar 1 impacto y asignarlo a 1 de las naves de tu adversario en el sistema activo.",
       descriptionEn:
         "After you produce your units, you may destroy 1 of your cruisers or destroyers in a system to produce 2 fighters in that system at no cost.",
     },
@@ -1310,13 +1369,12 @@ const YIN_SHEET: FactionSheet = {
     stats: {
       cost: "8",
       combat: 9,
-      combatDice: 2,
       movement: 1,
       capacity: 3,
       abilitiesEs: ["Resistencia al daño"],
       abilitiesEn: ["Sustain Damage"],
       description: {
-        es: "Cuando se destruya esta nave, todas las demás naves del sistema también se destruyen.",
+        es: "Cuando esta nave es destruida, todas las naves del sistema son destruidas.",
         en: "When this ship is destroyed, destroy all ships in this system.",
       },
     },
@@ -1326,7 +1384,7 @@ const YIN_SHEET: FactionSheet = {
 
 const YSSARIL_SHEET: FactionSheet = {
   factionIdx: 16,
-  titleEs: "LAS TRIBUS DE YSSARIL",
+  titleEs: "LAS TRIBUS YSSARIL",
   titleEn: "THE YSSARIL TRIBES",
   quoteEs: "",
   quoteEn: "",
@@ -1336,27 +1394,27 @@ const YSSARIL_SHEET: FactionSheet = {
     {
       nameEs: "TÁCTICAS DILATORIAS",
       nameEn: "STALL TACTICS",
-      descriptionEs: "ACCIÓN: Descarta 1 carta de Acción al azar de tu mano.",
+      descriptionEs: "ACCIÓN: Descarta 1 carta de Acción de tu mano.",
       descriptionEn: "ACTION: Discard 1 action card from your hand.",
     },
     {
-      nameEs: "MENTE INQUIETA",
+      nameEs: "CONFABULADORES",
       nameEn: "SCHEMING",
       descriptionEs:
-        "Cuando robes 1 o más cartas de Acción, roba 1 carta de Acción adicional. Tras tu jugada, descarta 1 carta de Acción de tu mano.",
+        "Cuando robes 1 o más cartas de Acción, roba 1 carta de Acción adicional. Luego elige y descarta 1 carta de Acción de tu mano.",
       descriptionEn:
         "When you draw 1 or more action cards, draw 1 additional action card. Then choose and discard 1 action card from your hand.",
     },
     {
-      nameEs: "ASTUCIA",
+      nameEs: "ASTUTOS",
       nameEn: "CRAFTY",
       descriptionEs:
-        "No tienes límite en el número de cartas de Acción que puedes tener en mano.",
+        "Puedes tener cualquier cantidad de cartas de Acción en tu mano. Ningún efecto de juego puede impedirte utilizar esta capacidad.",
       descriptionEn: "You have no maximum hand size for action cards.",
     },
   ],
   units: withOverride(makeStandardUnits(), "flagship", {
-    nameEs: "Y'sia Y'ssrila",
+    nameEs: "Y'sia Y'ssirila",
     nameEn: "Y'sia Y'ssrila",
     stats: {
       cost: "8",
@@ -1367,7 +1425,7 @@ const YSSARIL_SHEET: FactionSheet = {
       abilitiesEs: ["Resistencia al daño"],
       abilitiesEn: ["Sustain Damage"],
       description: {
-        es: "Esta unidad puede moverse a través de sistemas que contengan naves de otros jugadores.",
+        es: "Esta nave puede moverse a través de sistemas que contengan naves de otros jugadores.",
         en: "This ship can move through systems that contain other players' ships.",
       },
     },
@@ -1385,25 +1443,25 @@ const ARGENT_SHEET: FactionSheet = {
   commodities: 3,
   abilities: [
     {
-      nameEs: "FERVOR",
+      nameEs: "FANATISMO",
       nameEn: "ZEAL",
       descriptionEs:
-        "Siempre votas primero durante la fase de Consejo Galáctico. Cuando emitas al menos 1 voto, emite 1 voto adicional por cada jugador (tú incluido).",
+        "Siempre votas en primer lugar durante la fase de Consejo Galáctico. Cuando presentes al menos 1 voto, presenta 1 voto adicional por cada jugador que haya en la partida (incluido tú).",
       descriptionEn:
         "You always vote first during the agenda phase. When you cast at least 1 vote, cast 1 additional vote for each player in the game, including you.",
     },
     {
-      nameEs: "FORMACIÓN DE ASALTO",
+      nameEs: "FORMACIÓN DE HOSTIGAMIENTO",
       nameEn: "RAID FORMATION",
       descriptionEs:
-        "Cuando una o más de tus unidades usen la capacidad ARTILLERÍA ANTI-CAZAS, por cada impacto producido en exceso del número de Cazas del adversario, elige 1 nave del adversario con RESISTENCIA AL DAÑO para que pase a estar dañada.",
+        "Cuando al menos 1 de tus unidades utilice la capacidad ARTILLERÍA ANTICAZAS, por cada impacto obtenido que exceda el número de Cazas de tu adversario, elige 1 nave de tu adversario que posea RESISTENCIA AL DAÑO. Esa nave queda dañada.",
       descriptionEn:
         "When 1 or more of your units use ANTI-FIGHTER BARRAGE, for each hit produced in excess of your opponent's fighters, choose 1 of your opponent's ships that has Sustain Damage to become damaged.",
     },
   ],
   units: withOverride(
     withOverride(makeStandardUnits(), "flagship", {
-      nameEs: "Quetzecoatl",
+      nameEs: "Quetzalcoatl",
       nameEn: "Quetzecoatl",
       stats: {
         cost: "8",
@@ -1414,7 +1472,7 @@ const ARGENT_SHEET: FactionSheet = {
         abilitiesEs: ["Resistencia al daño"],
         abilitiesEn: ["Sustain Damage"],
         description: {
-          es: "Otros jugadores no pueden utilizar la capacidad CAÑÓN ESPACIAL contra tus naves en este sistema.",
+          es: "Los demás jugadores no pueden utilizar la capacidad CAÑÓN ESPACIAL contra tus naves en este sistema.",
           en: "Other players cannot use SPACE CANNON against your ships in this system.",
         },
       },
@@ -1446,43 +1504,42 @@ const EMPYREAN_SHEET: FactionSheet = {
   commodities: 4,
   abilities: [
     {
-      nameEs: "NACIDOS DEL VACÍO",
+      nameEs: "NACIDOS EN EL VACÍO",
       nameEn: "VOIDBORN",
-      descriptionEs:
-        "Las nebulosas no obstaculizan tus naves: tus naves pueden moverse libremente entrando y saliendo de ellas.",
+      descriptionEs: "Las Nebulosas no afectan al movimiento de tus naves.",
       descriptionEn:
         "Nebulae do not affect your ships' movement; your ships can move into and through nebulae freely.",
     },
     {
-      nameEs: "VACÍO",
+      nameEs: "PASO ETÉREO",
       nameEn: "VOID",
       descriptionEs:
-        "Tras realizar una acción táctica en un sistema vacío adyacente a tu sistema de origen, puedes producir 1 unidad en ese sistema.",
+        "Después de que un jugador active un sistema, puedes permitirle mover sus naves a través de sistemas que contengan naves tuyas.",
       descriptionEn:
         "After a player resolves the secondary ability of the 'Construction' strategy card, you may exhaust this card; if you do, that player gains 2 commodities.",
     },
     {
-      nameEs: "SUSURROS OSCUROS",
+      nameEs: "SUSURROS SINIESTROS",
       nameEn: "DARK WHISPERS",
       descriptionEs:
-        "Comienzas la partida con la carta de Estrategia 'Política Empírea' además de tu carta de Estrategia inicial.",
+        "Durante la preparación de la partida, coge la carta de Favor adicional de la facción de los Empíreos; tienes 2 cartas de Favor de tu facción.",
       descriptionEn:
         "Once per game, when you receive a promissory note, you may take 1 commodity from any other player.",
     },
   ],
   units: withOverride(makeStandardUnits(), "flagship", {
-    nameEs: "Dynamo",
+    nameEs: "Dinamo",
     nameEn: "Dynamo",
     stats: {
       cost: "8",
-      combat: 7,
+      combat: 5,
       combatDice: 2,
       movement: 1,
-      capacity: 6,
+      capacity: 3,
       abilitiesEs: ["Resistencia al daño"],
       abilitiesEn: ["Sustain Damage"],
       description: {
-        es: "Cuando esta unidad use RESISTENCIA AL DAÑO, repárala al final del combate.",
+        es: "Después de que una unidad de cualquier jugador situada en este sistema o en un sistema adyacente utilice la capacidad RESISTENCIA AL DAÑO, puedes gastar 2 de Influencia para reparar esa unidad.",
         en: "When this unit uses Sustain Damage, repair it at the end of combat.",
       },
     },
@@ -1497,50 +1554,69 @@ const MAHACT_SHEET: FactionSheet = {
   quoteEs: "",
   quoteEn: "",
   quoteAuthor: "",
-  commodities: 4,
+  commodities: 3,
   abilities: [
     {
       nameEs: "EDICTO",
       nameEn: "EDICT",
       descriptionEs:
-        "Cuando ganes un combate espacial contra otro jugador por primera vez, captura 1 ficha de Mando de sus refuerzos y colócala en tu reserva de Flota.",
+        "Cuando ganes un combate, coge 1 ficha de Mando de los refuerzos de tu adversario y colócala en tu reserva de Flota si no contiene ya 1 ficha de ese jugador; las fichas ajenas que haya en tu reserva de Flota aumentan el límite de tu Flota, pero no pueden redistribuirse.",
       descriptionEn:
         "When you win a combat, place 1 of your opponent's command tokens from their reinforcements in your fleet pool; other player's tokens in your fleet pool count toward your fleet limit.",
     },
     {
-      nameEs: "HUBRIS",
-      nameEn: "HUBRIS",
-      descriptionEs:
-        "Comienzas la partida sin tu carta de Estrategia Imperial; descártala al inicio de la partida.",
-      descriptionEn:
-        "At the start of the game, purge your Imperial strategy card.",
-    },
-    {
-      nameEs: "IMPERIO",
+      nameEs: "IMPERIA",
       nameEn: "IMPERIA",
       descriptionEs:
-        "Mientras una ficha de Mando de otro jugador esté en tu reserva de Flota, posees los líderes de comandante de la facción de ese jugador y puedes usarlos.",
+        "Mientras tengas una ficha de Mando ajena en tu reserva de Flota, puedes usar la capacidad del comandante de ese jugador (si está habilitada).",
       descriptionEn:
         "While another player's command token is in your fleet pool, you can use their commander's ability as if it were your own.",
     },
+    {
+      nameEs: "SOBERBIA",
+      nameEn: "HUBRIS",
+      descriptionEs:
+        "Durante la preparación de la partida, purga tu carta de Favor «Alianza». Los demás jugadores no pueden entregarte sus cartas de Favor «Alianza».",
+      descriptionEn:
+        "At the start of the game, purge your Imperial strategy card.",
+    },
   ],
-  units: withOverride(makeStandardUnits(), "flagship", {
-    nameEs: "Arvicon Rex",
-    nameEn: "Arvicon Rex",
-    stats: {
-      cost: "8",
-      combat: 7,
-      combatDice: 2,
-      movement: 1,
-      capacity: 3,
-      abilitiesEs: ["Resistencia al daño", "Bombardeo 5 (×3)"],
-      abilitiesEn: ["Sustain Damage", "Bombardment 5 (×3)"],
-      description: {
-        es: "Durante combate, los impactos que produzca esta unidad deben asignarse a naves no-Cazas si es posible.",
-        en: "Hits produced by this ship must be assigned to non-fighter ships if able.",
+  units: withOverride(
+    withOverride(makeStandardUnits(), "flagship", {
+      nameEs: "Arvicon Rex",
+      nameEn: "Arvicon Rex",
+      stats: {
+        cost: "8",
+        combat: 5,
+        combatDice: 2,
+        movement: 1,
+        capacity: 3,
+        abilitiesEs: ["Resistencia al daño"],
+        abilitiesEn: ["Sustain Damage"],
+        description: {
+          es: "Durante un combate contra un adversario cuya ficha de Mando no esté en tu reserva de Flota, añade +2 a los resultados de las tiradas de combate de esta unidad.",
+          en: "Hits produced by this ship must be assigned to non-fighter ships if able.",
+        },
+      },
+    }),
+    "infantry",
+    {
+      nameEs: "Legionario Carmesí I",
+      nameEn: "Crimson Legionnaire I",
+      stats: {
+        cost: "1",
+        combat: 8,
+        movement: null,
+        capacity: null,
+        abilitiesEs: [],
+        abilitiesEn: [],
+        description: {
+          es: "Después de que esta unidad sea destruida, ganas 1 Exportación o conviertes 1 de tus Exportaciones en 1 Mercancía.",
+          en: "",
+        },
       },
     },
-  }),
+  ),
   complete: true,
 };
 
@@ -1554,35 +1630,35 @@ const NAAZ_SHEET: FactionSheet = {
   commodities: 3,
   abilities: [
     {
-      nameEs: "SOLES DISTANTES",
+      nameEs: "SOLES LEJANOS",
       nameEn: "DISTANT SUNS",
       descriptionEs:
-        "Cuando explores un planeta que controles, puedes robar 1 carta adicional del mazo correspondiente; descarta una.",
+        "Cuando explores un planeta que contenga 1 de tus Mecas, puedes robar 1 carta adicional; resuelve 1 de ellas (a tu elección) y descarta el resto.",
       descriptionEn:
         "When you explore a planet you control, you may draw 1 additional card; choose 1 to resolve and discard the rest.",
     },
     {
-      nameEs: "FABRICACIÓN",
+      nameEs: "INVENCIÓN",
       nameEn: "FABRICATION",
       descriptionEs:
-        "ACCIÓN: Agota una de tus cartas de Exploración para ganar 1 Meca de tus refuerzos y colocarlo en un planeta que controles. O bien purga 2 cartas de Exploración para obtener 1 ficha de Reliquia.",
+        "ACCIÓN: Elige entre purgar 2 de tus fragmentos de reliquia (del mismo tipo) para ganar 1 reliquia o bien purgar 1 de tus fragmentos de reliquia para ganar 1 ficha de Mando.",
       descriptionEn:
         "ACTION: Purge 2 of your relic fragments of the same type to gain 1 relic.",
     },
   ],
   units: withOverride(makeStandardUnits(), "flagship", {
-    nameEs: "Visz el Sublime",
+    nameEs: "Visz el Vir",
     nameEn: "Visz el Vir",
     stats: {
       cost: "8",
       combat: 9,
       combatDice: 2,
       movement: 1,
-      capacity: 3,
+      capacity: 4,
       abilitiesEs: ["Resistencia al daño"],
       abilitiesEn: ["Sustain Damage"],
       description: {
-        es: "Tras una tirada de combate, aplica +1 al resultado de cada Meca tuyo en este sistema.",
+        es: "Los Mecas que tengas en este sistema tiran 1 dado adicional en combate.",
         en: "Your mechs in this system roll 1 additional die during combat.",
       },
     },
@@ -1592,7 +1668,7 @@ const NAAZ_SHEET: FactionSheet = {
 
 const NOMAD_SHEET: FactionSheet = {
   factionIdx: 21,
-  titleEs: "LOS NÓMADAS",
+  titleEs: "EL NÓMADA",
   titleEn: "THE NOMAD",
   quoteEs: "",
   quoteEn: "",
@@ -1603,21 +1679,21 @@ const NOMAD_SHEET: FactionSheet = {
       nameEs: "LA COMPAÑÍA",
       nameEn: "THE COMPANY",
       descriptionEs:
-        "Durante la preparación, llevas 2 agentes en lugar de 1. Puedes tener ambos en juego a la vez.",
+        "Durante la preparación de la partida, coge 2 agentes adicionales de la facción del Nómada y colócalos junto a tu hoja de facción; tienes 3 agentes.",
       descriptionEn:
         "During setup, take both of your agent leaders and place them next to your faction sheet; both are ready and you may use them as if you had unlocked them.",
     },
     {
-      nameEs: "PREVISIÓN",
+      nameEs: "VISIÓN DE FUTURO",
       nameEn: "FUTURE SIGHT",
       descriptionEs:
-        "Ganas 1 Mercancía después de que cualquier jugador (tú incluido) resuelva una transacción.",
+        "Durante la fase de Consejo Galáctico, después de que se ejecute una resolución que tú hayas votado o pronosticado, ganas 1 Mercancía.",
       descriptionEn:
         "After a player resolves a transaction, gain 1 trade good.",
     },
   ],
   units: withOverride(makeStandardUnits(), "flagship", {
-    nameEs: "Memoria",
+    nameEs: "Memoria I",
     nameEn: "Memoria I",
     stats: {
       cost: "8",
@@ -1628,7 +1704,7 @@ const NOMAD_SHEET: FactionSheet = {
       abilitiesEs: ["Resistencia al daño", "Artillería anti-Cazas 8 (×3)"],
       abilitiesEn: ["Sustain Damage", "Anti-Fighter Barrage 8 (×3)"],
       description: {
-        es: "Puedes considerar esta unidad como adyacente a sistemas que contengan al menos 1 de tus Mecas.",
+        es: "Puedes tratar esta unidad como si estuviese adyacente a todos los sistemas que contengan al menos 1 de tus Mecas.",
         en: "You may treat this unit as being adjacent to systems that contain 1 or more of your mechs.",
       },
     },
@@ -1649,62 +1725,94 @@ const TITANS_SHEET: FactionSheet = {
       nameEs: "TERRAGÉNESIS",
       nameEn: "TERRAGENESIS",
       descriptionEs:
-        "Tras explorar un planeta sin trazos en él, puedes colocar 1 ficha de planta o de Titán en él.",
+        "Después de que explores un planeta que no tenga una ficha de Durmiente, puedes colocar o mover 1 ficha de Durmiente a ese planeta.",
       descriptionEn:
         "After you explore a planet that does not have an attachment, you may place or remove 1 sleeper token on it.",
     },
     {
-      nameEs: "DESPIERTOS",
+      nameEs: "DESPERTAR",
       nameEn: "AWAKEN",
       descriptionEs:
-        "Tras activar un sistema que contenga al menos 1 de tus Plantas, puedes sustituir cada Planta de ese sistema por 1 SDP.",
+        "Después de que actives un sistema que contenga al menos 1 de tus fichas de Durmiente, puedes sustituir cada una de esas fichas por 1 SDP de tus refuerzos.",
       descriptionEn:
         "After you activate a system that contains 1 or more of your sleeper tokens, you may replace each of those tokens with 1 PDS from your reinforcements.",
     },
     {
-      nameEs: "UL EL PROGENITOR",
-      nameEn: "UL THE PROGENITOR",
+      nameEs: "INCORPORACIÓN",
+      nameEn: "TITANS OF UL",
       descriptionEs:
-        "Comienzas la partida con la ficha de planeta Elysium y la habilidad de despertar los Titanes.",
+        "Si tu Nave insignia o tu capacidad de facción DESPERTAR colocan tus unidades en la misma zona de espacio o planeta que las unidades de otro jugador, tus unidades deben participar en combate durante los pasos de «Combate espacial» o «Combate terrestre».",
       descriptionEn:
         "Elysium has the Cybernetic technology specialty and counts as a legendary planet.",
     },
-    {
-      nameEs: "MAESTRÍA",
-      nameEn: "CRAFTY",
-      descriptionEs:
-        "Tus SDP también son fuerzas terrestres con Combate 7 y RESISTENCIA AL DAÑO. Pueden recibir órdenes terrestres.",
-      descriptionEn:
-        "You can have any number of action cards in your hand. Other game effects cannot prevent you from triggering your PDS's SPACE CANNON ability.",
-    },
   ],
-  units: withOverride(makeStandardUnits(), "flagship", {
-    nameEs: "Ouranos",
-    nameEn: "Ouranos",
-    stats: {
-      cost: "8",
-      combat: 7,
-      combatDice: 2,
-      movement: 1,
-      capacity: 3,
-      abilitiesEs: [
-        "Resistencia al daño",
-        "Bombardeo 5",
-        "Cañón espacial 5 (×3)",
-      ],
-      abilitiesEn: ["Sustain Damage", "Bombardment 5", "Space Cannon 5 (×3)"],
-      description: {
-        es: "Durante un combate, esta unidad usa el valor de Combate 7. Otros jugadores no pueden usar CAÑÓN ESPACIAL contra naves de este sistema.",
-        en: "Other players' units in this system lose PLANETARY SHIELD; their PDS units cannot use SPACE CANNON.",
+  units: withOverride(
+    withOverride(
+      withOverride(makeStandardUnits(), "flagship", {
+        nameEs: "Ouranos",
+        nameEn: "Ouranos",
+        stats: {
+          cost: "8",
+          combat: 7,
+          combatDice: 2,
+          movement: 1,
+          capacity: 3,
+          abilitiesEs: ["Resistencia al daño"],
+          abilitiesEn: ["Sustain Damage"],
+          description: {
+            es: "DESPLIEGUE: Después de que actives un sistema que contenga al menos 1 de tus SDP, puedes sustituir 1 de esos SDP por esta unidad.",
+            en: "Other players' units in this system lose PLANETARY SHIELD; their PDS units cannot use SPACE CANNON.",
+          },
+        },
+      }),
+      "cruiser",
+      {
+        nameEs: "Máquina de Saturno I",
+        nameEn: "Saturn Engine I",
+        stats: {
+          cost: "2",
+          combat: 7,
+          movement: 2,
+          capacity: 1,
+          abilitiesEs: [],
+          abilitiesEn: [],
+        },
+      },
+    ),
+    "pds",
+    {
+      nameEs: "Titán Infernal I",
+      nameEn: "Hel-Titan I",
+      stats: {
+        cost: null,
+        combat: 7,
+        movement: null,
+        capacity: null,
+        abilitiesEs: [
+          "Escudo planetario",
+          "Cañón espacial 6",
+          "Resistencia al daño",
+          "Producción 1",
+        ],
+        abilitiesEn: [
+          "Planetary Shield",
+          "Space Cannon 6",
+          "Sustain Damage",
+          "Production 1",
+        ],
+        description: {
+          es: "Esta unidad se considera estructura y fuerza terrestre. No puede ser transportada.",
+          en: "",
+        },
       },
     },
-  }),
+  ),
   complete: true,
 };
 
 const VUILRAITH_SHEET: FactionSheet = {
   factionIdx: 23,
-  titleEs: "LA CÁBALA DE VUIL'RAITH",
+  titleEs: "LA CÁBALA VUIL'RAITH",
   titleEn: "THE VUIL'RAITH CABAL",
   quoteEs: "",
   quoteEn: "",
@@ -1715,58 +1823,69 @@ const VUILRAITH_SHEET: FactionSheet = {
       nameEs: "DEVORAR",
       nameEn: "DEVOUR",
       descriptionEs:
-        "Tras destruir naves de otro jugador, captura cada Caza y nave que no sea Caza (un máximo de 3 unidades capturadas por combate).",
+        "Captura las unidades de tu adversario que no sean estructuras y resulten destruidas en combate.",
       descriptionEn:
         "Capture your opponent's non-structure units that are destroyed during combat against you.",
     },
     {
-      nameEs: "TRENZADO DE GRIETAS",
-      nameEn: "RIFTMELD",
-      descriptionEs:
-        "Cuando investigues una Tecnología de mejora de unidad, puedes purgar 1 de tus naves capturadas del mismo tipo para ignorar todos los requisitos.",
-      descriptionEn:
-        "When you research a unit upgrade technology, you may purge 1 of your captured non-fighter ships of the same type to ignore the prerequisites.",
-    },
-    {
-      nameEs: "AMALGAMACIÓN",
+      nameEs: "AMALGAMA",
       nameEn: "AMALGAMATION",
       descriptionEs:
-        "Cuando produces unidades, puedes purgar cualquier número de tus unidades capturadas de los refuerzos de otros jugadores para reducir el coste combinado de las unidades producidas en una cantidad igual al valor combinado de Recursos de las unidades purgadas.",
+        "Cuando produzcas una unidad, puedes devolver 1 unidad capturada de ese tipo para producir esa unidad sin gastar Recursos.",
       descriptionEn:
         "When you produce units, you may use captured units' resource values to pay for those units.",
     },
     {
-      nameEs: "ANCLA DIMENSIONAL",
-      nameEn: "DIMENSIONAL ANCHOR",
+      nameEs: "HIBRIDACIÓN",
+      nameEn: "RIFTMELD",
       descriptionEs:
-        "Tras realizar una acción táctica en un sistema no-de-origen que contenga 1 de tus Puertos espaciales, considera ese sistema como si contuviera un Agujero de gusano gamma.",
+        "Cuando investigues una Tecnología de mejora de unidad, puedes devolver 1 unidad capturada de ese tipo para ignorar todos los requisitos de esa Tecnología.",
       descriptionEn:
-        "Your space docks are treated as having gamma wormholes. When another player activates a system that contains your space dock, they must reveal their action cards to you.",
+        "When you research a unit upgrade technology, you may purge 1 of your captured non-fighter ships of the same type to ignore the prerequisites.",
     },
   ],
-  units: withOverride(makeStandardUnits(), "flagship", {
-    nameEs: "El Terror Tetrarca",
-    nameEn: "The Terror Between",
-    stats: {
-      cost: "8",
-      combat: 5,
-      combatDice: 2,
-      movement: 1,
-      capacity: 3,
-      abilitiesEs: ["Resistencia al daño"],
-      abilitiesEn: ["Sustain Damage"],
-      description: {
-        es: "Considera este sistema como si contuviera un Agujero de gusano gamma. Otros jugadores no pueden mover naves a través de Agujeros de gusano gamma.",
-        en: "This system contains a gamma wormhole. Other players' ships cannot move through gamma wormholes.",
+  units: withOverride(
+    withOverride(makeStandardUnits(), "flagship", {
+      nameEs: "El Terror del Intersticio",
+      nameEn: "The Terror Between",
+      stats: {
+        cost: "8",
+        combat: 5,
+        combatDice: 2,
+        movement: 1,
+        capacity: 3,
+        abilitiesEs: ["Resistencia al daño", "Bombardeo 5"],
+        abilitiesEn: ["Sustain Damage", "Bombardment 5"],
+        description: {
+          es: "Captura todas las demás unidades destruidas en este sistema que no sean estructuras (incluidas las tuyas).",
+          en: "This system contains a gamma wormhole. Other players' ships cannot move through gamma wormholes.",
+        },
+      },
+    }),
+    "spaceDock",
+    {
+      nameEs: "Brecha Dimensional I",
+      nameEn: "Dimensional Tear I",
+      stats: {
+        cost: null,
+        combat: null,
+        movement: null,
+        capacity: null,
+        abilitiesEs: ["Producción 5"],
+        abilitiesEn: ["Production 5"],
+        description: {
+          es: "Este sistema es un Vórtice gravitatorio, pero tus naves no tienen que hacer tiradas en él. Coloca una ficha de Brecha dimensional debajo de esta unidad como recordatorio. Hasta 6 Cazas que se encuentren en este sistema no se cuentan de cara a la Capacidad de transporte de tus naves.",
+          en: "",
+        },
       },
     },
-  }),
+  ),
   complete: true,
 };
 
 const KELERES_SHEET: FactionSheet = {
   factionIdx: 24,
-  titleEs: "EL CONSEJO KELERES",
+  titleEs: "LOS KELERES DEL CONSEJO",
   titleEn: "THE COUNCIL KELERES",
   quoteEs: "",
   quoteEn: "",
@@ -1774,25 +1893,85 @@ const KELERES_SHEET: FactionSheet = {
   commodities: 2,
   abilities: [
     {
-      nameEs: "PATRONAZGO DEL CONSEJO",
+      nameEs: "LOS TRIBUNII",
+      nameEn: "THE TRIBUNII",
+      descriptionEs:
+        "Durante el despliegue, elige una facción no jugada de entre 3 facciones al azar alineadas con los Keleres; coge el sistema natal de esa facción, las fichas de mando y las fichas de control. Además, coge el héroe Keleres que corresponda a esa facción.",
+      descriptionEn: "",
+    },
+    {
+      nameEs: "MECENAZGO DEL CONSEJO",
       nameEn: "COUNCIL PATRONAGE",
       descriptionEs:
-        "Repones tus Exportaciones al inicio de la fase de Estrategia (en lugar de al transactar). Después gana 1 Bien de comercio.",
+        "Al comienzo de la fase de Estrategia, repón tus Exportaciones, luego gana 1 Mercancía. Eres vecino de todos los jugadores que tengan unidades o controlen planetas adyacentes a Mecatol Rex.",
       descriptionEn:
         "Replenish your commodities at the start of the strategy phase, then gain 1 trade good.",
     },
     {
-      nameEs: "INSIGNIA DIPLOMÁTICA",
-      nameEn: "DIPLOMATIC INSIGNIA",
+      nameEs: "CUSTODIA VIGILIA",
+      nameEn: "CUSTODIA VIGILIA",
       descriptionEs:
-        "Cuando otro jugador active un sistema que contenga 1 o más de tus unidades, puedes anular esa activación; si lo haces, no puedes activar ese sistema durante este turno.",
-      descriptionEn:
-        "When another player activates a system containing 1 or more of your units, you may cancel that action; if you do, you cannot activate that system this turn.",
+        "Durante la preparación, gana la carta de planeta Custodia Vigilia y su carta de habilidad de planeta Legendario. Custodia Vigilia comienza la partida agotada. No puedes perder estas cartas.",
+      descriptionEn: "",
     },
   ],
   units: withOverride(makeStandardUnits(), "flagship", {
-    nameEs: "Artúno Insignia",
-    nameEn: "Artuno the Betrayer",
+    nameEs: "Artemiris",
+    nameEn: "Artemiris",
+    stats: {
+      cost: "8",
+      combat: 7,
+      combatDice: 2,
+      movement: 1,
+      capacity: 6,
+      abilitiesEs: ["Resistencia al daño"],
+      abilitiesEn: ["Sustain Damage"],
+      description: {
+        es: "Los demás jugadores deben gastar 2 de Influencia para poder activar el sistema que contenga esta nave.",
+        en: "When you gain trade goods during the strategy phase, gain 1 additional trade good.",
+      },
+    },
+  }),
+  complete: true,
+};
+
+// ─── Discordant Stars factions — populated from physical card images ──────────
+
+const EDYN_SHEET: FactionSheet = {
+  factionIdx: 36,
+  titleEs: "EL MANDATO EDYN",
+  titleEn: "THE EDYN MANDATE",
+  quoteEs:
+    "«La vida es brillante, hermosa. Su encanto nos atrae hasta el punto de la obsesión. ¿Qué es lo que a ti te mueve?»",
+  quoteEn: "",
+  quoteAuthor: "Midir, la Voluntad Viviente",
+  commodities: 3,
+  abilities: [
+    {
+      nameEs: "ELEGANCIA",
+      nameEn: "ELEGANCE",
+      descriptionEs:
+        "Una vez por fase de acción, después de resolver la habilidad primaria de tu carta de estrategia, puedes resolver la habilidad secundaria de 1 carta de estrategia no agotada con un número de iniciativa menor al de tu carta de estrategia.",
+      descriptionEn: "",
+    },
+    {
+      nameEs: "DECRETO",
+      nameEn: "DECREE",
+      descriptionEs:
+        "Puedes impedir que las naves de otros jugadores se muevan a través de anomalías que contengan tus fuerzas terrestres.",
+      descriptionEn: "",
+    },
+    {
+      nameEs: "ESPLENDOR",
+      nameEn: "SPLENDOR",
+      descriptionEs:
+        "Después de que se revele una carta de consejo galáctico, puedes predecir en voz alta el resultado de la votación. Si tu predicción es correcta, coloca 1 ficha de mando de los refuerzos de otro jugador en un sistema con un Glifo.",
+      descriptionEn: "",
+    },
+  ],
+  units: withOverride(makeStandardUnits(), "flagship", {
+    nameEs: "Kaliburn",
+    nameEn: "Kaliburn",
     stats: {
       cost: "8",
       combat: 7,
@@ -1802,11 +1981,206 @@ const KELERES_SHEET: FactionSheet = {
       abilitiesEs: ["Resistencia al daño"],
       abilitiesEn: ["Sustain Damage"],
       description: {
-        es: "Cuando ganes Mercancías durante la fase de Estrategia, gana 1 Bien de comercio adicional.",
-        en: "When you gain trade goods during the strategy phase, gain 1 additional trade good.",
+        es: "Aplica +1 al resultado de las tiradas de combate de esta unidad por cada ley en juego.",
+        en: "+1 to the result of this unit's combat rolls for each law in play.",
       },
     },
   }),
+  complete: true,
+};
+
+const FSC_SHEET: FactionSheet = {
+  factionIdx: 38,
+  titleEs: "LA ALIANZA DE SISTEMAS LIBRES",
+  titleEn: "THE FREE SYSTEMS COMPACT",
+  quoteEs:
+    "«¿Habéis pedido liderazgo? Habéis pedido cambio. Yo, humildemente, atiendo vuestra demanda.»",
+  quoteEn: "",
+  quoteAuthor: "Conde Otto P'may",
+  commodities: 4,
+  abilities: [
+    {
+      nameEs: "UNIRSE A LA CAUSA",
+      nameEn: "JOIN THE CAUSE",
+      descriptionEs:
+        "Una vez por acción, después de producir 1 o más naves en tu sistema de origen, puedes producir hasta 2 naves en un sistema que contenga un planeta Cultural, Inhóspito o Industrial y que no contenga un planeta legendario ni unidades de otro jugador.",
+      descriptionEn: "",
+    },
+    {
+      nameEs: "PUEBLOS LIBRES",
+      nameEn: "FREE PEOPLES",
+      descriptionEs:
+        "Durante la preparación de la partida, coloca las cartas de planeta de todos los planetas que no sean de origen excepto Mecatol Rex boca arriba sobre el tablero de juego.",
+      descriptionEn: "",
+    },
+    {
+      nameEs: "DIPLOMÁTICOS",
+      nameEn: "DIPLOMATS",
+      descriptionEs:
+        "Una vez por acción, puedes agotar 1 carta de planeta no controlado que esté boca arriba en el tablero para utilizar sus recursos o influencia.",
+      descriptionEn: "",
+    },
+  ],
+  units: withOverride(makeStandardUnits(), "flagship", {
+    nameEs: "Vox Populi",
+    nameEn: "Vox Populi",
+    stats: {
+      cost: "8",
+      combat: 7,
+      combatDice: 2,
+      movement: 1,
+      capacity: 3,
+      abilitiesEs: ["Resistencia al daño"],
+      abilitiesEn: ["Sustain Damage"],
+      description: {
+        es: "Cuando esta unidad hace una tirada de combate, tira 1 dado adicional por cada planeta de este sistema que tenga un rasgo planetario diferente.",
+        en: "When this unit makes a combat roll, roll 1 additional die for each planet in this system with a different planet trait.",
+      },
+    },
+  }),
+  complete: true,
+};
+
+const KJALENGARD_SHEET: FactionSheet = {
+  factionIdx: 43,
+  titleEs: "LOS BERSERKERS DE KJALENGARD",
+  titleEn: "THE BERSERKERS OF KJALENGARD",
+  quoteEs: "«No hay gloria alguna en aplastar a un oponente.»",
+  quoteEn: "",
+  quoteAuthor: "El Trueno",
+  commodities: 3,
+  abilities: [
+    {
+      nameEs: "HEROÍSMO",
+      nameEn: "HEROISM",
+      descriptionEs:
+        "Captura tus Infanterías y Cazas destruidos durante el combate. Al pasar, por cada ficha de Gloria en el tablero, puedes devolver a tu reserva 4 de tus unidades capturadas para ganar 1 ficha de Mando.",
+      descriptionEn: "",
+    },
+    {
+      nameEs: "GLORIA",
+      nameEn: "GLORY",
+      descriptionEs:
+        "Después de ganar un combate, puedes colocar una ficha de Gloria en el sistema activo o gastar una ficha de tu reserva de Estrategia para investigar una tecnología de mejora de unidad del mismo tipo que 1 de tus unidades que participara en ese combate.",
+      descriptionEn: "",
+    },
+    {
+      nameEs: "VALOR",
+      nameEn: "VALOR",
+      descriptionEs:
+        "Cuando tus unidades realicen una tirada de combate en un sistema que contenga una ficha de Gloria, cada resultado de 10 natural (sin modificar), produce 1 impacto adicional.",
+      descriptionEn: "",
+    },
+  ],
+  units: withOverride(
+    withOverride(makeStandardUnits(), "flagship", {
+      nameEs: "Martillo de Hulgade",
+      nameEn: "Martillo de Hulgade",
+      stats: {
+        cost: "8",
+        combat: 7,
+        combatDice: 2,
+        movement: 1,
+        capacity: 6,
+        abilitiesEs: ["Resistencia al daño"],
+        abilitiesEn: ["Sustain Damage"],
+        description: {
+          es: "Después de la primera ronda de combate en este sistema, coloca hasta 2 de tus unidades capturadas en este sistema o en ese planeta.",
+          en: "After the first round of combat in this system, place up to 2 of your captured units in this system or on that planet.",
+        },
+      },
+    }),
+    "carrier",
+    {
+      nameEs: "Transporte Dragón I",
+      nameEn: "Dragon Carrier I",
+      stats: {
+        cost: "3",
+        combat: 8,
+        movement: 1,
+        capacity: 4,
+        abilitiesEs: [],
+        abilitiesEn: [],
+        description: {
+          es: "Esta unidad puede ignorar los efectos en el movimiento de Anomalías que no sean Supernovas.",
+          en: "This unit may ignore the movement effects of Anomalies that are not Supernovas.",
+        },
+      },
+    },
+  ),
+  complete: true,
+};
+
+const MYKO_SHEET: FactionSheet = {
+  factionIdx: 53,
+  titleEs: "LOS MYKO-MENTORI",
+  titleEn: "THE MYKO-MENTORI",
+  quoteEs: "",
+  quoteEn: "",
+  quoteAuthor: "",
+  commodities: 1,
+  abilities: [
+    {
+      nameEs: "MEMORIAS PRESCIENTES",
+      nameEn: "PRESCIENT MEMORIES",
+      descriptionEs:
+        "Tienes 4 dados de «Presagio». Al comienzo de la fase de Estrategia, lanza los 4 dados de Presagio y colócalos junto a tu hoja de facción.",
+      descriptionEn:
+        "You have 4 Omen Dice. At the start of the strategy phase, roll all 4 Omen dice and place them near your faction sheet.",
+    },
+    {
+      nameEs: "ADIVINACIÓN",
+      nameEn: "DIVINATION",
+      descriptionEs:
+        "Antes de tirar un dado, puedes devolver 1 de tus dados de Presagio a tus refuerzos para resolver esa tirada como si hubiese salido el resultado de ese dado.",
+      descriptionEn:
+        "Before you would roll a die, you may instead return 1 Omen die near your faction sheet to your reinforcements to resolve that roll as if it had the result of that die.",
+    },
+    {
+      nameEs: "NECRÓFAGOS",
+      nameEn: "NECROPHAGE",
+      descriptionEs:
+        "Aplica +1 a tu valor de Exportaciones por cada Puerto Espacial que controles. Después de la primera ronda de combate, gana 1 Exportación o convierte 1 de tus Exportaciones en 1 Mercancía.",
+      descriptionEn:
+        "Apply +1 to your commodity value for each space dock you control. After the first round of combat, gain 1 commodity or convert 1 of your commodities to a trade good.",
+    },
+  ],
+  units: withOverride(
+    withOverride(makeStandardUnits(), "flagship", {
+      nameEs: "Psyclobea Qarnyx",
+      nameEn: "Psyclobea Qarnyx",
+      stats: {
+        cost: "8",
+        combat: 7,
+        combatDice: 2,
+        movement: 1,
+        capacity: 3,
+        abilitiesEs: ["Resistencia al daño"],
+        abilitiesEn: ["Sustain Damage"],
+        description: {
+          es: "Una vez por ronda de combate espacial, cuando una nave que no sea un Caza sea destruida en este sistema, puedes ganar 1 Exportación.",
+          en: "Once per round of space combat, when a non-fighter ship in this system is destroyed, you may gain 1 commodity.",
+        },
+      },
+    }),
+    "spaceDock",
+    {
+      nameEs: "Anillo Micelial I",
+      nameEn: "Mycelium Ring I",
+      stats: {
+        cost: null,
+        combat: null,
+        movement: null,
+        capacity: null,
+        abilitiesEs: ["Producción X+2", "Escudo planetario"],
+        abilitiesEn: ["Production X+2", "Planetary Shield"],
+        description: {
+          es: "La Producción de esta unidad es igual a 2 más que los Recursos de este planeta. DESPLIEGUE: Cuando ganes el control de un planeta, puedes sustituir 4 de tus Infanterías en ese planeta por 1 Puerto Espacial.",
+          en: "This unit's Production value is equal to 2 more than the resource value of this planet. DEPLOY: When you gain control of a planet, you may replace 4 infantry on that planet with 1 space dock.",
+        },
+      },
+    },
+  ),
   complete: true,
 };
 
@@ -1857,6 +2231,10 @@ const POPULATED_SHEETS: Record<number, FactionSheet> = {
   22: TITANS_SHEET,
   23: VUILRAITH_SHEET,
   24: KELERES_SHEET,
+  36: EDYN_SHEET,
+  38: FSC_SHEET,
+  43: KJALENGARD_SHEET,
+  53: MYKO_SHEET,
 };
 
 const _sheets: FactionSheet[] = [];
@@ -1864,7 +2242,32 @@ for (let i = 0; i < FACTIONS.length; i++) {
   const sheet = POPULATED_SHEETS[i] ?? makeStub(i);
   // Attach optional extras (leaders, mech, promissory, starting fleet/techs)
   // when the per-faction data exists in factionExtras.ts.
-  if (MECHS_BY_IDX[i]) sheet.mech = MECHS_BY_IDX[i];
+  if (MECHS_BY_IDX[i]) {
+    const m = MECHS_BY_IDX[i];
+    const mechUnit: FactionUnit = {
+      type: "mech",
+      nameEs: m.nameEs,
+      nameEn: m.nameEn,
+      hasUpgrade: false,
+      stats: {
+        ...m.stats,
+        description: { es: m.descriptionEs, en: m.descriptionEn },
+      },
+      altSide: m.altSide
+        ? {
+            nameEs: m.altSide.nameEs,
+            nameEn: m.altSide.nameEn,
+            stats: {
+              ...m.altSide.stats,
+              description: { es: m.altSide.descriptionEs, en: m.altSide.descriptionEn },
+            },
+          }
+        : undefined,
+    };
+    const infIdx = sheet.units.findIndex((u) => u.type === "infantry");
+    if (infIdx >= 0) sheet.units.splice(infIdx + 1, 0, mechUnit);
+    else sheet.units.push(mechUnit);
+  }
   if (LEADERS_BY_IDX[i]) sheet.leaders = LEADERS_BY_IDX[i];
   if (PROMISSORY_BY_IDX[i]) sheet.promissoryNote = PROMISSORY_BY_IDX[i];
   if (STARTING_FLEET_BY_IDX[i]) sheet.startingFleet = STARTING_FLEET_BY_IDX[i];

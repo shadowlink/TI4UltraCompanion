@@ -82,6 +82,8 @@ interface GameState {
   // Technologies
   researchedTechs: Record<number, string[]>;
   exhaustedTechs: Record<number, string[]>;
+  /** Nekro Virus — assimilated faction tech IDs (max 2 per player). */
+  nekroAssimilated: Record<number, string[]>;
 
   // Options
   options: GameOptions;
@@ -165,6 +167,8 @@ interface GameState {
   readyTech: (playerIdx: number, techId: string) => void;
   readyAllMyTechs: (playerIdx: number) => void;
   readyAllTechs: () => void;
+  assimilateTech: (playerIdx: number, techId: string) => void;
+  unassimilateTech: (playerIdx: number, techId: string) => void;
 
   // Clock
   tick: () => void;
@@ -222,6 +226,7 @@ const INITIAL_STATE = {
   objectivesScoredBy: {} as Record<string, number[]>,
   researchedTechs: {} as Record<number, string[]>,
   exhaustedTechs: {} as Record<number, string[]>,
+  nekroAssimilated: {} as Record<number, string[]>,
   options: DEFAULT_OPTIONS,
   gameDuration: 0,
   clockRun: 0 as ClockRun,
@@ -821,6 +826,61 @@ export const useGameStore = create<GameState>()((set, get) => ({
     get().persistGame();
   },
 
+  assimilateTech: (playerIdx, techId) => {
+    set((s) => {
+      const current = s.nekroAssimilated[playerIdx] ?? [];
+      if (current.includes(techId)) return {};
+      if (current.length >= 2) return {};
+      const tech = TECH_BY_ID[techId];
+      if (!tech || tech.factionIdx === undefined) return {};
+      const nextAssim = {
+        ...s.nekroAssimilated,
+        [playerIdx]: [...current, techId],
+      };
+      // Also add to researched so the tech text becomes "owned" by Nekro.
+      const researched = s.researchedTechs[playerIdx] ?? [];
+      const nextResearched = researched.includes(techId)
+        ? s.researchedTechs
+        : { ...s.researchedTechs, [playerIdx]: [...researched, techId] };
+      return { nekroAssimilated: nextAssim, researchedTechs: nextResearched };
+    });
+    get().persistGame();
+  },
+
+  unassimilateTech: (playerIdx, techId) => {
+    set((s) => {
+      const current = s.nekroAssimilated[playerIdx] ?? [];
+      if (!current.includes(techId)) return {};
+      const remaining = current.filter((id) => id !== techId);
+      const nextAssim = { ...s.nekroAssimilated };
+      if (remaining.length === 0) delete nextAssim[playerIdx];
+      else nextAssim[playerIdx] = remaining;
+      // Also drop from researched + exhausted lists.
+      const researched = s.researchedTechs[playerIdx] ?? [];
+      let nextResearched = s.researchedTechs;
+      if (researched.includes(techId)) {
+        const rem = researched.filter((id) => id !== techId);
+        nextResearched = { ...s.researchedTechs };
+        if (rem.length === 0) delete nextResearched[playerIdx];
+        else nextResearched[playerIdx] = rem;
+      }
+      const exhausted = s.exhaustedTechs[playerIdx] ?? [];
+      let nextExhausted = s.exhaustedTechs;
+      if (exhausted.includes(techId)) {
+        const rem = exhausted.filter((id) => id !== techId);
+        nextExhausted = { ...s.exhaustedTechs };
+        if (rem.length === 0) delete nextExhausted[playerIdx];
+        else nextExhausted[playerIdx] = rem;
+      }
+      return {
+        nekroAssimilated: nextAssim,
+        researchedTechs: nextResearched,
+        exhaustedTechs: nextExhausted,
+      };
+    });
+    get().persistGame();
+  },
+
   // ── Clock ──────────────────────────────────────────────────────────────────
 
   tick: () => {
@@ -909,6 +969,7 @@ export const useGameStore = create<GameState>()((set, get) => ({
       objectivesScoredBy: saved.objectivesScoredBy ?? {},
       researchedTechs: saved.researchedTechs ?? {},
       exhaustedTechs: saved.exhaustedTechs ?? {},
+      nekroAssimilated: saved.nekroAssimilated ?? {},
       decisionTimerRemaining: saved.options.decisionTimerLimit,
     });
   },
@@ -945,6 +1006,7 @@ export const useGameStore = create<GameState>()((set, get) => ({
       objectivesScoredBy: synced.objectivesScoredBy ?? {},
       researchedTechs: synced.researchedTechs ?? {},
       exhaustedTechs: synced.exhaustedTechs ?? {},
+      nekroAssimilated: synced.nekroAssimilated ?? {},
       decisionTimerRemaining: synced.options.decisionTimerLimit,
     });
   },
@@ -982,6 +1044,7 @@ export const useGameStore = create<GameState>()((set, get) => ({
       objectivesScoredBy: s.objectivesScoredBy,
       researchedTechs: s.researchedTechs,
       exhaustedTechs: s.exhaustedTechs,
+      nekroAssimilated: s.nekroAssimilated,
     };
   },
 
@@ -1011,6 +1074,7 @@ export const useGameStore = create<GameState>()((set, get) => ({
       objectivesScoredBy: s.objectivesScoredBy,
       researchedTechs: s.researchedTechs,
       exhaustedTechs: s.exhaustedTechs,
+      nekroAssimilated: s.nekroAssimilated,
     });
   },
 }));

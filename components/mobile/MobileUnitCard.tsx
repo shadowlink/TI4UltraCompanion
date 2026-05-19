@@ -74,8 +74,14 @@ export default function MobileUnitCard({
 }: Props) {
   const lang = useGameStore((s) => s.lang);
   const [iconFailed, setIconFailed] = useState(false);
+  const [showAlt, setShowAlt] = useState(false);
   const s = SIZE[size];
-  const stats = unit.stats;
+  const hasAltSide = !!unit.altSide;
+  const activeFace =
+    hasAltSide && showAlt && unit.altSide
+      ? { nameEs: unit.altSide.nameEs, nameEn: unit.altSide.nameEn, stats: unit.altSide.stats }
+      : { nameEs: unit.nameEs, nameEn: unit.nameEn, stats: unit.stats };
+  const stats = activeFace.stats;
   const combatDice = stats.combatDice ?? 1;
   const combatLabel =
     stats.combat === null
@@ -164,6 +170,20 @@ export default function MobileUnitCard({
         >
           {typeLabel}
         </span>
+        {hasAltSide && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowAlt((v) => !v);
+            }}
+            className={`${s.typeLabel} px-2 py-0.5 rounded border border-cyan-400/60 bg-cyan-500/15 text-cyan-200 uppercase tracking-wider leading-none active:bg-cyan-500/30 pointer-events-auto`}
+            style={{ fontFamily: 'var(--font-aldrich)' }}
+            title={lang === 'es' ? 'Voltear carta' : 'Flip card'}
+          >
+            ⟲ {lang === 'es' ? 'voltear' : 'flip'}
+          </button>
+        )}
       </div>
 
       {!iconFailed && (
@@ -171,7 +191,7 @@ export default function MobileUnitCard({
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={getUnitIconPath(unit.type)}
-            alt={lang === 'es' ? unit.nameEs : unit.nameEn}
+            alt={lang === 'es' ? activeFace.nameEs : activeFace.nameEn}
             className="w-full h-full object-contain"
             onError={() => setIconFailed(true)}
           />
@@ -179,7 +199,7 @@ export default function MobileUnitCard({
       )}
 
       <p className={`${s.name} text-white leading-tight`} style={{ fontFamily: 'var(--font-audiowide)' }}>
-        {lang === 'es' ? unit.nameEs : unit.nameEn}
+        {lang === 'es' ? activeFace.nameEs : activeFace.nameEn}
       </p>
 
       <div className="grid grid-cols-4 gap-1">

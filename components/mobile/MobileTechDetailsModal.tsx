@@ -124,6 +124,11 @@ export default function MobileTechDetailsModal({
                   : `${lang === 'es' ? 'Nivel' : 'Level'} ${tech.level}`}
                 {' · '}
                 {tech.expansion === 'base' ? 'Base' : 'PoK'}
+                {tech.factionIdx !== undefined && (
+                  <span className="ml-2 text-amber-300 border border-amber-400/60 bg-amber-500/10 px-1 rounded text-[9px] leading-none">
+                    ◆ {lang === 'es' ? 'FACCIÓN' : 'FACTION'}
+                  </span>
+                )}
               </p>
             </div>
           </div>

@@ -151,6 +151,8 @@ export interface SaveState {
   objectivesScoredBy: Record<string, number[]>;
   researchedTechs: Record<number, string[]>;
   exhaustedTechs: Record<number, string[]>;
+  /** Nekro Virus only — faction-specific tech IDs assimilated via Valefar X/Y (max 2 per player). */
+  nekroAssimilated: Record<number, string[]>;
 }
 
 export const DEFAULT_OPTIONS: GameOptions = {

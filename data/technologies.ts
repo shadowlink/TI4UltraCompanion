@@ -612,7 +612,7 @@ export const FACTION_TECHNOLOGIES: Technology[] = [
     expansion: "base",
     factionIdx: 0,
     effectEs:
-      "Al final de la fase de Estado, puedes retirar cualquier número de unidades de Infantería de planetas que controles y colocarlas en uno o varios planetas que controles del mismo sistema o de sistemas adyacentes.",
+      "Al final de la fase de Estado, puedes retirar cualquier número de unidades de Infantería de planetas que controles y colocarlas en 1 o varios planetas que controles en esos mismos sistemas o en sistemas adyacentes.",
     effectEn:
       "At the end of the status phase, you may remove any number of infantry from planets you control and place them on 1 or more planets you control in the same or adjacent systems.",
   },
@@ -632,7 +632,7 @@ export const FACTION_TECHNOLOGIES: Technology[] = [
     upgradedSubtitleEs: "Infantería Arborec",
     upgradedSubtitleEn: "Arborec Infantry",
     effectEs:
-      "Esta unidad cuenta como 2 capacidades de PRODUCCIÓN. Si esta unidad es destruida, tira 1 dado: con 6+ vuelve a colocarse sobre esta carta y se redesplegará en tu sistema de origen al inicio de tu próximo turno.",
+      "Después de que esta unidad sea destruida, tira 1 dado. Si el resultado es 6 o más, coloca la unidad encima de esta carta. Al comienzo de tu próximo turno, coloca cada unidad que haya sobre esta carta en un planeta de tu sistema de origen que controles.",
     effectEn:
       "This unit's PRODUCTION counts as 2. After this unit is destroyed, roll 1 die; on a 6+ place the unit on this card and redeploy it to your home system at the start of your next turn.",
     upgradedStats: {
@@ -655,20 +655,20 @@ export const FACTION_TECHNOLOGIES: Technology[] = [
     expansion: "base",
     factionIdx: 1,
     effectEs:
-      "Durante una invasión, las unidades no pueden utilizar la capacidad CAÑÓN ESPACIAL contra tus unidades.",
+      "Durante una invasión, ninguna unidad puede utilizar capacidades de CAÑÓN ESPACIAL contra tus unidades.",
     effectEn:
       "During an invasion, units cannot use SPACE CANNON against your units.",
   },
   {
     id: "non-euclidean-shielding",
-    nameEs: "Escudo No Euclídeo",
+    nameEs: "Blindaje no Euclidiano",
     nameEn: "Non-Euclidean Shielding",
     color: "red",
     level: 2,
     expansion: "base",
     factionIdx: 1,
     effectEs:
-      "Cuando una de tus unidades utilice su capacidad RESISTENCIA AL DAÑO, puede anular 2 impactos en lugar de 1.",
+      "Cuando 1 de tus unidades utilice la capacidad RESISTENCIA AL DAÑO, se anulan 2 impactos en vez de 1.",
     effectEn:
       "When 1 of your units uses its SUSTAIN DAMAGE ability, it cancels 2 hits instead of 1.",
   },
@@ -676,20 +676,20 @@ export const FACTION_TECHNOLOGIES: Technology[] = [
   // ─── Saar (2) ──────────────────────────────────────────────────────────────
   {
     id: "chaos-mapping",
-    nameEs: "Cartografía del Caos",
+    nameEs: "Cartografía Entrópica",
     nameEn: "Chaos Mapping",
     color: "blue",
     level: 1,
     expansion: "base",
     factionIdx: 2,
     effectEs:
-      "Otros jugadores no pueden activar sistemas que contengan tus naves en Campos de Asteroides. Al comienzo de tu turno durante la fase de Acción, puedes producir 1 unidad en un sistema que contenga al menos 1 unidad tuya con PRODUCCIÓN.",
+      "Los demás jugadores no pueden activar campos de asteroides que contengan al menos 1 de tus naves. Al comienzo de tu turno durante la fase de Acción, puedes producir 1 unidad en un sistema que contenga al menos 1 unidad tuya con PRODUCCIÓN.",
     effectEn:
       "Other players cannot activate asteroid field systems that contain your ships. At the start of your turn during the action phase, you may produce 1 unit in a system that contains 1 or more of your units with PRODUCTION.",
   },
   {
     id: "floating-factory-ii",
-    nameEs: "Fábrica Flotante II",
+    nameEs: "Factoría Orbital II",
     nameEn: "Floating Factory II",
     color: "yellow",
     level: 0,
@@ -698,19 +698,19 @@ export const FACTION_TECHNOLOGIES: Technology[] = [
     category: "unitUpgrade",
     prereqs: ["yellow", "yellow"],
     upgradesUnit: "spaceDock",
-    upgradedNameEs: "Fábrica Flotante II",
+    upgradedNameEs: "Factoría Orbital II",
     upgradedNameEn: "Floating Factory II",
     upgradedSubtitleEs: "Puerto Espacial Saar",
     upgradedSubtitleEn: "Saar Space Dock",
     effectEs:
-      "Esta unidad se coloca en el espacio (no en un planeta). Se mueve y combate como un transporte. Si queda bloqueada por naves enemigas, se destruye.",
+      "Esta unidad se coloca en una zona de espacio en vez de en un planeta. Puede moverse y retirarse como si fuera una nave. Si esta unidad queda bloqueada, es destruida.",
     effectEn:
       "This unit is placed in the space area of a system (not on a planet). It moves and fights like a carrier. If it is blockaded by enemy ships, it is destroyed.",
     upgradedStats: {
-      cost: "4",
-      combat: 7,
+      cost: null,
+      combat: null,
       movement: 2,
-      capacity: 6,
+      capacity: 5,
       abilitiesEs: ["Producción 7"],
       abilitiesEn: ["Production 7"],
     },
@@ -726,13 +726,13 @@ export const FACTION_TECHNOLOGIES: Technology[] = [
     expansion: "base",
     factionIdx: 3,
     effectEs:
-      "Tus naves pueden moverse a sistemas Supernova y a través de ellos. Cada Supernova que contenga al menos 1 de tus unidades obtiene PRODUCCIÓN 5.",
+      "Tus naves pueden moverse al interior de Supernovas. Después de que al menos 1 de tus unidades utilice una capacidad de PRODUCCIÓN en un sistema que contenga una Estrella de guerra o que esté adyacente a una Supernova, ganas 1 Mercancía.",
     effectEn:
       "Your ships can move into and through supernovas. Each supernova that contains 1 or more of your units gains PRODUCTION 5.",
   },
   {
     id: "prototype-war-sun-ii",
-    nameEs: "Prototipo Estrella de Guerra II",
+    nameEs: "Prototipo de Estrella de Guerra II",
     nameEn: "Prototype War Sun II",
     color: "red",
     level: 0,
@@ -741,12 +741,12 @@ export const FACTION_TECHNOLOGIES: Technology[] = [
     category: "unitUpgrade",
     prereqs: ["yellow", "red", "red"],
     upgradesUnit: "warSun",
-    upgradedNameEs: "Prototipo Estrella de Guerra II",
+    upgradedNameEs: "Prototipo de Estrella de Guerra II",
     upgradedNameEn: "Prototype War Sun II",
     upgradedSubtitleEs: "Estrella de Guerra Muaat",
     upgradedSubtitleEn: "Muaat War Sun",
     effectEs:
-      "Las unidades enemigas de este sistema pierden la capacidad ESCUDO PLANETARIO.",
+      "Las unidades que los demás jugadores tengan en este sistema pierden la capacidad ESCUDO PLANETARIO.",
     effectEn:
       "Units other players have in this system lose the PLANETARY SHIELD ability.",
     upgradedStats: {
@@ -770,20 +770,20 @@ export const FACTION_TECHNOLOGIES: Technology[] = [
     expansion: "base",
     factionIdx: 4,
     effectEs:
-      "ACCIÓN: Agota esta carta y gasta 1 ficha de mando de Estrategia para ganar 4 Exportaciones y conseguir el equivalente a las Exportaciones iniciales de cada uno de tus vecinos.",
+      "ACCIÓN: Agota esta carta y gasta 1 ficha de tu reserva de Estrategia para ganar 4 Mercancías y elegir a otro jugador; ese jugador gana 2 Mercancías.",
     effectEn:
       "ACTION: Exhaust this card and spend 1 strategy token to gain 4 trade goods and 1 trade good from each of your neighbors.",
   },
   {
     id: "quantum-datahub-node",
-    nameEs: "Nodo Cuántico Datahub",
+    nameEs: "Centro de Procesamiento Cuántico",
     nameEn: "Quantum Datahub Node",
     color: "yellow",
     level: 3,
     expansion: "base",
     factionIdx: 4,
     effectEs:
-      "ACCIÓN: Agota esta carta, gasta 3 Exportaciones y 1 ficha de Estrategia para que otro jugador te entregue su carta de Estrategia; das una tuya a cambio.",
+      "Al final de la fase de Estrategia, puedes gastar 1 ficha de tu reserva de Estrategia y entregar 3 de tus Mercancías a otro jugador. Si lo haces, entrega 1 de tus cartas de Estrategia a ese jugador y coge 1 de sus cartas de Estrategia.",
     effectEn:
       "ACTION: Exhaust this card and spend 3 trade goods and 1 strategy token; choose another player and exchange one of your strategy cards with one of theirs.",
   },
@@ -805,12 +805,12 @@ export const FACTION_TECHNOLOGIES: Technology[] = [
     upgradedSubtitleEs: "Infantería Sol",
     upgradedSubtitleEn: "Sol Infantry",
     effectEs:
-      "Después de que esta unidad sea destruida, tira 1 dado. Si el resultado es 5 o más, coloca la unidad sobre esta carta; al inicio de tu próximo turno se redespliega en tu sistema de origen.",
+      "Después de que esta unidad sea destruida, tira 1 dado. Si el resultado es 5 o más, coloca la unidad encima de esta carta. Al comienzo de tu próximo turno, coloca cada unidad que haya sobre esta carta en un planeta de tu sistema de origen que controles.",
     effectEn:
       "After this unit is destroyed, roll 1 die. If the result is 5 or higher, place the unit on this card; at the start of your next turn redeploy it to your home system.",
     upgradedStats: {
       cost: "1 (×2)",
-      combat: 7,
+      combat: 6,
       movement: null,
       capacity: null,
       abilitiesEs: [],
@@ -838,7 +838,7 @@ export const FACTION_TECHNOLOGIES: Technology[] = [
     upgradedStats: {
       cost: "3",
       combat: 9,
-      movement: 1,
+      movement: 2,
       capacity: 8,
       abilitiesEs: ["Resistencia al daño"],
       abilitiesEn: ["Sustain Damage"],
@@ -848,27 +848,27 @@ export const FACTION_TECHNOLOGIES: Technology[] = [
   // ─── Creuss (6) ────────────────────────────────────────────────────────────
   {
     id: "wormhole-generator",
-    nameEs: "Generador de Agujero de Gusano",
+    nameEs: "Generador de Agujeros de Gusano",
     nameEn: "Wormhole Generator",
     color: "blue",
     level: 2,
     expansion: "base",
     factionIdx: 6,
     effectEs:
-      "Al inicio de la fase de Estado, coloca o mueve cualquiera de las fichas de Agujero de Gusano Creuss a un sistema que cumpla los requisitos.",
+      "Al comienzo de la fase de Estado, coloca o mueve una ficha de Agujero de gusano a un sistema que contenga un planeta controlado por ti o bien a un sistema que no sea de origen y que no contenga naves de otro jugador.",
     effectEn:
       "At the start of the status phase, place or move 1 of your Creuss wormhole tokens into a system that contains a planet you control or a non-home system that contains no other players' ships.",
   },
   {
     id: "dimensional-splicer",
-    nameEs: "Bisturí Dimensional",
+    nameEs: "Concatenador Dimensional",
     nameEn: "Dimensional Splicer",
     color: "red",
     level: 1,
     expansion: "base",
     factionIdx: 6,
     effectEs:
-      "Al inicio de un combate espacial en un sistema con un Agujero de Gusano que contenga al menos 1 de tus naves, puedes producir 1 impacto que tu adversario deberá asignar a una de sus naves que no sea un Caza.",
+      "Al comienzo de un combate espacial en un sistema que contenga un Agujero de gusano y al menos 1 de tus naves, puedes causar 1 impacto y asignarlo a 1 nave de tu adversario.",
     effectEn:
       "At the start of a space combat in a system that contains a wormhole and at least 1 of your ships, you may produce 1 hit that your opponent must assign to 1 of their non-fighter ships.",
   },
@@ -876,20 +876,20 @@ export const FACTION_TECHNOLOGIES: Technology[] = [
   // ─── L1Z1X (7) ─────────────────────────────────────────────────────────────
   {
     id: "inheritance-systems",
-    nameEs: "Sistemas Heredados",
+    nameEs: "Sistemas de Herencia Informática",
     nameEn: "Inheritance Systems",
     color: "yellow",
     level: 2,
     expansion: "base",
     factionIdx: 7,
     effectEs:
-      "Puedes agotar esta carta para ignorar todos los requisitos al investigar una Tecnología.",
+      "Puedes agotar esta carta y gastar 2 Recursos cuando investigues una Tecnología para ignorar todos los requisitos de esa Tecnología.",
     effectEn:
       "You may exhaust this card to ignore all prerequisites when researching a technology.",
   },
   {
     id: "super-dreadnought-ii",
-    nameEs: "Super-Acorazado II",
+    nameEs: "Súper Acorazado II",
     nameEn: "Super-Dreadnought II",
     color: "yellow",
     level: 0,
@@ -898,12 +898,12 @@ export const FACTION_TECHNOLOGIES: Technology[] = [
     category: "unitUpgrade",
     prereqs: ["blue", "blue", "yellow"],
     upgradesUnit: "dreadnought",
-    upgradedNameEs: "Super-Acorazado II",
+    upgradedNameEs: "Súper Acorazado II",
     upgradedNameEn: "Super-Dreadnought II",
     upgradedSubtitleEs: "Acorazado L1Z1X",
     upgradedSubtitleEn: "L1Z1X Dreadnought",
     effectEs:
-      "Esta unidad no puede ser destruida por cartas de Acción de \"impacto directo\". Capacidad 2.",
+      "Esta unidad no puede ser destruida por cartas de Acción de «Impacto directo».",
     effectEn:
       "This unit cannot be destroyed by Action cards' \"direct hit\" effects. Capacity 2.",
     upgradedStats: {
@@ -926,20 +926,20 @@ export const FACTION_TECHNOLOGIES: Technology[] = [
     expansion: "base",
     factionIdx: 8,
     effectEs:
-      "Después de cualquier combate espacial, ganas 1 Mercancía. Si ganaste el combate, puedes producir 1 nave (del tipo destruido) en ese sistema.",
+      "Después de que ganes o pierdas un combate espacial, ganas 1 Mercancía; si has ganado el combate, también puedes producir 1 nave en ese sistema de cualquier tipo de nave que haya sido destruido durante el combate.",
     effectEn:
       "After you win or lose a space combat, gain 1 trade good. If you won, you may also produce 1 ship (of the destroyed type) in that system.",
   },
   {
     id: "mirror-computing",
-    nameEs: "Computación Espejo",
+    nameEs: "Redundancia Computacional",
     nameEn: "Mirror Computing",
     color: "yellow",
     level: 3,
     expansion: "base",
     factionIdx: 8,
     effectEs:
-      "Cuando gastes Exportaciones, cada una vale el doble (2 Recursos o 2 Influencia).",
+      "Cuando gastes Mercancías, cada Mercancía vale por 2 puntos de Recursos o Influencia en vez de 1.",
     effectEn:
       "When you spend trade goods, each is worth 2 resources or influence instead of 1.",
   },
@@ -947,20 +947,20 @@ export const FACTION_TECHNOLOGIES: Technology[] = [
   // ─── Naalu (9) ─────────────────────────────────────────────────────────────
   {
     id: "neuroglaive",
-    nameEs: "Neuroguadaña",
+    nameEs: "Neuroglía",
     nameEn: "Neuroglaive",
     color: "green",
     level: 3,
     expansion: "base",
     factionIdx: 9,
     effectEs:
-      "Después de que otro jugador active un sistema que contenga al menos 1 de tus unidades, ese jugador retira 1 ficha de Mando de su reserva de Flota y la devuelve a sus refuerzos.",
+      "Después de que otro jugador active un sistema que contenga al menos 1 de tus naves, ese jugador retira 1 ficha de su reserva de Flota y la devuelve a sus refuerzos.",
     effectEn:
       "After another player activates a system that contains 1 or more of your units, that player removes 1 token from their fleet pool and returns it to their reinforcements.",
   },
   {
     id: "hybrid-crystal-fighter-ii",
-    nameEs: "Caza de Cristal Híbrido II",
+    nameEs: "Caza Cristalino Híbrido II",
     nameEn: "Hybrid Crystal Fighter II",
     color: "blue",
     level: 0,
@@ -969,12 +969,12 @@ export const FACTION_TECHNOLOGIES: Technology[] = [
     category: "unitUpgrade",
     prereqs: ["green", "blue"],
     upgradesUnit: "fighter",
-    upgradedNameEs: "Caza de Cristal Híbrido II",
+    upgradedNameEs: "Caza Cristalino Híbrido II",
     upgradedNameEn: "Hybrid Crystal Fighter II",
     upgradedSubtitleEs: "Caza Naalu",
     upgradedSubtitleEn: "Naalu Fighter",
     effectEs:
-      "Esta unidad puede moverse sin ser transportada. Cada 2 Cazas en exceso de Capacidad cuentan como 1 contra tu reserva de Flota.",
+      "Esta unidad puede moverse sin necesidad de ser transportada. Cada Caza que exceda la Capacidad de transporte de tus naves cuenta como 1/2 nave de cara al límite establecido por tu reserva de Flota.",
     effectEn:
       "This unit can move without being transported. Each fighter in excess of capacity counts as 1/2 ship against your fleet pool.",
     upgradedStats: {
@@ -990,14 +990,14 @@ export const FACTION_TECHNOLOGIES: Technology[] = [
   // ─── Sardakk N'orr (11) ────────────────────────────────────────────────────
   {
     id: "valkyrie-particle-weave",
-    nameEs: "Tejido de Partículas Valquiria",
+    nameEs: "Entramado de Partículas Valquiria",
     nameEn: "Valkyrie Particle Weave",
     color: "red",
     level: 2,
     expansion: "base",
     factionIdx: 11,
     effectEs:
-      "Tras un combate terrestre, si tu adversario produjo al menos 1 impacto, produces 1 impacto adicional contra sus fuerzas terrestres.",
+      "Después de efectuar tiradas de combate durante una ronda de combate terrestre, si tu adversario ha causado al menos 1 impacto, tú causas 1 impacto adicional.",
     effectEn:
       "After making combat rolls during a round of ground combat, if your opponent produced 1 or more hits, you produce 1 additional hit.",
   },
@@ -1017,7 +1017,7 @@ export const FACTION_TECHNOLOGIES: Technology[] = [
     upgradedSubtitleEs: "Acorazado Sardakk",
     upgradedSubtitleEn: "Sardakk Dreadnought",
     effectEs:
-      "Esta unidad no puede ser destruida por cartas de Acción de \"impacto directo\". Después de un combate espacial, puedes destruir esta unidad para destruir hasta 2 naves enemigas en ese sistema (no Cazas).",
+      "Esta unidad no puede ser destruida por cartas de Acción de «Impacto directo». Después de una ronda de combate espacial, puedes destruir esta unidad para destruir hasta 2 naves que haya en este sistema.",
     effectEn:
       "This unit cannot be destroyed by Action cards' \"direct hit\" effects. After a space combat, you may destroy this unit to destroy up to 2 of your opponent's non-fighter ships in that system.",
     upgradedStats: {
@@ -1033,14 +1033,14 @@ export const FACTION_TECHNOLOGIES: Technology[] = [
   // ─── Jol-Nar (12) ──────────────────────────────────────────────────────────
   {
     id: "e-res-siphons",
-    nameEs: "Sifones de E-Res",
+    nameEs: "Sumideros de Resonancia Energética",
     nameEn: "E-Res Siphons",
     color: "yellow",
     level: 2,
     expansion: "base",
     factionIdx: 12,
     effectEs:
-      "Después de que otro jugador active un sistema que contenga al menos 1 de tus naves, ganas 4 Exportaciones.",
+      "Después de que otro jugador active un sistema que contenga al menos 1 de tus naves, ganas 4 Mercancías.",
     effectEn:
       "After another player activates a system that contains 1 or more of your ships, gain 4 trade goods.",
   },
@@ -1053,7 +1053,7 @@ export const FACTION_TECHNOLOGIES: Technology[] = [
     expansion: "base",
     factionIdx: 12,
     effectEs:
-      "Después de que actives un sistema que contenga al menos 1 de tus unidades, puedes agotar esta carta; el sistema activado se considera adyacente a todos los demás sistemas que contengan al menos 1 de tus unidades durante esta acción.",
+      "Puedes agotar esta carta después de que actives un sistema que contenga al menos 1 de tus unidades; durante esta activación, ese sistema se considera adyacente a todos los demás sistemas que contengan al menos 1 de tus unidades.",
     effectEn:
       "After you activate a system that contains 1 or more of your units, you may exhaust this card; that system is adjacent to all other systems that contain 1 or more of your units during this activation.",
   },
@@ -1061,27 +1061,27 @@ export const FACTION_TECHNOLOGIES: Technology[] = [
   // ─── Winnu (13) ────────────────────────────────────────────────────────────
   {
     id: "lazax-gate-folding",
-    nameEs: "Plegado Lazax de Portales",
+    nameEs: "Portal de Curvatura Lazax",
     nameEn: "Lazax Gate Folding",
     color: "blue",
     level: 2,
     expansion: "base",
     factionIdx: 13,
     effectEs:
-      "Si Mecatol Rex no está controlado, el sistema Mecatol se considera que contiene los Agujeros de Gusano Alfa y Beta. ACCIÓN: Si controlas Mecatol Rex, agota esta carta para colocar 1 unidad de Infantería desde tus refuerzos en Mecatol Rex.",
+      "Durante tus acciones tácticas, si no controlas Mecatol Rex, trata su sistema como si hubiera en él Agujeros de gusano Alfa y Beta. ACCIÓN: Si controlas Mecatol Rex, agota esta carta para coger 1 unidad de Infantería de tus refuerzos y colocarla en Mecatol Rex.",
     effectEn:
       "If Mecatol Rex is not controlled, the Mecatol system is treated as containing both an alpha and beta wormhole. ACTION: If you control Mecatol Rex, exhaust this card to place 1 infantry from your reinforcements on Mecatol Rex.",
   },
   {
     id: "hegemonic-trade-policy",
-    nameEs: "Política Comercial Hegemónica",
+    nameEs: "Programa de Hegemonía Comercial",
     nameEn: "Hegemonic Trade Policy",
     color: "yellow",
     level: 2,
     expansion: "base",
     factionIdx: 13,
     effectEs:
-      "Agota esta carta cuando una de tus unidades use la capacidad PRODUCCIÓN; intercambia los valores de Recursos e Influencia de 1 planeta que controles hasta el final de tu turno.",
+      "Agota esta carta cuando al menos 1 de tus unidades utilice la capacidad PRODUCCIÓN para intercambiar las puntuaciones de Recursos e Influencia de 1 planeta que controles (este intercambio dura hasta el final de tu turno).",
     effectEn:
       "Exhaust this card when 1 of your units uses PRODUCTION; swap the resource and influence values of 1 planet you control until the end of your turn.",
   },
@@ -1089,27 +1089,27 @@ export const FACTION_TECHNOLOGIES: Technology[] = [
   // ─── Xxcha (14) ────────────────────────────────────────────────────────────
   {
     id: "nullification-field",
-    nameEs: "Campo de Nulificación",
+    nameEs: "Campo de Anulación",
     nameEn: "Nullification Field",
     color: "yellow",
     level: 2,
     expansion: "base",
     factionIdx: 14,
     effectEs:
-      "Después de que otro jugador active un sistema que contenga al menos 1 de tus naves, puedes agotar esta carta y gastar 1 ficha de Estrategia para finalizar inmediatamente el turno de ese jugador.",
+      "Después de que otro jugador active un sistema que contenga al menos 1 de tus naves, puedes agotar esta carta y gastar 1 ficha de tu reserva de Estrategia para finalizar de inmediato el turno de ese jugador.",
     effectEn:
       "After another player activates a system that contains 1 or more of your ships, you may exhaust this card and spend 1 strategy token to end that player's turn immediately.",
   },
   {
     id: "instinct-training",
-    nameEs: "Entrenamiento Instintivo",
+    nameEs: "Adiestramiento del Instinto",
     nameEn: "Instinct Training",
     color: "green",
     level: 1,
     expansion: "base",
     factionIdx: 14,
     effectEs:
-      "Puedes agotar esta carta y gastar 1 ficha de Estrategia cuando otro jugador juegue una carta de Acción para cancelar esa carta de Acción.",
+      "Puedes agotar esta carta y gastar 1 ficha de tu reserva de Estrategia cuando otro jugador utilice una carta de Acción para anular dicha carta de Acción.",
     effectEn:
       "You may exhaust this card and spend 1 strategy token when another player plays an action card to cancel that action card.",
   },
@@ -1117,27 +1117,27 @@ export const FACTION_TECHNOLOGIES: Technology[] = [
   // ─── Yin (15) ──────────────────────────────────────────────────────────────
   {
     id: "impulse-core",
-    nameEs: "Núcleo de Impulso",
+    nameEs: "Núcleo de Impulsos",
     nameEn: "Impulse Core",
     color: "yellow",
     level: 2,
     expansion: "base",
     factionIdx: 15,
     effectEs:
-      "Al inicio de un combate espacial, puedes destruir 1 de tus Cruceros o Destructores en el sistema para producir 1 impacto contra una nave enemiga en ese sistema.",
+      "Al comienzo de un combate espacial, puedes destruir 1 Crucero o Destructor que tengas en el sistema activo para causar 1 impacto contra las naves de tu adversario; ese impacto debe asignarlo tu adversario a 1 nave suya que no sea un Caza (si puede).",
     effectEn:
       "At the start of a space combat, you may destroy 1 of your cruisers or destroyers in the system to produce 1 hit against your opponent's ships in that system.",
   },
   {
     id: "yin-spinner",
-    nameEs: "Tejedor Yin",
+    nameEs: "Centrifugadora Embrionaria",
     nameEn: "Yin Spinner",
     color: "green",
     level: 2,
     expansion: "base",
     factionIdx: 15,
     effectEs:
-      "Después de que al menos 1 de tus unidades use la capacidad PRODUCCIÓN, coloca 1 Infantería desde tus refuerzos en 1 planeta que controles en ese sistema.",
+      "Después de que al menos 1 de tus unidades utilice la capacidad PRODUCCIÓN, coge 1 unidad de Infantería de tus refuerzos y colócala en un planeta que controles en ese sistema.",
     effectEn:
       "After 1 or more of your units use PRODUCTION, place 1 infantry from your reinforcements on a planet you control in that system.",
   },
@@ -1145,27 +1145,27 @@ export const FACTION_TECHNOLOGIES: Technology[] = [
   // ─── Yssaril (16) ──────────────────────────────────────────────────────────
   {
     id: "transparasteel-plating",
-    nameEs: "Blindaje Transparastel",
+    nameEs: "Revestimiento de Transpariacero",
     nameEn: "Transparasteel Plating",
     color: "green",
     level: 1,
     expansion: "base",
     factionIdx: 16,
     effectEs:
-      "Durante tu turno de la fase de Acción, los jugadores que hayan pasado no pueden jugar cartas de Acción.",
+      "Durante tu turno en la fase de Acción, los jugadores que hayan pasado su turno no podrán utilizar cartas de Acción.",
     effectEn:
       "During your turn of the action phase, players that have passed cannot play action cards.",
   },
   {
     id: "mageon-implants",
-    nameEs: "Implantes Mageón",
+    nameEs: "Implantes Mageónicos",
     nameEn: "Mageon Implants",
     color: "green",
     level: 3,
     expansion: "base",
     factionIdx: 16,
     effectEs:
-      "ACCIÓN: Agota esta carta para mirar la mano de cartas de Acción de otro jugador; elige 1 de esas cartas y añádela a tu mano.",
+      "ACCIÓN: Agota esta carta para mirar la mano de cartas de Acción de otro jugador. Elige 1 de esas cartas y añádela a tu mano.",
     effectEn:
       "ACTION: Exhaust this card to look at another player's hand of action cards; choose 1 of those cards and add it to your hand.",
   },
@@ -1187,7 +1187,7 @@ export const FACTION_TECHNOLOGIES: Technology[] = [
     upgradedSubtitleEs: "Destructor Argent",
     upgradedSubtitleEn: "Argent Destroyer",
     effectEs:
-      "Cuando esta unidad produzca un impacto, tu adversario debe destruir 1 de sus Cazas si los tiene. Cuando esta unidad use ARTILLERÍA ANTI-CAZAS, los resultados de 9-10 también destruyen Infantería enemiga.",
+      "Cuando esta unidad utiliza su ARTILLERÍA ANTICAZAS, cada resultado de 9 o 10 también destruirá 1 unidad de Infantería que tu adversario tenga en la zona de espacio del sistema activo.",
     effectEn:
       "When this unit produces a hit, your opponent must destroy 1 of their fighters if able. When this unit uses ANTI-FIGHTER BARRAGE, results of 9-10 also destroy your opponent's infantry.",
     upgradedStats: {
@@ -1201,14 +1201,14 @@ export const FACTION_TECHNOLOGIES: Technology[] = [
   },
   {
     id: "aerie-hololattice",
-    nameEs: "Hololatice de Eyrie",
+    nameEs: "Holojula",
     nameEn: "Aerie Hololattice",
     color: "yellow",
     level: 1,
     expansion: "pok",
     factionIdx: 17,
     effectEs:
-      "Las naves de otros jugadores no pueden moverse a través de sistemas que contengan 1 de tus estructuras. Cada planeta con tus estructuras gana PRODUCCIÓN X (X = número de estructuras tuyas en ese planeta).",
+      "Los demás jugadores no pueden mover naves a través de sistemas que contengan Estructuras tuyas. Cada planeta que contenga al menos 1 de tus estructuras gana la capacidad PRODUCCIÓN 1 como si fuera una unidad.",
     effectEn:
       "Other players' ships cannot move through systems that contain your structures. Each planet that contains 1 or more of your structures gains PRODUCTION X (X = number of your structures on that planet).",
   },
@@ -1223,20 +1223,20 @@ export const FACTION_TECHNOLOGIES: Technology[] = [
     expansion: "pok",
     factionIdx: 18,
     effectEs:
-      "Después de que tú o un vecino tuyo active un sistema adyacente a una anomalía, aplica +1 al atributo de Movimiento de las naves de ese jugador durante esa acción táctica.",
+      "Después de que tú o uno de tus vecinos activéis un sistema adyacente a una anomalía, puedes sumar +1 al atributo de Movimiento de todas las naves de ese jugador durante esta acción táctica.",
     effectEn:
       "After you or a neighbor activates a system adjacent to an anomaly, apply +1 to the move value of all of that player's ships during this tactical action.",
   },
   {
     id: "voidwatch",
-    nameEs: "Vigía del Vacío",
+    nameEs: "Vigilancia del Vacío",
     nameEn: "Voidwatch",
     color: "green",
     level: 1,
     expansion: "pok",
     factionIdx: 18,
     effectEs:
-      "Después de que otro jugador mueva naves a un sistema que contenga al menos 1 de tus unidades, ese jugador te entrega 1 favor.",
+      "Después de que un jugador mueva naves a un sistema que contenga al menos 1 de tus unidades, debe entregarte 1 carta de Favor de su mano (si puede).",
     effectEn:
       "After another player moves ships into a system that contains 1 or more of your units, that player gives you 1 of their promissory notes.",
   },
@@ -1258,7 +1258,7 @@ export const FACTION_TECHNOLOGIES: Technology[] = [
     upgradedSubtitleEs: "Infantería Mahact",
     upgradedSubtitleEn: "Mahact Infantry",
     effectEs:
-      "Después de que esta unidad sea destruida, devuélvela a tus refuerzos. Al final de la fase de Estado, coloca cada unidad devuelta en 1 planeta tuyo que contenga al menos una de tus estructuras.",
+      "Después de que esta unidad sea destruida, ganas 1 Exportación o conviertes 1 de tus Exportaciones en 1 Mercancía. Luego coloca la unidad sobre esta carta. Al comienzo de tu próximo turno, coloca todas las unidades que haya sobre esta carta en un planeta que controles en tu sistema de origen.",
     effectEn:
       "After this unit is destroyed, return it to your reinforcements. At the end of the status phase, place each returned unit on a planet you control that contains 1 or more of your structures.",
     upgradedStats: {
@@ -1279,7 +1279,7 @@ export const FACTION_TECHNOLOGIES: Technology[] = [
     expansion: "pok",
     factionIdx: 19,
     effectEs:
-      "Puedes agotar esta carta antes de que un jugador emita votos; ese jugador debe emitir al menos 1 voto a la resolución de tu elección, o bien retirar 1 ficha de mando de su reserva de Flota.",
+      "Puedes agotar esta carta antes de que un jugador vote; ese jugador debe presentar al menos 1 voto a favor de una resolución de tu elección o quitar 1 ficha de su reserva de Flota y devolverla a sus refuerzos.",
     effectEn:
       "You may exhaust this card before a player casts votes; that player must cast at least 1 vote for the outcome of your choice or remove 1 token from their fleet pool.",
   },
@@ -1287,14 +1287,14 @@ export const FACTION_TECHNOLOGIES: Technology[] = [
   // ─── Naaz-Rokha (20) ───────────────────────────────────────────────────────
   {
     id: "supercharge",
-    nameEs: "Sobrecarga",
+    nameEs: "Sobrealimentación",
     nameEn: "Supercharge",
     color: "red",
     level: 1,
     expansion: "pok",
     factionIdx: 20,
     effectEs:
-      "Puedes agotar esta carta al inicio de una ronda de combate; aplica +1 al resultado de cada una de las tiradas de combate de tus unidades durante esta ronda de combate.",
+      "Al comienzo de una ronda de combate, puedes agotar esta carta para sumar +1 al resultado de todas las tiradas de combate de tu unidad durante esta ronda de combate.",
     effectEn:
       "You may exhaust this card at the start of a combat round; apply +1 to the result of each of your unit's combat rolls during this combat round.",
   },
@@ -1307,7 +1307,7 @@ export const FACTION_TECHNOLOGIES: Technology[] = [
     expansion: "pok",
     factionIdx: 20,
     effectEs:
-      "Después de explorar un planeta, prepara ese planeta.",
+      "Después de que explores un planeta, prepara ese planeta.",
     effectEn:
       "After you explore a planet, ready that planet.",
   },
@@ -1326,31 +1326,32 @@ export const FACTION_TECHNOLOGIES: Technology[] = [
     upgradesUnit: "flagship",
     upgradedNameEs: "Memoria II",
     upgradedNameEn: "Memoria II",
-    upgradedSubtitleEs: "Buque Insignia Nomad",
+    upgradedSubtitleEs: "Nave Insignia del Nómada",
     upgradedSubtitleEn: "Nomad Flagship",
     effectEs:
-      "Puedes tratar los sistemas con uno de tus Mecas como adyacentes a este sistema. Cuando esta unidad realice una tirada de combate, obtiene +1 por cada Caza y por cada Infantería que transporte.",
+      "Puedes tratar esta unidad como si estuviese adyacente a todos los sistemas que contengan al menos 1 de tus Mecas.",
     effectEn:
       "You may treat this unit as being adjacent to systems that contain 1 or more of your mechs. When this unit makes a combat roll, it rolls 1 additional die for each fighter and infantry it is transporting.",
     upgradedStats: {
       cost: "8",
       combat: 5,
+      combatDice: 2,
       movement: 2,
       capacity: 6,
-      abilitiesEs: ["Resistencia al daño", "Artillería anti-Cazas 8 (×3)"],
+      abilitiesEs: ["Resistencia al daño", "Artillería Anticazas 5 (×3)"],
       abilitiesEn: ["Sustain Damage", "Anti-Fighter Barrage 8 (×3)"],
     },
   },
   {
     id: "temporal-command-suite",
-    nameEs: "Suite de Mando Temporal",
+    nameEs: "Programa de Control Provisional",
     nameEn: "Temporal Command Suite",
     color: "yellow",
     level: 1,
     expansion: "pok",
     factionIdx: 21,
     effectEs:
-      "Después de que cualquier jugador realice una transacción, puedes agotar esta carta para preparar a tu agente o, si ese jugador es vecino tuyo, también puedes realizar una transacción con él.",
+      "Después de que se agote el agente de cualquier jugador, puedes agotar esta carta para preparar ese agente; si preparas el agente de otro jugador, puedes llevar a cabo una transacción con ese jugador.",
     effectEn:
       "After any player performs a transaction, you may exhaust this card to ready your agent; if that player is your neighbor, you may also perform a transaction with them.",
   },
@@ -1358,7 +1359,7 @@ export const FACTION_TECHNOLOGIES: Technology[] = [
   // ─── Titans of Ul (22) ─────────────────────────────────────────────────────
   {
     id: "saturn-engine-ii",
-    nameEs: "Motor Saturno II",
+    nameEs: "Máquina de Saturno II",
     nameEn: "Saturn Engine II",
     color: "yellow",
     level: 0,
@@ -1367,7 +1368,7 @@ export const FACTION_TECHNOLOGIES: Technology[] = [
     category: "unitUpgrade",
     prereqs: ["green", "yellow", "red"],
     upgradesUnit: "cruiser",
-    upgradedNameEs: "Motor Saturno II",
+    upgradedNameEs: "Máquina de Saturno II",
     upgradedNameEn: "Saturn Engine II",
     upgradedSubtitleEs: "Crucero Titans",
     upgradedSubtitleEn: "Titans Cruiser",
@@ -1386,7 +1387,7 @@ export const FACTION_TECHNOLOGIES: Technology[] = [
   },
   {
     id: "hel-titan-ii",
-    nameEs: "Hel-Titán II",
+    nameEs: "Titán Infernal II",
     nameEn: "Hel-Titan II",
     color: "red",
     level: 0,
@@ -1395,12 +1396,12 @@ export const FACTION_TECHNOLOGIES: Technology[] = [
     category: "unitUpgrade",
     prereqs: ["yellow", "red"],
     upgradesUnit: "pds",
-    upgradedNameEs: "Hel-Titán II",
+    upgradedNameEs: "Titán Infernal II",
     upgradedNameEn: "Hel-Titan II",
     upgradedSubtitleEs: "SDP Titans",
     upgradedSubtitleEn: "Titans PDS",
     effectEs:
-      "Esta unidad puede usar CAÑÓN ESPACIAL contra naves en sistemas adyacentes. Es también una unidad de fuerza terrestre con Combate 6 y RESISTENCIA AL DAÑO.",
+      "Esta unidad se considera estructura y fuerza terrestre. No puede ser transportada. Puedes utilizar el CAÑÓN ESPACIAL de esta unidad contra naves que estén adyacentes al sistema de esta unidad.",
     effectEn:
       "This unit's SPACE CANNON may be used against ships in adjacent systems. This unit is also a ground force with Combat 6 and SUSTAIN DAMAGE.",
     upgradedStats: {
@@ -1416,7 +1417,7 @@ export const FACTION_TECHNOLOGIES: Technology[] = [
   // ─── Vuil'Raith Cabal (23) ─────────────────────────────────────────────────
   {
     id: "dimensional-tear-ii",
-    nameEs: "Desgarro Dimensional II",
+    nameEs: "Brecha Dimensional II",
     nameEn: "Dimensional Tear II",
     color: "yellow",
     level: 0,
@@ -1425,12 +1426,12 @@ export const FACTION_TECHNOLOGIES: Technology[] = [
     category: "unitUpgrade",
     prereqs: ["yellow", "yellow"],
     upgradesUnit: "spaceDock",
-    upgradedNameEs: "Desgarro Dimensional II",
+    upgradedNameEs: "Brecha Dimensional II",
     upgradedNameEn: "Dimensional Tear II",
     upgradedSubtitleEs: "Puerto Espacial Vuil'Raith",
     upgradedSubtitleEn: "Vuil'Raith Space Dock",
     effectEs:
-      "Esta unidad cuenta como Agujero de Gusano Gamma. Hasta 12 Cazas no cuentan contra la Capacidad. Al final de un combate espacial en este sistema, captura cada una de las unidades enemigas que no sea Caza que haya sido destruida.",
+      "Este sistema es un Vórtice gravitatorio, pero tus naves no tienen que hacer tiradas en él. Coloca una ficha de Brecha dimensional debajo de esta unidad como recordatorio. Hasta 12 Cazas que se encuentren en este sistema no se cuentan de cara a la Capacidad de transporte de tus naves.",
     effectEn:
       "This unit is treated as a gamma wormhole. Up to 12 fighters don't count against your ships' capacity. At the end of a space combat in this system, capture each of your opponent's non-fighter ships that were destroyed.",
     upgradedStats: {
@@ -1438,8 +1439,8 @@ export const FACTION_TECHNOLOGIES: Technology[] = [
       combat: null,
       movement: null,
       capacity: null,
-      abilitiesEs: ["Producción 7", "Escudo planetario"],
-      abilitiesEn: ["Production 7", "Planetary Shield"],
+      abilitiesEs: ["Producción 7"],
+      abilitiesEn: ["Production 7"],
     },
   },
   {
@@ -1451,9 +1452,182 @@ export const FACTION_TECHNOLOGIES: Technology[] = [
     expansion: "pok",
     factionIdx: 23,
     effectEs:
-      "ACCIÓN: Agota esta carta para elegir 1 unidad no-estructura de otro jugador en un sistema adyacente a uno de tus Puertos espaciales; captura 1 unidad de ese tipo de los refuerzos de ese jugador.",
+      "ACCIÓN: Agota esta carta para elegir una unidad de otro jugador que no sea una estructura y esté situada en un sistema adyacente como mínimo a 1 de tus Puertos espaciales. Captura 1 unidad del mismo tipo de los refuerzos de ese jugador.",
     effectEn:
       "ACTION: Exhaust this card to choose 1 non-structure unit in a system adjacent to 1 of your space docks belonging to another player; capture 1 unit of that type from that player's reinforcements.",
+  },
+
+  // ─── Keleres (24) ──────────────────────────────────────────────────────────
+  {
+    id: "agency-supply-network",
+    nameEs: "Red de Suministro de la Agencia",
+    nameEn: "Agency Supply Network",
+    color: "yellow",
+    level: 2,
+    expansion: "pok",
+    factionIdx: 24,
+    effectEs:
+      "Cuando utilices una de tus Capacidades de PRODUCCIÓN, puedes utilizar una de tus Capacidades de PRODUCCIÓN adicional en cualquier sistema; dicho uso adicional no activa esta Capacidad.",
+    effectEn:
+      "Whenever you use one of your PRODUCTION abilities, you may use one of your other PRODUCTION abilities in any system; that additional use does not trigger this ability.",
+  },
+  {
+    id: "iihq-modernization",
+    nameEs: "Credenciales Especiales",
+    nameEn: "I.I.H.Q. Modernization",
+    color: "yellow",
+    level: 1,
+    expansion: "pok",
+    factionIdx: 24,
+    effectEs:
+      "Al comienzo del turno de un jugador, puedes gastar 1 Exportación o 1 Mercancía para permitir a ese jugador elegir cualquier número de leyes en juego. El texto de esas leyes se considera en blanco hasta el final del turno de ese jugador.",
+    effectEn:
+      "At the start of a player's turn, you may spend 1 trade good to allow that player to choose any number of laws in play. The text of those laws is treated as blank until the end of that player's turn.",
+  },
+
+  // ─── Edyn Mandate (36) — Discordant Stars (unofficial) ───────────────────
+  {
+    id: "unity-algorithm",
+    nameEs: "Algoritmo de Unidad",
+    nameEn: "Unity Algorithm",
+    color: "green",
+    level: 3,
+    expansion: "pok",
+    factionIdx: 36,
+    prereqs: ["green", "green", "green"],
+    effectEs:
+      "Una vez por fase de Consejo Galáctico, después de que se revele una agenda, puedes predecir en voz alta un resultado de esa agenda. Si tu predicción es correcta, puedes puntuar 1 Objetivo público si cumples sus requisitos; cada otro jugador que votó por ese resultado roba 1 Objetivo secreto.",
+    effectEn:
+      "Once per agenda phase, after an agenda is revealed, you may predict aloud an outcome of that agenda. If your prediction is correct, you may score 1 public objective if you fulfill its requirements; each other player who voted for that outcome draws 1 secret objective.",
+  },
+  {
+    id: "encrypted-trade-hub",
+    nameEs: "Centro de Comercio Cifrado",
+    nameEn: "Encrypted Trade Hub",
+    color: "yellow",
+    level: 2,
+    expansion: "pok",
+    factionIdx: 36,
+    prereqs: ["yellow", "yellow"],
+    effectEs:
+      "Puedes agotar esta carta para permitir a un jugador intercambiar 1 de sus Reliquias o agendas como parte de una transacción. Siempre votas el último durante la fase de Consejo Galáctico. Cuando se resuelva un resultado por el que hayas votado o predicho, cada jugador que votó por ese resultado gana 1 Exportación.",
+    effectEn:
+      "You may exhaust this card to allow a player to exchange 1 of their relics or agendas as part of a transaction. You always vote last during the agenda phase. When an outcome you voted for or predicted is resolved, each player who voted for that outcome gains 1 commodity.",
+  },
+
+  // ─── Free Systems Compact (38) — Discordant Stars (unofficial) ────────────
+  {
+    id: "envoy-network",
+    nameEs: "Red de Emisarios",
+    nameEn: "Envoy Network",
+    color: "green",
+    level: 1,
+    expansion: "pok",
+    factionIdx: 38,
+    effectEs:
+      "Al comienzo de la fase de Consejo Galáctico, puedes elegir y agotar 1 planeta Cultural, 1 Inhóspito y 1 Industrial. Cuando emitas 1 o más votos, si agotas al menos 1 planeta Cultural, 1 Inhóspito y 1 Industrial para emitir votos, puedes emitir 4 votos adicionales.",
+    effectEn:
+      "At the start of the agenda phase, you may choose and exhaust 1 cultural, 1 hazardous, and 1 industrial planet. When you cast 1 or more votes, if you exhaust at least 1 cultural, 1 hazardous, and 1 industrial planet to cast votes, you may cast 4 additional votes.",
+  },
+  {
+    id: "covert-strike-teams",
+    nameEs: "Equipos de Asalto Encubiertos",
+    nameEn: "Covert Strike Teams",
+    color: "yellow",
+    level: 2,
+    expansion: "pok",
+    factionIdx: 38,
+    effectEs:
+      "Al comienzo de un combate terrestre, puedes tirar 1 dado por cada una de hasta 2 de tus fuerzas terrestres en ese planeta. Por cada resultado igual o superior al valor de combate de esa unidad, produces 1 impacto; tu adversario debe asignarlo a 1 de sus unidades en ese planeta.",
+    effectEn:
+      "At the start of a ground combat, you may roll 1 die for each of up to 2 of your ground forces on that planet. For each result equal to or greater than that unit's combat value, produce 1 hit; your opponent must assign it to 1 of their units on that planet.",
+  },
+
+  // ─── Myko-Mentori (53) — Discordant Stars (unofficial) ────────────────────
+  {
+    id: "psychoactive-armaments",
+    nameEs: "Armamento Psicoactivo",
+    nameEn: "Psychoactive Armaments",
+    color: "green",
+    level: 2,
+    expansion: "pok",
+    factionIdx: 53,
+    effectEs:
+      "Después de que tu adversario haga una tirada de combate, puedes agotar esta carta. Si lo haces, por cada unidad suya que no haya producido un impacto, puedes volver a tirar el dado de combate de esa unidad; los impactos que produzca esa tirada se producen contra las unidades de tu adversario en su lugar.",
+    effectEn:
+      "After your opponent makes a combat roll, you may exhaust this card. If you do, for each of their units that did not produce a hit, you may reroll that unit's combat roll; any hits that roll produces are produced against your opponent's units instead.",
+  },
+  {
+    id: "mycelium-ring-ii",
+    nameEs: "Anillo Micelial II",
+    nameEn: "Mycelium Ring II",
+    color: "yellow",
+    level: 0,
+    expansion: "pok",
+    factionIdx: 53,
+    category: "unitUpgrade",
+    prereqs: ["yellow", "yellow"],
+    upgradesUnit: "spaceDock",
+    upgradedNameEs: "Anillo Micelial II",
+    upgradedNameEn: "Mycelium Ring II",
+    upgradedSubtitleEs: "Puerto Espacial Myko-Mentori",
+    upgradedSubtitleEn: "Myko-Mentori Space Dock",
+    effectEs:
+      "La Producción de esta unidad es igual a 5 más que los Recursos de este planeta. DESPLIEGUE: Cuando ganes el control de un planeta, puedes sustituir 3 de tus Infanterías en ese planeta por 1 Puerto Espacial.",
+    effectEn:
+      "This unit's Production value is equal to 5 more than the resource value of this planet. DEPLOY: When you gain control of a planet, you may replace 3 infantry on that planet with 1 space dock.",
+    upgradedStats: {
+      cost: null,
+      combat: null,
+      movement: null,
+      capacity: null,
+      abilitiesEs: ["Producción X+5", "Escudo planetario"],
+      abilitiesEn: ["Production X+5", "Planetary Shield"],
+    },
+  },
+
+  // ─── Berserkers of Kjalengard (43) — Discordant Stars (unofficial) ───────────
+  {
+    id: "zhrgar-stimulants",
+    nameEs: "Estimulantes Zhrgar",
+    nameEn: "Zhrgar Stimulants",
+    color: "green",
+    level: 1,
+    expansion: "pok",
+    factionIdx: 43,
+    prereqs: ["green"],
+    effectEs:
+      "Una vez por acción, después de que un jugador produzca 1 o más impactos durante una ronda de combate en un sistema que contenga un token de Gloria, gana 1 Mercancía. Después de que un jugador tire dados de combate, puedes agotar esta carta para permitir a ese jugador volver a tirar cualquier número de esos dados.",
+    effectEn:
+      "Once per action, after a player produces 1 or more hits during a round of combat in a system that contains a Glory token, gain 1 trade good. After a player rolls combat dice, you may exhaust this card to allow that player to reroll any number of those dice.",
+  },
+  {
+    id: "star-dragon-ii",
+    nameEs: "Transporte Dragón II",
+    nameEn: "Star Dragon II",
+    color: "yellow",
+    level: 0,
+    expansion: "pok",
+    factionIdx: 43,
+    category: "unitUpgrade",
+    prereqs: ["yellow", "yellow"],
+    upgradesUnit: "carrier",
+    upgradedNameEs: "Transporte Dragón II",
+    upgradedNameEn: "Star Dragon II",
+    upgradedSubtitleEs: "Transporte Kjalengard",
+    upgradedSubtitleEn: "Kjalengard Carrier",
+    effectEs:
+      "Esta unidad puede ignorar los efectos de movimiento de las anomalías.",
+    effectEn:
+      "This unit may ignore the movement effects of anomalies.",
+    upgradedStats: {
+      cost: "3",
+      combat: 7,
+      movement: 2,
+      capacity: 6,
+      abilitiesEs: ["Ignora efectos de movimiento de anomalías"],
+      abilitiesEn: ["Ignore movement effects of anomalies"],
+    },
   },
 ];
 

@@ -241,39 +241,6 @@ export default function FactionDetailView({ factionIdx }: Props) {
         </section>
       )}
 
-      {/* Mech */}
-      {sheet.mech && (
-        <section className="flex flex-col gap-3">
-          <h2 className="text-sm text-orange-300 uppercase tracking-wider px-1" style={{ fontFamily: 'var(--font-aldrich)' }}>
-            {lang === 'es' ? 'Meca' : 'Mech'}
-          </h2>
-          <div className="rounded border-2 border-red-700/60 bg-gradient-to-b from-red-900/20 to-black/60 p-5">
-            <div className="flex items-center gap-4 mb-3 flex-wrap">
-              <p
-                className="text-xl text-white flex-1"
-                style={{ fontFamily: 'var(--font-audiowide)' }}
-              >
-                {lang === 'es' ? sheet.mech.nameEs : sheet.mech.nameEn}
-              </p>
-              <div className="flex gap-4 text-base text-gray-300" style={{ fontFamily: 'var(--font-share-tech-mono)' }}>
-                <span>{lang === 'es' ? 'Coste' : 'Cost'} {sheet.mech.stats.cost ?? '—'}</span>
-                <span>{lang === 'es' ? 'Combate' : 'Combat'} {sheet.mech.stats.combat ?? '—'}</span>
-              </div>
-            </div>
-            {(lang === 'es' ? sheet.mech.stats.abilitiesEs : sheet.mech.stats.abilitiesEn).length > 0 && (
-              <ul className="text-base text-yellow-200 mb-3 space-y-1">
-                {(lang === 'es' ? sheet.mech.stats.abilitiesEs : sheet.mech.stats.abilitiesEn).map((a, i) => (
-                  <li key={i}>◆ {a}</li>
-                ))}
-              </ul>
-            )}
-            <p className="text-base text-gray-200 leading-relaxed" style={{ fontFamily: 'var(--font-electrolize)' }}>
-              {lang === 'es' ? sheet.mech.descriptionEs : sheet.mech.descriptionEn}
-            </p>
-          </div>
-        </section>
-      )}
-
       {/* Leaders */}
       {sheet.leaders && (
         <section className="flex flex-col gap-3">
@@ -362,6 +329,13 @@ export default function FactionDetailView({ factionIdx }: Props) {
                       style={{ background: colorHex, fontFamily: 'var(--font-share-tech-mono)' }}
                     >
                       {isUpgrade ? (lang === 'es' ? 'Mejora' : 'Upgrade') : `L${tech.level}`}
+                    </span>
+                    <span
+                      className="text-[10px] font-bold text-amber-200 border border-amber-400/60 bg-amber-500/10 px-2 py-0.5 rounded leading-none uppercase"
+                      style={{ fontFamily: 'var(--font-aldrich)' }}
+                      title={lang === 'es' ? 'Tecnología de facción' : 'Faction technology'}
+                    >
+                      ◆ {lang === 'es' ? 'Facción' : 'Faction'}
                     </span>
                     <p className="text-lg text-white flex-1" style={{ fontFamily: 'var(--font-audiowide)' }}>
                       {lang === 'es' ? tech.nameEs : tech.nameEn}
