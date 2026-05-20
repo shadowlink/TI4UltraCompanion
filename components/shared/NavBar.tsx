@@ -2,18 +2,13 @@
 
 import { useGameStore } from '@/store/gameStore';
 import { formatTime } from '@/lib/timeUtils';
-import {
-  PHASE_STRATEGY,
-  PHASE_ACTION,
-  PHASE_STATUS,
-  PHASE_AGENDA,
-} from '@/lib/constants';
+import { Timer, Radio, Settings } from '@/components/ui/icons';
 
-const PHASE_LABELS: Record<number, { en: string; es: string }> = {
-  2: { en: 'Strategy Phase', es: 'Fase de Estrategia' },
-  3: { en: 'Action Phase', es: 'Fase de Acción' },
-  4: { en: 'Status Phase', es: 'Fase de Estado' },
-  5: { en: 'Agenda Phase', es: 'Fase de Consejo Galáctico' },
+const PHASE_LABELS: Record<number, string> = {
+  2: 'Fase de Estrategia',
+  3: 'Fase de Acción',
+  4: 'Fase de Estado',
+  5: 'Fase de Consejo Galáctico',
 };
 
 export default function NavBar() {
@@ -26,7 +21,7 @@ export default function NavBar() {
   const setClock = useGameStore((s) => s.setClock);
   const openModal = useGameStore((s) => s.openModal);
 
-  const phaseLabel = PHASE_LABELS[phase]?.es ?? '';
+  const phaseLabel = PHASE_LABELS[phase] ?? '';
   const progressPct = Math.max(0, (decisionTimerRemaining / decisionTimerLimit) * 100);
   const isDecisionRed = decisionTimerRemaining <= 5;
 
@@ -35,17 +30,17 @@ export default function NavBar() {
   };
 
   return (
-    <nav className="flex items-center justify-between px-3 py-2 border-b border-orange-500/30 bg-black/40">
+    <nav className="flex items-center justify-between px-3 py-2 border-b border-[color:var(--accent-border-faint)] bg-[var(--bg-surface)]">
       {/* Clock */}
       <button
         onClick={handleClockClick}
-        className="flex items-center gap-2 text-xl"
+        className="flex items-center gap-2 pointer-events-auto"
         style={{ fontFamily: 'var(--font-share-tech-mono)' }}
         title={clockRun === 1 ? 'Pause' : 'Resume'}
       >
-        <span className="text-orange-400">⏱</span>
-        <span className={clockRun !== 1 ? 'text-gray-500' : 'text-white'}>
-          {clockRun === 0 ? '—Pause—' : formatTime(gameDuration)}
+        <Timer size={18} className="text-[color:var(--accent)]" strokeWidth={2} aria-hidden />
+        <span className={`text-lg ${clockRun !== 1 ? 'text-[color:var(--text-muted)]' : 'text-white'}`}>
+          {clockRun === 0 ? '—Pausa—' : formatTime(gameDuration)}
         </span>
       </button>
 
@@ -53,22 +48,28 @@ export default function NavBar() {
       <div className="flex flex-col items-center gap-1 flex-1 mx-4">
         {phaseLabel ? (
           <span
-            className="text-base text-orange-300 text-shadow"
+            className="text-base text-[color:var(--accent-soft)] text-shadow"
             style={{ fontFamily: 'var(--font-audiowide)' }}
           >
             {`Ronda ${turnCounter}`} — {phaseLabel}
           </span>
         ) : null}
         {/* Decision timer progress bar */}
-        <div className="w-full max-w-md h-3 bg-gray-700 rounded overflow-hidden">
+        <div className="w-full max-w-md h-2.5 bg-white/5 rounded-[var(--radius-sm)] overflow-hidden">
           <div
-            className={`h-full progress-bar rounded ${isDecisionRed ? 'bg-red-500' : 'bg-orange-400'}`}
-            style={{ width: `${progressPct}%` }}
+            className="h-full rounded-[var(--radius-sm)] transition-[width,background-color] duration-500 ease-out"
+            style={{
+              width: `${progressPct}%`,
+              background: isDecisionRed ? 'var(--danger)' : 'var(--accent)',
+            }}
           />
         </div>
         <span
-          className={`text-2xl font-bold ${isDecisionRed ? 'text-red-400' : 'text-gray-300'}`}
-          style={{ fontFamily: 'var(--font-share-tech-mono)' }}
+          className="text-2xl font-bold transition-colors duration-300"
+          style={{
+            fontFamily: 'var(--font-share-tech-mono)',
+            color: isDecisionRed ? 'var(--danger)' : 'var(--text-secondary)',
+          }}
         >
           {decisionTimerRemaining > 0 ? decisionTimerRemaining : '¡Decide!'}
         </span>
@@ -78,17 +79,19 @@ export default function NavBar() {
       <div className="flex items-center gap-1">
         <button
           onClick={() => openModal('broadcast')}
-          className="text-orange-400 hover:text-orange-200 text-xl px-2"
-          title={'Compartir partida'}
+          className="text-[color:var(--accent)] hover:text-[color:var(--accent-soft)] p-2 transition-colors pointer-events-auto"
+          title="Compartir partida"
+          aria-label="Compartir partida"
         >
-          📡
+          <Radio size={20} strokeWidth={2} aria-hidden />
         </button>
         <button
           onClick={() => openModal('options')}
-          className="text-orange-400 hover:text-orange-200 text-xl px-2"
-          title="Options"
+          className="text-[color:var(--accent)] hover:text-[color:var(--accent-soft)] p-2 transition-colors pointer-events-auto"
+          title="Opciones"
+          aria-label="Opciones"
         >
-          ⚙
+          <Settings size={20} strokeWidth={2} aria-hidden />
         </button>
       </div>
     </nav>

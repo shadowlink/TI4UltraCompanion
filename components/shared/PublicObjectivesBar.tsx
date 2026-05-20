@@ -5,7 +5,14 @@ import Image from 'next/image';
 import { useGameStore } from '@/store/gameStore';
 import { OBJECTIVES_BY_ID } from '@/data/publicObjectives';
 import { FACTIONS, PLAYER_COLORS, PLAYER_COLOR_VALUES } from '@/data/factions';
+import { Lock } from '@/components/ui/icons';
+import Badge from '@/components/ui/Badge';
 import ObjectiveScoringModal from './ObjectiveScoringModal';
+
+const STAGE_COLORS: Record<number, string> = {
+  1: '#3a9ad9',
+  2: '#d97a3a',
+};
 
 export default function PublicObjectivesBar() {
   const objectiveDeck = useGameStore((s) => s.objectiveDeck);
@@ -18,97 +25,100 @@ export default function PublicObjectivesBar() {
 
   return (
     <>
-      <div className="border-b border-orange-500/20 bg-black/50">
-        <div className="flex items-stretch gap-2 px-3 py-2 overflow-x-auto scrollbar-hide">
+      <div
+        className="flex-shrink-0 border-b border-orange-500/20 bg-gray-900"
+        style={{ minHeight: 200 }}
+      >
+        <div
+          className="grid gap-2 px-3 py-2"
+          style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))' }}
+        >
           {objectiveDeck.map((id, idx) => {
             const obj = OBJECTIVES_BY_ID[id];
             if (!obj) return null;
             const revealed = idx < revealedCount;
-            const isStage1 = obj.stage === 1;
-            const stageColor = isStage1 ? '#3a9ad9' : '#d97a3a';
+            const stageColor = STAGE_COLORS[obj.stage] ?? STAGE_COLORS[1];
             const scoredBy = objectivesScoredBy[id] ?? [];
+
+            if (!revealed) {
+              return (
+                <div
+                  key={`${id}-${idx}`}
+                  className="rounded border border-gray-700/60 bg-black/40 flex items-center justify-center p-2"
+                  style={{ minHeight: 180 }}
+                >
+                  <Lock size={32} className="text-gray-600" strokeWidth={2} aria-label="Oculta" />
+                </div>
+              );
+            }
+
             return (
               <button
                 key={`${id}-${idx}`}
-                onClick={() => revealed && setOpenId(id)}
-                disabled={!revealed}
-                className={`flex-shrink-0 w-72 rounded-lg border-2 px-3 py-2 text-left ${
-                  revealed ? 'hover:brightness-110 transition' : 'opacity-30 cursor-not-allowed'
-                }`}
+                onClick={() => setOpenId(id)}
+                className="rounded border-2 px-2.5 py-2.5 text-left transition hover:brightness-110 flex flex-col gap-2 pointer-events-auto"
                 style={{
                   borderColor: stageColor,
-                  background: revealed
-                    ? `linear-gradient(180deg, ${stageColor}25 0%, rgba(0,0,0,0.55) 100%)`
-                    : 'rgba(0,0,0,0.5)',
-                  minHeight: 100,
+                  background: `linear-gradient(180deg, ${stageColor}25 0%, rgba(0,0,0,0.55) 100%)`,
+                  minHeight: 180,
                 }}
               >
-                <div className="flex items-center gap-2 mb-1">
+                {/* Top row: stage badge + points */}
+                <div className="flex items-center justify-between">
+                  <Badge tone="custom" color={stageColor} filled size="sm">
+                    {obj.stage === 1 ? 'I' : 'II'}
+                  </Badge>
                   <span
-                    className="text-sm font-bold px-2 py-0.5 rounded leading-none"
-                    style={{
-                      background: stageColor,
-                      color: 'white',
-                      fontFamily: 'var(--font-audiowide)',
-                    }}
-                  >
-                    {isStage1 ? 'I' : 'II'}
-                  </span>
-                  {revealed ? (
-                    <span
-                      className="text-base text-white truncate flex-1"
-                      style={{ fontFamily: 'var(--font-audiowide)' }}
-                    >
-                      {obj.nameEn}
-                    </span>
-                  ) : (
-                    <span className="text-base text-gray-500 flex-1 italic">
-                      {'Oculta'}
-                    </span>
-                  )}
-                  <span
-                    className="text-2xl font-bold leading-none"
+                    className="text-3xl font-bold leading-none"
                     style={{ color: stageColor, fontFamily: 'var(--font-share-tech-mono)' }}
                   >
                     {obj.points}
                   </span>
                 </div>
-                {revealed && (
-                  <>
-                    <p
-                      className="text-sm text-gray-200 leading-snug"
-                      style={{ fontFamily: 'var(--font-electrolize)' }}
-                      title={obj.conditionEn}
-                    >
-                      {obj.conditionEn}
-                    </p>
-                    {scoredBy.length > 0 && (
-                      <div className="flex gap-1.5 mt-1.5 flex-wrap">
-                        {scoredBy.map((pIdx) => {
-                          const player = players[pIdx];
-                          if (!player) return null;
-                          const faction = FACTIONS[player.faction];
-                          const color = PLAYER_COLOR_VALUES[PLAYER_COLORS[player.color]];
-                          return (
-                            <div
-                              key={pIdx}
-                              className="w-7 h-7 relative rounded-full border-2 bg-black/40"
-                              style={{ borderColor: color }}
-                              title={`${faction.shortName}${player.name ? ` (${player.name})` : ''}`}
-                            >
-                              <Image
-                                src={faction.iconPath}
-                                alt={faction.shortName}
-                                fill
-                                className="object-contain p-0.5"
-                                unoptimized
-                              />
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </>
+
+                {/* Name */}
+                <p
+                  className="text-sm text-white leading-tight"
+                  style={{ fontFamily: 'var(--font-audiowide)' }}
+                >
+                  {obj.nameEn}
+                </p>
+
+                {/* Condition (always visible) */}
+                <p
+                  className="text-xs text-gray-200 leading-snug flex-1"
+                  style={{ fontFamily: 'var(--font-electrolize)' }}
+                  title={obj.conditionEn}
+                >
+                  {obj.conditionEn}
+                </p>
+
+                {/* Scored-by icons */}
+                {scoredBy.length > 0 && (
+                  <div className="flex gap-1 flex-wrap pt-1 border-t border-white/10">
+                    {scoredBy.map((pIdx) => {
+                      const player = players[pIdx];
+                      if (!player) return null;
+                      const faction = FACTIONS[player.faction];
+                      const color = PLAYER_COLOR_VALUES[PLAYER_COLORS[player.color]];
+                      return (
+                        <div
+                          key={pIdx}
+                          className="w-5 h-5 relative rounded-full border bg-black/40"
+                          style={{ borderColor: color }}
+                          title={`${faction.shortName}${player.name ? ` (${player.name})` : ''}`}
+                        >
+                          <Image
+                            src={faction.iconPath}
+                            alt={faction.shortName}
+                            fill
+                            className="object-contain p-0.5"
+                            unoptimized
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
                 )}
               </button>
             );

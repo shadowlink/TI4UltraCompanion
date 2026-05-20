@@ -7,12 +7,14 @@ import { FACTIONS, PLAYER_COLORS, PLAYER_COLOR_VALUES } from '@/data/factions';
 import {
   NO_PLAYER,
   STRATEGY_PLAYED,
-  STRATEGY_PASSED,
   STRATEGY_DISABLED,
 } from '@/lib/constants';
 import { formatTime } from '@/lib/timeUtils';
 import StrategyCard from '@/components/shared/StrategyCard';
 import SpeakerModal from '@/components/shared/SpeakerModal';
+import Button from '@/components/ui/Button';
+import { Timer, Check, ArrowRight, Zap, Hexagon, X } from '@/components/ui/icons';
+import { type LucideIcon } from '@/components/ui/icons';
 
 export default function ActionPhase() {
   const nbPlayers = useGameStore((s) => s.nbPlayers);
@@ -39,7 +41,6 @@ export default function ActionPhase() {
     ? PLAYER_COLOR_VALUES[PLAYER_COLORS[activePlayer.color]]
     : undefined;
 
-  // Second strategy for this player (≤4p mode only)
   const secondStrategy = strategies.find(
     (st) => st.secondPickPlayerIdx === activePlayerIdx
   );
@@ -48,7 +49,6 @@ export default function ActionPhase() {
   const isS1Played = activeStrategy?.status === STRATEGY_PLAYED;
   const isS2Played = secondStrategy?.status === STRATEGY_PLAYED;
 
-  // Pass requires both strategies to be "settled" (played already OR toggled to play now)
   const canPass =
     (s1Active || isS1Played) &&
     (nbPlayers > 4 || secondStratIdx === -1 || s2Active || isS2Played);
@@ -63,7 +63,6 @@ export default function ActionPhase() {
     setOtherActive(false);
   };
 
-  // Sidebar: only show strategies with a real assigned player, excluding DISABLED
   const sidebarStrategies = strategies
     .map((st, i) => ({ st, i }))
     .filter(({ st }) => st.playerIdx !== NO_PLAYER && st.playerIdx < 8 && st.status !== STRATEGY_DISABLED);
@@ -73,14 +72,14 @@ export default function ActionPhase() {
       {/* Header */}
       <div className="flex items-center justify-between flex-shrink-0">
         <h2
-          className="text-2xl text-orange-400 text-shadow"
+          className="text-2xl text-[color:var(--accent-soft)] text-shadow"
           style={{ fontFamily: 'var(--font-audiowide)' }}
         >
           {`Ronda ${turnCounter} — Fase de Acción`}
         </h2>
         {roundCounter > 1 && (
           <span
-            className="text-base text-gray-500"
+            className="text-base text-[color:var(--text-muted)]"
             style={{ fontFamily: 'var(--font-share-tech-mono)' }}
           >
             {`sub-ronda ${roundCounter}`}
@@ -90,7 +89,7 @@ export default function ActionPhase() {
 
       <div className="flex gap-4 flex-1 min-h-0">
         {/* ── Strategy sidebar ──────────────────────────────────────────── */}
-        <div className="flex flex-col gap-1 w-36 flex-shrink-0 overflow-y-auto">
+        <div className="flex flex-col gap-1 w-60 flex-shrink-0 overflow-y-auto">
           {sidebarStrategies.map(({ st, i }) => (
             <StrategyCard
               key={i}
@@ -110,8 +109,8 @@ export default function ActionPhase() {
           {activeFaction && activePlayer ? (
             <>
               <div
-                className="p-4 rounded border"
-                style={{ borderColor: activeColorValue, borderWidth: 2 }}
+                className="p-4 rounded-[var(--radius)] border-2 bg-[var(--bg-surface)]"
+                style={{ borderColor: activeColorValue }}
               >
                 {/* Player header */}
                 <div className="flex items-center gap-4 mb-5">
@@ -131,15 +130,16 @@ export default function ActionPhase() {
                     >
                       {activeFaction.nameEs} ({activePlayer.name})
                     </p>
-                    <p className="text-lg text-orange-300 mt-0.5">
+                    <p className="text-lg text-[color:var(--accent-soft)] mt-0.5">
                       {'realiza tu Acción'}
                     </p>
                     {showFactionClock && (
                       <p
-                        className="text-base text-gray-400 mt-1"
+                        className="inline-flex items-center gap-1.5 text-base text-[color:var(--text-secondary)] mt-1"
                         style={{ fontFamily: 'var(--font-share-tech-mono)' }}
                       >
-                        ⏱ {formatTime(currentPlayerTimer + activePlayer.clock)}
+                        <Timer size={14} strokeWidth={2} aria-hidden />
+                        {formatTime(currentPlayerTimer + activePlayer.clock)}
                       </p>
                     )}
                   </div>
@@ -147,61 +147,54 @@ export default function ActionPhase() {
 
                 {/* Action buttons */}
                 <div className="flex flex-col gap-3">
-                  {/* Strategy 1 */}
                   <ActionBtn
-                    label={activeStrategy?.nameEs}
+                    label={activeStrategy?.nameEs ?? ''}
+                    icon={Zap}
                     active={s1Active}
                     done={isS1Played}
-                    color="orange"
+                    tone="accent"
                     onClick={() => setS1Active((v) => !v)}
                   />
-
-                  {/* Strategy 2 — ≤4p only */}
                   {secondStrategy && (
                     <ActionBtn
                       label={`${secondStrategy.nameEs} (2)`}
+                      icon={Zap}
                       active={s2Active}
                       done={isS2Played}
-                      color="blue"
+                      tone="info"
                       onClick={() => setS2Active((v) => !v)}
                     />
                   )}
-
-                  {/* Tactical / Component */}
                   <ActionBtn
                     label={'Táctica / Componente'}
+                    icon={Hexagon}
                     active={otherActive}
                     done={false}
-                    color="green"
+                    tone="success"
                     onClick={() => setOtherActive((v) => !v)}
                   />
-
-                  {/* Pass */}
                   <ActionBtn
                     label={'Pasar'}
+                    icon={X}
                     active={passActive}
                     done={false}
                     disabled={!canPass}
-                    color="red"
+                    tone="danger"
                     onClick={() => setPassActive((v) => !v)}
                   />
                 </div>
               </div>
 
-              {/* Resolve button — appears when at least one action is selected */}
+              {/* Resolve button */}
               {anyActionSelected && (
-                <button
-                  onClick={handleResolve}
-                  className="px-4 py-5 text-2xl border-2 border-orange-500 bg-orange-500/20 hover:bg-orange-500/40 text-orange-300 rounded transition-all"
-                  style={{ fontFamily: 'var(--font-aldrich)' }}
-                >
-                  {'Resolver y Siguiente →'}
-                </button>
+                <Button onClick={handleResolve} variant="primary" size="lg" icon={ArrowRight} iconPosition="right">
+                  {'Resolver y Siguiente'}
+                </Button>
               )}
             </>
           ) : (
             <div className="flex items-center justify-center flex-1">
-              <p className="text-gray-600 text-lg">
+              <p className="text-[color:var(--text-muted)] text-lg">
                 {'Sin jugador activo'}
               </p>
             </div>
@@ -209,7 +202,6 @@ export default function ActionPhase() {
         </div>
       </div>
 
-      {/* Speaker modal — triggered when Politics (slot 3) is played */}
       {activeModal === 'speaker' && <SpeakerModal />}
     </div>
   );
@@ -217,59 +209,61 @@ export default function ActionPhase() {
 
 // ─── ActionBtn sub-component ──────────────────────────────────────────────────
 
-const COLOR_CLASSES = {
-  orange: {
-    active: 'bg-orange-500/30 border-orange-400 text-orange-200',
-    hover: 'hover:border-orange-500/50 hover:bg-orange-500/5 text-gray-300',
-  },
-  blue: {
-    active: 'bg-blue-500/30 border-blue-400 text-blue-200',
-    hover: 'hover:border-blue-500/50 hover:bg-blue-500/5 text-gray-300',
-  },
-  green: {
-    active: 'bg-green-500/30 border-green-400 text-green-200',
-    hover: 'hover:border-green-500/50 hover:bg-green-500/5 text-gray-300',
-  },
-  red: {
-    active: 'bg-red-500/30 border-red-400 text-red-200',
-    hover: 'hover:border-red-500/50 hover:bg-red-500/5 text-gray-300',
-  },
-} as const;
+type Tone = 'accent' | 'info' | 'success' | 'danger';
+
+const TONE_VARS: Record<Tone, string> = {
+  accent:  'var(--accent)',
+  info:    'var(--info)',
+  success: 'var(--success)',
+  danger:  'var(--danger)',
+};
 
 function ActionBtn({
   label,
+  icon: Icon,
   active,
   done,
   disabled = false,
-  color,
+  tone,
   onClick,
 }: {
-  label?: string;
+  label: string;
+  icon: LucideIcon;
   active: boolean;
   done: boolean;
   disabled?: boolean;
-  color: keyof typeof COLOR_CLASSES;
+  tone: Tone;
   onClick: () => void;
 }) {
-  const c = COLOR_CLASSES[color];
   const isUnavailable = done || disabled;
+  const color = TONE_VARS[tone];
+
+  const cls = [
+    'px-4 py-3 text-lg rounded-[var(--radius)] border transition-all text-left flex items-center gap-3 pointer-events-auto',
+  ];
+  const style: React.CSSProperties = { fontFamily: 'var(--font-aldrich)' };
+
+  if (done) {
+    cls.push('opacity-40 cursor-not-allowed border-white/8 text-[color:var(--text-muted)] line-through');
+  } else if (disabled) {
+    cls.push('opacity-25 cursor-not-allowed border-white/5 text-[color:var(--text-muted)]');
+  } else if (active) {
+    style.borderColor = color;
+    style.background = `${color}30`;
+    style.color = '#fff';
+  } else {
+    cls.push('border-white/10 text-[color:var(--text-secondary)] hover:text-white hover:bg-white/5');
+  }
 
   return (
     <button
       onClick={!isUnavailable ? onClick : undefined}
-      className={`px-4 py-4 text-lg rounded border transition-all text-left ${
-        done
-          ? 'opacity-40 cursor-not-allowed border-gray-700 text-gray-500 line-through'
-          : disabled
-          ? 'opacity-25 cursor-not-allowed border-gray-800 text-gray-600'
-          : active
-          ? c.active
-          : `border-gray-600 ${c.hover}`
-      }`}
-      style={{ fontFamily: 'var(--font-aldrich)' }}
+      className={cls.join(' ')}
+      style={style}
     >
-      {label}
-      {done && ' ✓'}
+      <Icon size={18} strokeWidth={2} aria-hidden style={{ color: active && !isUnavailable ? color : undefined }} />
+      <span className="flex-1">{label}</span>
+      {done && <Check size={16} strokeWidth={2} className="text-[color:var(--success)]" aria-hidden />}
     </button>
   );
 }

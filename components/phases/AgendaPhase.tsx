@@ -7,8 +7,17 @@ import { FACTIONS, PLAYER_COLORS, PLAYER_COLOR_VALUES } from '@/data/factions';
 import { PLANETS } from '@/data/planets';
 import { LAWS, SECRET_OBJECTIVES, STRATEGY_CARD_NAMES, GENERIC_CHOICES } from '@/data/laws';
 import { NEKRO_FACTION, VOTE_PASS, NO_PLAYER } from '@/lib/constants';
-
-// ─── Types ────────────────────────────────────────────────────────────────────
+import Panel from '@/components/ui/Panel';
+import Modal from '@/components/ui/Modal';
+import Button from '@/components/ui/Button';
+import {
+  ArrowRight,
+  ChevronLeft,
+  Plus,
+  RefreshCw,
+  Trophy,
+  Check,
+} from '@/components/ui/icons';
 
 type VoteType =
   | 'ForAgainst'
@@ -19,15 +28,12 @@ type VoteType =
   | 'ElectStrategy'
   | 'ElectOther';
 
-type Stage = 'type_select' | 'voting' | 'results';
 type PlanetFilter = 'all' | 'cultural' | 'hazardous' | 'industrial' | 'homeworld';
 
 interface PlayerVote {
   columnIdx: number | 'abstain';
   amount: number;
 }
-
-// ─── Main component ───────────────────────────────────────────────────────────
 
 export default function AgendaPhase() {
   const nbPlayers = useGameStore((s) => s.nbPlayers);
@@ -61,23 +67,19 @@ export default function AgendaPhase() {
   >(null);
   const [planetFilter, setPlanetFilter] = useState<PlanetFilter>('all');
 
-  // Reset local UI state when agendaStep changes (agenda 1 → 2)
   useEffect(() => {
     setPlayerVotes({});
     setSelectedColumn(null);
     setKeypad(0);
     setPickerOpen(null);
-    // Store-driven agenda context is reset by advanceAgendaStep itself
   }, [agendaStep]);
 
-  // Auto-transition to results when voting is complete (store-driven, works for mobile too)
   useEffect(() => {
     if (stage === 'voting' && votingPlayerIdx === NO_PLAYER) {
       setAgendaStage('results');
     }
   }, [stage, votingPlayerIdx, setAgendaStage]);
 
-  // Mirror store votes into local playerVotes for UI rendering (so mobile-driven votes update host display)
   const votes = useGameStore((s) => s.votes);
   useEffect(() => {
     const synced: Record<number, PlayerVote> = {};
@@ -91,23 +93,18 @@ export default function AgendaPhase() {
   }, [votes]);
 
   const agendaLabel =
-    agendaStep === 1
-      ? 'Primera Carta del Consejo'
-      : 'Segunda Carta del Consejo';
+    agendaStep === 1 ? 'Primera Carta del Consejo' : 'Segunda Carta del Consejo';
 
-  // Speaker votes LAST: order is [speakerIdx+1, ..., speakerIdx] (used for display)
   const votingOrder = Array.from(
     { length: nbPlayers },
     (_, i) => (speakerIdx + 1 + i) % nbPlayers
   );
-  // Store is source of truth for current voter — speaker votes last, NO_PLAYER means done
   const allVoted = votingPlayerIdx === NO_PLAYER;
   const currentVoterIdx = allVoted ? -1 : votingPlayerIdx;
   const currentPlayer = currentVoterIdx >= 0 ? players[currentVoterIdx] : null;
   const currentFaction = currentPlayer ? FACTIONS[currentPlayer.faction] : null;
   const isNekro = currentPlayer?.faction === NEKRO_FACTION;
 
-  // Running totals per column
   const columnTotals = columns.map((_, colIdx) =>
     Object.values(playerVotes)
       .filter((v) => v.columnIdx === colIdx)
@@ -127,19 +124,15 @@ export default function AgendaPhase() {
     let cols: string[] = [];
     switch (type) {
       case 'ForAgainst':
-        cols = [
-          'A Favor',
-          'En Contra',
-        ];
+        cols = ['A Favor', 'En Contra'];
         break;
       case 'ElectPlayer':
         cols = players.slice(0, nbPlayers).map((p) => `${FACTIONS[p.faction].shortName} (${p.name})`);
         break;
       default:
-        cols = []; // populated dynamically via picker
+        cols = [];
     }
     setAgendaColumns(cols);
-    // Clear any previous store votes + set first voter (speaker votes last)
     useGameStore.setState((s) => ({
       votes: [],
       votingPlayerIdx: (s.speakerIdx + 1) % s.nbPlayers,
@@ -159,7 +152,6 @@ export default function AgendaPhase() {
       ? { columnIdx: 'abstain', amount: 0 }
       : { columnIdx: selectedColumn!, amount: keypad };
     setPlayerVotes((prev) => ({ ...prev, [pIdx]: vote }));
-    // Mirror to store so it gets synced to mobile viewers
     setVote({
       playerIdx: pIdx,
       voteColumnIdx: isAbstain ? VOTE_PASS : selectedColumn!,
@@ -171,53 +163,57 @@ export default function AgendaPhase() {
     resetDecisionTimer();
     setSelectedColumn(null);
     setKeypad(0);
-    // Advance voter in store (speaker-last rule). Stage transition handled by useEffect.
     nextVotingPlayer();
   };
 
   // ── Type select screen ──────────────────────────────────────────────────────
 
   if (stage === 'type_select') {
-    const types: [VoteType, string, string][] = [
-      ['ForAgainst', 'A Favor / En Contra', 'For / Against'],
-      ['ElectPlayer', 'Elegir Jugador', 'Elect Player'],
-      ['ElectPlanet', 'Elegir Planeta', 'Elect Planet'],
-      ['ElectLaw', 'Elegir Ley', 'Elect Law'],
-      ['ElectObjective', 'Elegir Objetivo', 'Elect Objective'],
-      ['ElectStrategy', 'Carta de Estrategia', 'Strategy Card'],
-      ['ElectOther', 'Propuesta Genérica', 'Generic Proposal'],
+    const types: [VoteType, string][] = [
+      ['ForAgainst', 'A Favor / En Contra'],
+      ['ElectPlayer', 'Elegir Jugador'],
+      ['ElectPlanet', 'Elegir Planeta'],
+      ['ElectLaw', 'Elegir Ley'],
+      ['ElectObjective', 'Elegir Objetivo'],
+      ['ElectStrategy', 'Carta de Estrategia'],
+      ['ElectOther', 'Propuesta Genérica'],
     ];
     return (
       <div className="flex flex-col h-full p-5 gap-4">
         <div className="flex-shrink-0">
           <h2
-            className="text-2xl text-orange-400 text-shadow"
+            className="text-2xl text-[color:var(--accent-soft)] text-shadow"
             style={{ fontFamily: 'var(--font-audiowide)' }}
           >
             {`Ronda ${turnCounter} — ${agendaLabel}`}
           </h2>
-          <p className="text-base text-gray-400 mt-1">
+          <p className="text-base text-[color:var(--text-secondary)] mt-1">
             {'¿Qué tipo de voto?'}
           </p>
         </div>
         <div className="grid grid-cols-2 gap-2">
-          {types.map(([type, labelEs, labelEn]) => (
-            <button
+          {types.map(([type, labelEs]) => (
+            <Button
               key={type}
               onClick={() => startVoting(type)}
-              className="py-5 px-4 text-lg border border-orange-500/40 bg-orange-500/5 hover:bg-orange-500/20 text-orange-300 rounded transition-all text-left"
-              style={{ fontFamily: 'var(--font-aldrich)' }}
+              variant="secondary"
+              size="lg"
+              className="justify-start"
             >
               {labelEs}
-            </button>
+            </Button>
           ))}
         </div>
-        <button
+        <Button
           onClick={advanceAgendaStep}
-          className="mt-auto px-4 py-3 text-base border border-gray-700 text-gray-500 hover:text-gray-300 rounded transition-colors self-start"
+          variant="ghost"
+          size="md"
+          icon={ArrowRight}
+          iconPosition="right"
+          className="mt-auto self-start"
         >
-          {'Omitir este consejo →'}
-        </button>
+          {'Omitir este consejo'}
+        </Button>
       </div>
     );
   }
@@ -243,20 +239,16 @@ export default function AgendaPhase() {
 
   return (
     <div className="flex flex-col h-full p-5 gap-4">
-      {/* Header */}
       <div className="flex items-center justify-between flex-shrink-0">
         <h2
-          className="text-2xl text-orange-400 text-shadow"
+          className="text-2xl text-[color:var(--accent-soft)] text-shadow"
           style={{ fontFamily: 'var(--font-audiowide)' }}
         >
           {agendaLabel}
         </h2>
-        <button
-          onClick={() => { resetAgendaContext(); }}
-          className="text-base text-gray-600 hover:text-gray-300 transition-colors"
-        >
-          ← {'Cambiar'}
-        </button>
+        <Button onClick={() => resetAgendaContext()} variant="ghost" size="sm" icon={ChevronLeft}>
+          {'Cambiar'}
+        </Button>
       </div>
 
       {/* Vote columns */}
@@ -271,19 +263,19 @@ export default function AgendaPhase() {
             <div
               key={colIdx}
               onClick={() => !allVoted && setSelectedColumn(colIdx)}
-              className={`flex-shrink-0 w-40 rounded border transition-all cursor-pointer select-none ${
+              className={`flex-shrink-0 w-40 rounded-[var(--radius)] border transition-all cursor-pointer select-none pointer-events-auto ${
                 isSelected
-                  ? 'border-orange-400 bg-orange-500/15'
-                  : 'border-gray-700 hover:border-gray-500 bg-black/20'
+                  ? 'border-[color:var(--accent-border-strong)] bg-[color:var(--accent)]/15'
+                  : 'border-white/10 hover:border-[color:var(--accent-border)] bg-[var(--bg-surface)]'
               }`}
             >
-              <div className="px-2 pt-2 pb-1 border-b border-gray-700/60">
-                <p className="text-sm text-gray-300 font-semibold truncate">{col}</p>
+              <div className="px-2 pt-2 pb-1 border-b border-white/5">
+                <p className="text-sm text-[color:var(--text-secondary)] font-semibold truncate">{col}</p>
                 <p
                   className="text-4xl font-bold"
                   style={{
                     fontFamily: 'var(--font-share-tech-mono)',
-                    color: 'var(--color-gold)',
+                    color: 'var(--vp-gold)',
                   }}
                 >
                   {total}
@@ -297,7 +289,7 @@ export default function AgendaPhase() {
                       <div className="w-8 h-8 relative flex-shrink-0">
                         <Image src={f.iconPath} alt={f.shortName} fill className="object-contain" unoptimized />
                       </div>
-                      <span className="text-sm text-gray-400">
+                      <span className="text-sm text-[color:var(--text-secondary)]">
                         {v.amount > 0 ? v.amount : '—'}
                       </span>
                     </div>
@@ -308,7 +300,6 @@ export default function AgendaPhase() {
           );
         })}
 
-        {/* Add candidate button (for picker types) */}
         {isPicker && (
           <button
             onClick={() => {
@@ -318,24 +309,24 @@ export default function AgendaPhase() {
               else if (voteType === 'ElectStrategy') setPickerOpen('strategy');
               else setPickerOpen('other');
             }}
-            className="flex-shrink-0 w-14 rounded border border-dashed border-gray-600 hover:border-orange-500/50 hover:text-orange-400 text-gray-600 text-2xl flex items-center justify-center transition-colors"
+            className="flex-shrink-0 w-14 rounded-[var(--radius)] border border-dashed border-white/15 hover:border-[color:var(--accent-border-strong)] hover:text-[color:var(--accent-soft)] text-[color:var(--text-muted)] inline-flex items-center justify-center transition-colors pointer-events-auto"
+            aria-label="Añadir candidato"
           >
-            +
+            <Plus size={22} strokeWidth={2} />
           </button>
         )}
       </div>
 
       {/* Current voter */}
       {currentFaction && currentPlayer && (
-        <div
-          className={`flex items-center gap-4 p-3 rounded border flex-shrink-0 ${
-            isNekro ? 'border-gray-600 opacity-70' : 'border-orange-500/30 bg-orange-500/5'
-          }`}
-          style={{
-            borderColor: isNekro
+        <Panel
+          variant={isNekro ? 'subtle' : 'accent'}
+          className={`flex items-center gap-4 p-3 flex-shrink-0 ${isNekro ? 'opacity-70' : ''}`}
+          style={
+            isNekro
               ? undefined
-              : PLAYER_COLOR_VALUES[PLAYER_COLORS[currentPlayer.color]],
-          }}
+              : { borderColor: PLAYER_COLOR_VALUES[PLAYER_COLORS[currentPlayer.color]] }
+          }
         >
           <div className="w-20 h-20 relative flex-shrink-0">
             <Image src={currentFaction.iconPath} alt={currentFaction.shortName} fill className="object-contain" unoptimized />
@@ -344,44 +335,37 @@ export default function AgendaPhase() {
             <p className="text-2xl text-white text-shadow" style={{ fontFamily: 'var(--font-aldrich)' }}>
               {currentFaction.nameEs} ({currentPlayer.name})
             </p>
-            <p className="text-base text-orange-300">
-              {isNekro
-                ? 'El Virus Nekro no puede votar'
-                : 'emite tu voto'}
+            <p className="text-base text-[color:var(--accent-soft)]">
+              {isNekro ? 'El Virus Nekro no puede votar' : 'emite tu voto'}
             </p>
           </div>
           <div
             className="w-2 self-stretch rounded-full ml-auto flex-shrink-0"
             style={{ backgroundColor: PLAYER_COLOR_VALUES[PLAYER_COLORS[currentPlayer.color]] }}
           />
-        </div>
+        </Panel>
       )}
 
       {/* Keypad */}
       <div className="flex-shrink-0">
         <div className="flex items-center gap-3 mb-2">
-          <span className="text-base text-gray-500">
-            {'Influencia:'}
-          </span>
+          <span className="text-base text-[color:var(--text-muted)]">{'Influencia:'}</span>
           <span
-            className="text-4xl font-bold text-orange-300"
+            className="text-4xl font-bold text-[color:var(--accent-soft)]"
             style={{ fontFamily: 'var(--font-share-tech-mono)' }}
           >
             {keypad}
           </span>
-          <button
-            onClick={() => setKeypad(0)}
-            className="ml-1 text-sm text-gray-600 hover:text-gray-300 border border-gray-700 rounded px-2 py-1"
-          >
-            ⟳ 0
-          </button>
+          <Button onClick={() => setKeypad(0)} variant="ghost" size="sm" icon={RefreshCw}>
+            {'0'}
+          </Button>
         </div>
         <div className="flex gap-2 flex-wrap">
           {[1, 2, 3, 4, 6, 8].map((n) => (
             <button
               key={n}
               onClick={() => setKeypad((v) => v + n)}
-              className="w-16 h-12 text-lg border border-gray-600 hover:border-orange-500/50 hover:bg-orange-500/10 text-gray-300 rounded transition-colors"
+              className="w-16 h-12 text-lg border border-white/10 hover:border-[color:var(--accent-border)] hover:bg-[color:var(--accent)]/10 text-[color:var(--text-secondary)] rounded-[var(--radius)] transition-colors pointer-events-auto"
               style={{ fontFamily: 'var(--font-share-tech-mono)' }}
             >
               +{n}
@@ -392,53 +376,44 @@ export default function AgendaPhase() {
 
       {/* Action buttons */}
       <div className="flex gap-3 flex-wrap flex-shrink-0 mt-auto">
-        <button
+        <Button
           onClick={() => resolveVote(false)}
           disabled={selectedColumn === null || isNekro}
-          className={`px-6 py-4 text-lg rounded border transition-all ${
-            selectedColumn !== null && !isNekro
-              ? 'border-orange-500 bg-orange-500/20 text-orange-300 hover:bg-orange-500/40'
-              : 'border-gray-800 text-gray-700 cursor-not-allowed'
-          }`}
-          style={{ fontFamily: 'var(--font-aldrich)' }}
+          variant="primary"
+          size="lg"
+          icon={Check}
         >
           {'Confirmar Voto'}
-        </button>
-        <button
-          onClick={() => resolveVote(true)}
-          className="px-6 py-4 text-lg border border-gray-600 text-gray-400 hover:text-white rounded transition-colors"
-          style={{ fontFamily: 'var(--font-aldrich)' }}
-        >
+        </Button>
+        <Button onClick={() => resolveVote(true)} variant="ghost" size="lg">
           {'Abstención'}
-        </button>
-        <button
+        </Button>
+        <Button
           onClick={advanceAgendaStep}
-          className="px-6 py-4 text-lg border border-orange-500/50 bg-orange-500/10 text-orange-300 hover:bg-orange-500/25 rounded transition-colors ml-auto"
-          style={{ fontFamily: 'var(--font-aldrich)' }}
+          variant="secondary"
+          size="lg"
+          icon={ArrowRight}
+          iconPosition="right"
+          className="ml-auto"
         >
-          {'Fin del Voto →'}
-        </button>
+          {'Fin del Voto'}
+        </Button>
       </div>
 
       {/* Picker modals */}
-      {pickerOpen === 'planet' && (
-        <PickerModal
-          title={'Elegir Planeta'}
-          onClose={() => setPickerOpen(null)}
-        >
+      <Modal open={pickerOpen === 'planet'} onClose={() => setPickerOpen(null)} title="Elegir Planeta">
+        <div className="p-4">
           <div className="flex gap-1 mb-3 flex-wrap">
             {(['all', 'cultural', 'hazardous', 'industrial', 'homeworld'] as PlanetFilter[]).map((f) => (
-              <button
+              <Button
                 key={f}
                 onClick={() => setPlanetFilter(f)}
-                className={`px-2 py-1 text-xs rounded border transition-all ${
-                  planetFilter === f
-                    ? 'border-orange-400 bg-orange-500/20 text-orange-300'
-                    : 'border-gray-700 text-gray-500 hover:text-white'
-                }`}
+                variant="secondary"
+                size="sm"
+                selected={planetFilter === f}
               >
                 {f}
-              </button>
+              </Button>
             ))}
           </div>
           <div className="grid grid-cols-2 gap-1 overflow-y-auto max-h-64">
@@ -446,102 +421,70 @@ export default function AgendaPhase() {
               <button
                 key={p.name}
                 onClick={() => addColumn(p.name)}
-                className="px-2 py-1.5 text-xs border border-gray-700 text-gray-300 hover:border-orange-500/50 hover:text-orange-300 rounded text-left transition-colors"
+                className="px-2 py-1.5 text-xs border border-white/10 text-[color:var(--text-secondary)] hover:border-[color:var(--accent-border)] hover:text-[color:var(--accent-soft)] rounded-[var(--radius)] text-left transition-colors pointer-events-auto"
               >
                 {p.name}
               </button>
             ))}
           </div>
-        </PickerModal>
-      )}
+        </div>
+      </Modal>
 
-      {pickerOpen === 'law' && (
-        <PickerModal
-          title={'Elegir Ley'}
-          onClose={() => setPickerOpen(null)}
-        >
-          <div className="grid grid-cols-1 gap-1 overflow-y-auto max-h-80">
-            {LAWS.map((law, i) => {
-              const name = law.es;
-              return (
-                <button
-                  key={i}
-                  onClick={() => addColumn(name)}
-                  className="px-3 py-2 text-xs border border-gray-700 text-gray-300 hover:border-orange-500/50 hover:text-orange-300 rounded text-left transition-colors"
-                >
-                  {name}
-                </button>
-              );
-            })}
-          </div>
-        </PickerModal>
-      )}
+      <Modal open={pickerOpen === 'law'} onClose={() => setPickerOpen(null)} title="Elegir Ley">
+        <div className="p-4 grid grid-cols-1 gap-1 overflow-y-auto max-h-80">
+          {LAWS.map((law, i) => (
+            <button
+              key={i}
+              onClick={() => addColumn(law.es)}
+              className="px-3 py-2 text-xs border border-white/10 text-[color:var(--text-secondary)] hover:border-[color:var(--accent-border)] hover:text-[color:var(--accent-soft)] rounded-[var(--radius)] text-left transition-colors pointer-events-auto"
+            >
+              {law.es}
+            </button>
+          ))}
+        </div>
+      </Modal>
 
-      {pickerOpen === 'obj' && (
-        <PickerModal
-          title={'Elegir Objetivo'}
-          onClose={() => setPickerOpen(null)}
-        >
-          <div className="grid grid-cols-1 gap-1 overflow-y-auto max-h-80">
-            {SECRET_OBJECTIVES.map((obj, i) => {
-              const name = obj.es;
-              return (
-                <button
-                  key={i}
-                  onClick={() => addColumn(name)}
-                  className="px-3 py-2 text-xs border border-gray-700 text-gray-300 hover:border-orange-500/50 hover:text-orange-300 rounded text-left transition-colors"
-                >
-                  {name}
-                </button>
-              );
-            })}
-          </div>
-        </PickerModal>
-      )}
+      <Modal open={pickerOpen === 'obj'} onClose={() => setPickerOpen(null)} title="Elegir Objetivo">
+        <div className="p-4 grid grid-cols-1 gap-1 overflow-y-auto max-h-80">
+          {SECRET_OBJECTIVES.map((obj, i) => (
+            <button
+              key={i}
+              onClick={() => addColumn(obj.es)}
+              className="px-3 py-2 text-xs border border-white/10 text-[color:var(--text-secondary)] hover:border-[color:var(--accent-border)] hover:text-[color:var(--accent-soft)] rounded-[var(--radius)] text-left transition-colors pointer-events-auto"
+            >
+              {obj.es}
+            </button>
+          ))}
+        </div>
+      </Modal>
 
-      {pickerOpen === 'strategy' && (
-        <PickerModal
-          title={'Elegir Estrategia'}
-          onClose={() => setPickerOpen(null)}
-        >
-          <div className="grid grid-cols-2 gap-2 overflow-y-auto max-h-64">
-            {STRATEGY_CARD_NAMES.map((card, i) => {
-              const name = card.es;
-              return (
-                <button
-                  key={i}
-                  onClick={() => addColumn(name)}
-                  className="px-3 py-2 text-sm border border-gray-700 text-gray-300 hover:border-orange-500/50 hover:text-orange-300 rounded text-left transition-colors"
-                >
-                  {i + 1}. {name}
-                </button>
-              );
-            })}
-          </div>
-        </PickerModal>
-      )}
+      <Modal open={pickerOpen === 'strategy'} onClose={() => setPickerOpen(null)} title="Elegir Estrategia">
+        <div className="p-4 grid grid-cols-2 gap-2 overflow-y-auto max-h-64">
+          {STRATEGY_CARD_NAMES.map((card, i) => (
+            <button
+              key={i}
+              onClick={() => addColumn(card.es)}
+              className="px-3 py-2 text-sm border border-white/10 text-[color:var(--text-secondary)] hover:border-[color:var(--accent-border)] hover:text-[color:var(--accent-soft)] rounded-[var(--radius)] text-left transition-colors pointer-events-auto"
+            >
+              {i + 1}. {card.es}
+            </button>
+          ))}
+        </div>
+      </Modal>
 
-      {pickerOpen === 'other' && (
-        <PickerModal
-          title={'Propuesta'}
-          onClose={() => setPickerOpen(null)}
-        >
-          <div className="grid grid-cols-2 gap-2 overflow-y-auto max-h-64">
-            {GENERIC_CHOICES.map((choice, i) => {
-              const name = choice.es;
-              return (
-                <button
-                  key={i}
-                  onClick={() => addColumn(name)}
-                  className="px-3 py-2 text-sm border border-gray-700 text-gray-300 hover:border-orange-500/50 hover:text-orange-300 rounded text-left transition-colors"
-                >
-                  {name}
-                </button>
-              );
-            })}
-          </div>
-        </PickerModal>
-      )}
+      <Modal open={pickerOpen === 'other'} onClose={() => setPickerOpen(null)} title="Propuesta">
+        <div className="p-4 grid grid-cols-2 gap-2 overflow-y-auto max-h-64">
+          {GENERIC_CHOICES.map((choice, i) => (
+            <button
+              key={i}
+              onClick={() => addColumn(choice.es)}
+              className="px-3 py-2 text-sm border border-white/10 text-[color:var(--text-secondary)] hover:border-[color:var(--accent-border)] hover:text-[color:var(--accent-soft)] rounded-[var(--radius)] text-left transition-colors pointer-events-auto"
+            >
+              {choice.es}
+            </button>
+          ))}
+        </div>
+      </Modal>
     </div>
   );
 }
@@ -573,7 +516,7 @@ function ResultsScreen({
   return (
     <div className="flex flex-col h-full p-5 gap-4">
       <h2
-        className="text-2xl text-orange-400 text-shadow flex-shrink-0"
+        className="text-2xl text-[color:var(--accent-soft)] text-shadow flex-shrink-0"
         style={{ fontFamily: 'var(--font-audiowide)' }}
       >
         {'Resultado — '}{agendaLabel}
@@ -588,20 +531,21 @@ function ResultsScreen({
               return (
                 <div
                   key={i}
-                  className={`flex-shrink-0 rounded border p-3 min-w-[8rem] text-center ${
+                  className={`flex-shrink-0 rounded-[var(--radius)] border p-4 min-w-[10rem] text-center ${
                     isWinner
-                      ? 'border-yellow-400 bg-yellow-400/10'
-                      : 'border-gray-700 bg-black/20'
+                      ? 'border-[color:var(--vp-gold)] bg-[color:var(--vp-gold)]/10'
+                      : 'border-white/10 bg-[var(--bg-surface)]'
                   }`}
                 >
-                  <p className={`text-sm font-semibold mb-1 ${isWinner ? 'text-yellow-300' : 'text-gray-400'}`}>
-                    {isWinner && '🏆 '}{col}
-                  </p>
+                  <div className={`text-base font-semibold mb-1.5 flex items-center justify-center gap-1.5 ${isWinner ? 'text-[color:var(--vp-gold)]' : 'text-[color:var(--text-secondary)]'}`}>
+                    {isWinner && <Trophy size={16} strokeWidth={2} aria-hidden />}
+                    {col}
+                  </div>
                   <p
-                    className="text-4xl font-bold"
+                    className="text-5xl font-bold"
                     style={{
                       fontFamily: 'var(--font-share-tech-mono)',
-                      color: isWinner ? '#ffd700' : '#ff6666',
+                      color: isWinner ? 'var(--vp-gold)' : 'var(--text-primary)',
                     }}
                   >
                     {columnTotals[i]}
@@ -611,41 +555,57 @@ function ResultsScreen({
             })}
           </div>
 
-          {/* Winner announcement */}
           {winners.length > 0 && (
-            <div className="px-4 py-3 rounded border border-yellow-400/30 bg-yellow-400/5 flex-shrink-0">
-              <p className="text-xl text-yellow-300" style={{ fontFamily: 'var(--font-aldrich)' }}>
-                {'✓ Resultado: '}{winners.join(', ')}
+            <Panel
+              variant="accent"
+              className="px-5 py-4 flex items-center gap-3 flex-shrink-0"
+              style={{ borderColor: 'var(--vp-gold)', background: 'rgba(255, 213, 122, 0.08)' }}
+            >
+              <Trophy size={24} className="text-[color:var(--vp-gold)]" strokeWidth={2} aria-hidden />
+              <p className="text-2xl text-[color:var(--vp-gold)]" style={{ fontFamily: 'var(--font-aldrich)' }}>
+                {'Resultado: '}{winners.join(', ')}
               </p>
-            </div>
+            </Panel>
           )}
 
           {/* Per-player vote summary */}
-          <div className="flex flex-col gap-1 overflow-y-auto">
+          <div className="flex flex-col gap-2 overflow-y-auto">
             {votingOrder.map((pIdx) => {
               const vote = playerVotes[pIdx];
               const faction = FACTIONS[players[pIdx].faction];
               const colorVal = PLAYER_COLOR_VALUES[PLAYER_COLORS[players[pIdx].color]];
               if (!vote) return null;
               const colName = vote.columnIdx === 'abstain'
-                ? ('Abstención')
+                ? 'Abstención'
                 : columns[vote.columnIdx as number] ?? '?';
               return (
-                <div key={pIdx} className="flex items-center gap-2 text-xs text-gray-400">
+                <div
+                  key={pIdx}
+                  className="flex items-center gap-3 px-3 py-2 rounded-[var(--radius)] border border-white/5 bg-[var(--bg-surface)]"
+                >
                   <div
-                    className="w-1 h-5 rounded-full flex-shrink-0"
+                    className="w-1 h-8 rounded-full flex-shrink-0"
                     style={{ backgroundColor: colorVal }}
                   />
-                  <div className="w-5 h-5 relative flex-shrink-0">
+                  <div className="w-8 h-8 relative flex-shrink-0">
                     <Image src={faction.iconPath} alt={faction.shortName} fill className="object-contain" unoptimized />
                   </div>
-                  <span className="text-gray-300">{faction.shortName} ({players[pIdx].name})</span>
-                  <span className="text-gray-600">→</span>
-                  <span className={vote.columnIdx === 'abstain' ? 'text-gray-600 italic' : 'text-white'}>
+                  <span className="text-base text-white" style={{ fontFamily: 'var(--font-electrolize)' }}>
+                    {faction.shortName} ({players[pIdx].name})
+                  </span>
+                  <ArrowRight size={14} className="text-[color:var(--text-muted)]" strokeWidth={2} aria-hidden />
+                  <span
+                    className={`text-base ${vote.columnIdx === 'abstain' ? 'text-[color:var(--text-muted)] italic' : 'text-white font-semibold'}`}
+                  >
                     {colName}
                   </span>
                   {vote.columnIdx !== 'abstain' && vote.amount > 0 && (
-                    <span className="text-orange-400 ml-auto">{vote.amount} inf</span>
+                    <span
+                      className="text-base text-[color:var(--accent-soft)] ml-auto"
+                      style={{ fontFamily: 'var(--font-share-tech-mono)' }}
+                    >
+                      {vote.amount} inf
+                    </span>
                   )}
                 </div>
               );
@@ -653,55 +613,19 @@ function ResultsScreen({
           </div>
         </>
       ) : (
-        <p className="text-sm text-gray-500 italic">
-          {'Voto omitido'}
-        </p>
+        <p className="text-base text-[color:var(--text-muted)] italic">{'Voto omitido'}</p>
       )}
 
-      <button
+      <Button
         onClick={onNext}
-        className="mt-auto px-6 py-4 text-lg border-2 border-orange-500 bg-orange-500/20 hover:bg-orange-500/40 text-orange-300 rounded transition-all self-end"
-        style={{ fontFamily: 'var(--font-aldrich)' }}
+        variant="primary"
+        size="lg"
+        icon={ArrowRight}
+        iconPosition="right"
+        className="mt-auto self-end"
       >
-        {'Siguiente →'}
-      </button>
-    </div>
-  );
-}
-
-// ─── Picker modal wrapper ─────────────────────────────────────────────────────
-
-function PickerModal({
-  title,
-  children,
-  onClose,
-}: {
-  title: string;
-  children: React.ReactNode;
-  onClose: () => void;
-}) {
-  return (
-    <div
-      className="modal-overlay"
-      onClick={(e) => e.target === e.currentTarget && onClose()}
-    >
-      <div className="bg-gray-900 border border-orange-500/40 rounded-lg w-full max-w-sm mx-4 overflow-hidden shadow-2xl">
-        <div className="flex items-center justify-between px-5 py-3 border-b border-gray-700">
-          <h3
-            className="text-sm text-orange-400"
-            style={{ fontFamily: 'var(--font-audiowide)' }}
-          >
-            {title}
-          </h3>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-white text-lg leading-none transition-colors"
-          >
-            ✕
-          </button>
-        </div>
-        <div className="px-4 py-4">{children}</div>
-      </div>
+        {'Siguiente'}
+      </Button>
     </div>
   );
 }

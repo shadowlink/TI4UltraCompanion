@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { useGameStore } from '@/store/gameStore';
 import { FACTIONS, PLAYER_COLORS, PLAYER_COLOR_VALUES } from '@/data/factions';
+import { Crown, Swords, Rocket, Star } from '@/components/ui/icons';
 
 export default function VPBar() {
   const nbPlayers = useGameStore((s) => s.nbPlayers);
@@ -16,7 +17,7 @@ export default function VPBar() {
 
   return (
     <div
-      className="flex items-stretch border-b border-orange-500/30 bg-black/60"
+      className="flex items-stretch border-b border-[color:var(--accent-border-faint)] bg-[var(--bg-surface)]"
       style={{ minHeight: '88px' }}
     >
       {players.slice(0, nbPlayers).map((player, i) => {
@@ -31,8 +32,8 @@ export default function VPBar() {
         return (
           <div
             key={i}
-            className="flex-1 flex items-center justify-center gap-2 py-2 px-2 border-r border-gray-700/50 last:border-r-0 cursor-pointer select-none hover:bg-white/5 transition-colors"
-            style={{ borderBottomWidth: 3, borderBottomColor: colorValue, borderBottomStyle: 'solid' }}
+            className="flex-1 flex items-center justify-center gap-2 py-2 px-2 border-r border-white/5 last:border-r-0 cursor-pointer select-none hover:bg-white/5 transition-colors"
+            style={{ borderBottomWidth: 2, borderBottomColor: colorValue, borderBottomStyle: 'solid' }}
             onClick={() => incrementVP(i, 1)}
             title={`${faction.shortName} — Táctica ${tokens.tactic} / Flota ${tokens.fleet} / Estrategia ${tokens.strategy}`}
           >
@@ -50,7 +51,14 @@ export default function VPBar() {
             {/* Name + VP */}
             <div className="flex flex-col min-w-0">
               <div className="flex items-center gap-1">
-                {isSpeaker && <span className="text-base text-yellow-400 leading-none">👑</span>}
+                {isSpeaker && (
+                  <Crown
+                    size={14}
+                    className="text-[color:var(--warning)] flex-shrink-0"
+                    strokeWidth={2}
+                    aria-label="Speaker"
+                  />
+                )}
                 <span
                   className="text-sm text-white text-shadow truncate"
                   style={{ fontFamily: 'var(--font-electrolize)' }}
@@ -62,7 +70,7 @@ export default function VPBar() {
                 className="text-5xl font-bold leading-none text-shadow"
                 style={{
                   fontFamily: 'var(--font-share-tech-mono)',
-                  color: isWinner ? '#ffd700' : '#ff6666',
+                  color: isWinner ? 'var(--vp-gold)' : 'var(--text-primary)',
                 }}
               >
                 {player.vp}
@@ -70,38 +78,29 @@ export default function VPBar() {
             </div>
 
             {/* Command tokens (Tactic / Fleet / Strategy) */}
-            <div className="flex flex-col justify-center gap-0.5 ml-auto flex-shrink-0">
-              <div className="flex items-center justify-end gap-1">
-                <span className="text-base leading-none" style={{ color: '#f97316' }}>⚔</span>
+            <div className="flex flex-col justify-center gap-1 ml-auto flex-shrink-0">
+              <div className="flex items-center justify-end gap-1.5">
+                <Swords size={20} className="text-[color:var(--accent)]" strokeWidth={2} aria-hidden />
                 <span
-                  className="text-sm font-bold text-white leading-none min-w-[14px] text-right"
+                  className="text-xl font-bold text-white leading-none min-w-[18px] text-right"
                   style={{ fontFamily: 'var(--font-share-tech-mono)' }}
                 >
                   {tokens.tactic}
                 </span>
               </div>
-              <div className="flex items-center justify-end gap-1">
-                <svg
-                  viewBox="0 0 16 16"
-                  width="14"
-                  height="14"
-                  fill="#3b82f6"
-                  aria-hidden
-                  style={{ display: 'block' }}
-                >
-                  <path d="M8 1 L11.2 11.5 L8 9.3 L4.8 11.5 Z" />
-                </svg>
+              <div className="flex items-center justify-end gap-1.5">
+                <Rocket size={20} className="text-[color:var(--info)]" strokeWidth={2} aria-hidden />
                 <span
-                  className="text-sm font-bold text-white leading-none min-w-[14px] text-right"
+                  className="text-xl font-bold text-white leading-none min-w-[18px] text-right"
                   style={{ fontFamily: 'var(--font-share-tech-mono)' }}
                 >
                   {tokens.fleet}
                 </span>
               </div>
-              <div className="flex items-center justify-end gap-1">
-                <span className="text-base leading-none" style={{ color: '#10b981' }}>★</span>
+              <div className="flex items-center justify-end gap-1.5">
+                <Star size={20} className="text-[color:var(--success)]" strokeWidth={2} aria-hidden />
                 <span
-                  className="text-sm font-bold text-white leading-none min-w-[14px] text-right"
+                  className="text-xl font-bold text-white leading-none min-w-[18px] text-right"
                   style={{ fontFamily: 'var(--font-share-tech-mono)' }}
                 >
                   {tokens.strategy}

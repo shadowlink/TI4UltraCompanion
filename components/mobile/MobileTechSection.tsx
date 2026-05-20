@@ -46,7 +46,6 @@ export default function MobileTechSection({ viewingPlayerIdx, myPlayerIdx, sendC
   const researchedTechs = useGameStore((s) => s.researchedTechs);
   const exhaustedTechs = useGameStore((s) => s.exhaustedTechs);
   const players = useGameStore((s) => s.players);
-  const [expanded, setExpanded] = useState(false);
   const [openTech, setOpenTech] = useState<Technology | null>(null);
   const [openTechNekroActions, setOpenTechNekroActions] = useState<NekroModalActions | null>(null);
   const openWithActions = (tech: Technology | null, actions?: NekroModalActions) => {
@@ -75,37 +74,22 @@ export default function MobileTechSection({ viewingPlayerIdx, myPlayerIdx, sendC
   return (
     <>
       <div className="flex flex-col">
-        <button
-          onClick={() => setExpanded((e) => !e)}
-          className="flex items-center justify-between gap-2 px-3 py-2 border-y border-orange-500/30 bg-orange-500/5 pointer-events-auto"
-        >
-          <span
-            className="text-sm text-orange-300 flex-shrink-0"
-            style={{ fontFamily: 'var(--font-audiowide)' }}
-          >
-            {expanded ? '▼' : '▶'} {'Tecnologías'}
+        <div className="flex items-center justify-between gap-2 px-3 py-2 border-b border-orange-500/30 bg-orange-500/5">
+          <span className="text-xs text-gray-400" style={{ fontFamily: 'var(--font-share-tech-mono)' }}>
+            {researchedBasicCount} / {totalCount} {'investigadas'}
           </span>
-          <div className="flex items-center gap-2 ml-auto">
-            {canToggle && myExhausted.length > 0 && (
-              <span
-                onClick={(e) => {
-                  e.stopPropagation();
-                  sendCommand({ type: 'readyAllMyTechs' });
-                }}
-                role="button"
-                className="text-[10px] px-2 py-0.5 rounded border border-yellow-500/60 bg-yellow-500/15 text-yellow-200 active:bg-yellow-500/30"
-                style={{ fontFamily: 'var(--font-aldrich)' }}
-              >
-                ↻ {`Enderezar (${myExhausted.length})`}
-              </span>
-            )}
-            <span className="text-xs text-gray-400" style={{ fontFamily: 'var(--font-share-tech-mono)' }}>
-              {researchedBasicCount} / {totalCount}
-            </span>
-          </div>
-        </button>
+          {canToggle && myExhausted.length > 0 && (
+            <button
+              onClick={() => { sendCommand({ type: 'readyAllMyTechs' }); }}
+              className="text-[10px] px-2 py-0.5 rounded border border-yellow-500/60 bg-yellow-500/15 text-yellow-200 active:bg-yellow-500/30 pointer-events-auto"
+              style={{ fontFamily: 'var(--font-aldrich)' }}
+            >
+              ↻ {`Enderezar (${myExhausted.length})`}
+            </button>
+          )}
+        </div>
 
-        {expanded && isNekro && (
+        {isNekro && (
           <NekroAssimilatorPanel
             viewingPlayerIdx={viewingPlayerIdx}
             canToggle={canToggle}
@@ -118,14 +102,113 @@ export default function MobileTechSection({ viewingPlayerIdx, myPlayerIdx, sendC
           />
         )}
 
-        {expanded && !isNekro && (
+        {!isNekro && (
           <div className="flex flex-col gap-3 px-2 py-3">
+
+            {/* ── Zone A: Mis Tecnologías (cards con efecto) ── */}
+            <div className="flex flex-col gap-2">
+              <h3
+                className="text-[10px] uppercase tracking-wider text-orange-300 px-1"
+                style={{ fontFamily: 'var(--font-aldrich)' }}
+              >
+                {'Mis tecnologías'}
+              </h3>
+              {(() => {
+                const researchedFlat = COLOR_ORDER.flatMap((color) =>
+                  getTechsByColorForFaction(color, viewingFactionIdx)
+                    .filter((t) => myResearched.includes(t.id))
+                    .sort((a, b) => a.level - b.level),
+                );
+                if (researchedFlat.length === 0) {
+                  return (
+                    <p className="text-xs text-gray-500 italic px-1 py-2">
+                      {'Aún no has investigado ninguna tecnología.'}
+                    </p>
+                  );
+                }
+                return (
+                  <div className="flex flex-col gap-2">
+                    {researchedFlat.map((tech) => {
+                      const colorHex = TECH_COLOR_HEX[tech.color];
+                      const isExhausted = myExhausted.includes(tech.id);
+                      return (
+                        <button
+                          key={tech.id}
+                          onClick={() => setOpenTech(tech)}
+                          className="rounded border p-3 text-left pointer-events-auto active:scale-[0.99] transition-transform"
+                          style={{
+                            borderColor: `${colorHex}66`,
+                            background: `linear-gradient(135deg, ${colorHex}18 0%, rgba(0,0,0,0.4) 100%)`,
+                            opacity: isExhausted ? 0.55 : 1,
+                          }}
+                        >
+                          <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                            <span
+                              className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                              style={{ background: colorHex, boxShadow: `0 0 5px ${colorHex}` }}
+                            />
+                            <span
+                              className="text-[10px] uppercase tracking-wider"
+                              style={{ color: colorHex, fontFamily: 'var(--font-aldrich)' }}
+                            >
+                              {COLOR_LABELS[tech.color].es}
+                            </span>
+                            <span
+                              className="text-[10px] font-bold text-white px-1.5 py-0.5 rounded leading-none"
+                              style={{ background: colorHex, fontFamily: 'var(--font-share-tech-mono)' }}
+                            >
+                              L{tech.level}
+                            </span>
+                            {tech.factionIdx !== undefined && (
+                              <span
+                                className="text-[9px] text-amber-200 border border-amber-400/60 bg-amber-500/10 px-1 rounded leading-none"
+                                title={'Tecnología de facción'}
+                              >
+                                ◆ FACCIÓN
+                              </span>
+                            )}
+                            {isExhausted && (
+                              <span className="ml-auto text-xs text-yellow-400 leading-none" title={'Agotada'}>
+                                ⌀
+                              </span>
+                            )}
+                          </div>
+                          <p
+                            className="text-sm text-white mb-1"
+                            style={{ fontFamily: 'var(--font-audiowide)' }}
+                          >
+                            {tech.nameEs}
+                          </p>
+                          <p
+                            className="text-sm text-gray-200 leading-snug"
+                            style={{ fontFamily: 'var(--font-electrolize)' }}
+                          >
+                            {tech.effectEs}
+                          </p>
+                        </button>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
+            </div>
+
+            {/* ── Zone B header ── */}
+            <h3
+              className="text-[10px] uppercase tracking-wider text-gray-400 px-1 mt-2 pt-2 border-t border-gray-800"
+              style={{ fontFamily: 'var(--font-aldrich)' }}
+            >
+              {'Disponibles'}
+            </h3>
+
+            {/* ── Zone B: lista compacta de no investigadas, agrupada por color ── */}
             {COLOR_ORDER.map((color) => {
               const colorHex = TECH_COLOR_HEX[color];
-              const techs = getTechsByColorForFaction(color, viewingFactionIdx).sort(
+              const allTechs = getTechsByColorForFaction(color, viewingFactionIdx).sort(
                 (a, b) => a.level - b.level,
               );
-              const researchedInColor = techs.filter((t) => myResearched.includes(t.id)).length;
+              const available = allTechs.filter((t) => !myResearched.includes(t.id));
+              const researchedInColor = allTechs.length - available.length;
               return (
                 <div key={color} className="flex flex-col gap-1.5">
                   <div className="flex items-center gap-2 px-1">
@@ -140,90 +223,61 @@ export default function MobileTechSection({ viewingPlayerIdx, myPlayerIdx, sendC
                       {COLOR_LABELS[color].es}
                     </span>
                     <span className="text-[10px] text-gray-500 ml-auto">
-                      {researchedInColor} / {techs.length}
+                      {researchedInColor} / {allTechs.length}
                     </span>
                   </div>
-                  <div className="flex flex-col gap-1">
-                    {techs.map((tech) => {
-                      const isResearched = myResearched.includes(tech.id);
-                      const isExhausted = isResearched && myExhausted.includes(tech.id);
-                      const isResearchable = !isResearched && canResearch(myResearched, tech);
-                      return (
-                        <button
-                          key={tech.id}
-                          onClick={() => setOpenTech(tech)}
-                          className={`flex items-center gap-2 px-2 py-1.5 rounded border text-left pointer-events-auto active:scale-[0.98] ${
-                            isResearched
-                              ? isExhausted
-                                ? 'opacity-55'
-                                : ''
-                              : isResearchable
-                              ? 'opacity-100'
-                              : 'opacity-50'
-                          }`}
-                          style={{
-                            borderColor: isResearched
-                              ? isExhausted
-                                ? `${colorHex}66`
-                                : colorHex
-                              : isResearchable
-                              ? `${colorHex}99`
-                              : 'rgba(75,85,99,0.4)',
-                            background: isResearched
-                              ? isExhausted
-                                ? `linear-gradient(90deg, ${colorHex}15 0%, rgba(0,0,0,0.5) 100%)`
-                                : `linear-gradient(90deg, ${colorHex}30 0%, ${colorHex}08 100%)`
-                              : isResearchable
-                              ? `linear-gradient(90deg, ${colorHex}12 0%, rgba(0,0,0,0.4) 100%)`
-                              : 'rgba(0,0,0,0.35)',
-                          }}
-                        >
-                          <span
-                            className="text-[10px] font-bold text-white px-1.5 py-0.5 rounded leading-none"
-                            style={{ background: colorHex, fontFamily: 'var(--font-share-tech-mono)' }}
-                          >
-                            L{tech.level}
-                          </span>
-                          <span
-                            className={`flex-1 text-xs leading-tight truncate ${
-                              isExhausted ? 'text-gray-400 italic' : 'text-white'
+                  {available.length === 0 ? (
+                    <p className="text-[10px] text-gray-600 italic px-1">
+                      {'Todas investigadas.'}
+                    </p>
+                  ) : (
+                    <div className="flex flex-col gap-1">
+                      {available.map((tech) => {
+                        const isResearchable = canResearch(myResearched, tech);
+                        return (
+                          <button
+                            key={tech.id}
+                            onClick={() => setOpenTech(tech)}
+                            className={`flex items-center gap-2 px-2 py-1.5 rounded border text-left pointer-events-auto active:scale-[0.98] ${
+                              isResearchable ? 'opacity-100' : 'opacity-50'
                             }`}
-                            style={{ fontFamily: 'var(--font-electrolize)' }}
+                            style={{
+                              borderColor: isResearchable ? `${colorHex}99` : 'rgba(75,85,99,0.4)',
+                              background: isResearchable
+                                ? `linear-gradient(90deg, ${colorHex}12 0%, rgba(0,0,0,0.4) 100%)`
+                                : 'rgba(0,0,0,0.35)',
+                            }}
                           >
-                            {tech.nameEs}
-                          </span>
-                          {tech.factionIdx !== undefined && (
                             <span
-                              className="text-[9px] text-amber-200 border border-amber-400/60 bg-amber-500/10 px-1 rounded leading-none"
-                              title={'Tecnología de facción'}
+                              className="text-[10px] font-bold text-white px-1.5 py-0.5 rounded leading-none"
+                              style={{ background: colorHex, fontFamily: 'var(--font-share-tech-mono)' }}
                             >
-                              ◆ {'FACCIÓN'}
+                              L{tech.level}
                             </span>
-                          )}
-                          {tech.expansion === 'pok' && (
-                            <span className="text-[9px] text-purple-300 border border-purple-500/40 px-1 rounded leading-none">
-                              PoK
-                            </span>
-                          )}
-                          {isExhausted && (
                             <span
-                              className="text-[10px] text-yellow-400 leading-none"
-                              title={'Agotada'}
+                              className="flex-1 text-xs leading-tight truncate text-white"
+                              style={{ fontFamily: 'var(--font-electrolize)' }}
                             >
-                              ⌀
+                              {tech.nameEs}
                             </span>
-                          )}
-                          <span
-                            className={`w-4 h-4 rounded flex items-center justify-center text-[10px] font-bold ${
-                              isResearched ? 'bg-green-500 text-white' : 'bg-gray-700 text-gray-500'
-                            }`}
-                          >
-                            {isResearched ? '✓' : ''}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
+                            {tech.factionIdx !== undefined && (
+                              <span
+                                className="text-[9px] text-amber-200 border border-amber-400/60 bg-amber-500/10 px-1 rounded leading-none"
+                                title={'Tecnología de facción'}
+                              >
+                                ◆ {'FACCIÓN'}
+                              </span>
+                            )}
+                            {tech.expansion === 'pok' && (
+                              <span className="text-[9px] text-purple-300 border border-purple-500/40 px-1 rounded leading-none">
+                                PoK
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               );
             })}

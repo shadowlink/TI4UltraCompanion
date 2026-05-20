@@ -25,6 +25,9 @@ import PublicObjectivesBar from '@/components/shared/PublicObjectivesBar';
 import TransitionOverlay from '@/components/shared/TransitionOverlay';
 import OptionsPanel from '@/components/shared/OptionsPanel';
 import HostPanel from '@/components/shared/HostPanel';
+import Modal from '@/components/ui/Modal';
+import Button from '@/components/ui/Button';
+import { AlertTriangle, Power } from '@/components/ui/icons';
 import SetupScreen from '@/components/screens/SetupScreen';
 import EndGameScreen from '@/components/screens/EndGameScreen';
 import StrategyPhase from '@/components/phases/StrategyPhase';
@@ -114,37 +117,37 @@ export default function GameShell() {
         {renderPhase()}
       </main>
 
-      {activeModal === 'inactivity' && (
-        <div className="modal-overlay">
-          <div className="bg-gray-900 border border-orange-500/50 rounded-lg p-6 max-w-sm mx-4 text-center">
-            <p className="text-white mb-4">
-              {'No se detecta actividad. La partida está a punto de pausarse.'}
-            </p>
-            <button
-              onClick={() => { closeModal(); setClock(1); }}
-              className="px-6 py-2 border border-orange-500 bg-orange-500/20 text-orange-300 rounded"
-            >
-              {'Reanudar'}
-            </button>
-          </div>
+      <Modal
+        open={activeModal === 'inactivity'}
+        onClose={() => { closeModal(); setClock(1); }}
+        title="Inactividad detectada"
+      >
+        <div className="p-6 text-center flex flex-col gap-4 items-center">
+          <AlertTriangle size={32} className="text-[color:var(--warning)]" strokeWidth={2} aria-hidden />
+          <p className="text-white">
+            {'No se detecta actividad. La partida está a punto de pausarse.'}
+          </p>
+          <Button onClick={() => { closeModal(); setClock(1); }} variant="primary" size="md" icon={Power}>
+            {'Reanudar'}
+          </Button>
         </div>
-      )}
+      </Modal>
 
-      {activeModal === 'pauseAlert' && (
-        <div className="modal-overlay">
-          <div className="bg-gray-900 border border-red-500/50 rounded-lg p-6 max-w-sm mx-4 text-center">
-            <p className="text-white mb-4">
-              {'Partida pausada por inactividad.'}
-            </p>
-            <button
-              onClick={() => { closeModal(); setClock(1); }}
-              className="px-6 py-2 border border-orange-500 bg-orange-500/20 text-orange-300 rounded"
-            >
-              {'Reanudar'}
-            </button>
-          </div>
+      <Modal
+        open={activeModal === 'pauseAlert'}
+        onClose={() => { closeModal(); setClock(1); }}
+        title="Partida en pausa"
+      >
+        <div className="p-6 text-center flex flex-col gap-4 items-center">
+          <AlertTriangle size={32} className="text-[color:var(--danger)]" strokeWidth={2} aria-hidden />
+          <p className="text-white">
+            {'Partida pausada por inactividad.'}
+          </p>
+          <Button onClick={() => { closeModal(); setClock(1); }} variant="primary" size="md" icon={Power}>
+            {'Reanudar'}
+          </Button>
         </div>
-      )}
+      </Modal>
 
       {activeModal === 'options' && <OptionsPanel />}
       {activeModal === 'broadcast' && <HostPanel />}

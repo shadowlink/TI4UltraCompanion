@@ -1,0 +1,40 @@
+/**
+ * Curated re-export of `lucide-react` icons used across the UI.
+ * Centralizing the import here keeps the icon language consistent and
+ * makes it trivial to swap the underlying library later if needed.
+ */
+export {
+  AlertTriangle,
+  ArrowRight,
+  BookOpen,
+  Brain,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  CircleDot,
+  Crown,
+  Eye,
+  EyeOff,
+  Flag,
+  Hexagon,
+  Info,
+  Lock,
+  Minus,
+  Plus,
+  Power,
+  Radio,
+  RefreshCw,
+  RotateCcw,
+  Rocket,
+  Settings,
+  Shield,
+  Sparkles,
+  Star,
+  Swords,
+  Timer,
+  Trash2,
+  Trophy,
+  X,
+  Zap,
+  type LucideIcon,
+} from 'lucide-react';

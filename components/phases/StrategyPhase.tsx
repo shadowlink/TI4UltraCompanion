@@ -13,6 +13,18 @@ import {
 } from '@/lib/constants';
 import StrategyCard from '@/components/shared/StrategyCard';
 import SpeakerModal from '@/components/shared/SpeakerModal';
+import Panel from '@/components/ui/Panel';
+import Modal from '@/components/ui/Modal';
+import Button from '@/components/ui/Button';
+import {
+  Zap,
+  Brain,
+  RefreshCw,
+  Crown,
+  Check,
+  ArrowRight,
+  RotateCcw,
+} from '@/components/ui/icons';
 
 export default function StrategyPhase() {
   const nbPlayers = useGameStore((s) => s.nbPlayers);
@@ -21,7 +33,6 @@ export default function StrategyPhase() {
   const speakerIdx = useGameStore((s) => s.speakerIdx);
   const turnCounter = useGameStore((s) => s.turnCounter);
   const playerChooseCount = useGameStore((s) => s.playerChooseCount);
-  const naaluStrategyIdx = useGameStore((s) => s.naaluStrategyIdx);
   const telephaticPlayerIdx = useGameStore((s) => s.telephaticPlayerIdx);
   const activeModal = useGameStore((s) => s.activeModal);
   const openModal = useGameStore((s) => s.openModal);
@@ -45,7 +56,6 @@ export default function StrategyPhase() {
   const picksNeeded = nbPlayers <= 4 ? nbPlayers * 2 : nbPlayers;
   const allPicked = playerChooseCount >= picksNeeded;
 
-  // Determine current picker
   const pickOrder = Array.from({ length: nbPlayers }, (_, i) => (speakerIdx + i) % nbPlayers);
   const playerPickCount: Record<number, number> = {};
   strategies.forEach((st) => {
@@ -88,76 +98,90 @@ export default function StrategyPhase() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <h2
-          className="text-2xl text-orange-400 text-shadow"
+          className="text-2xl text-[color:var(--accent-soft)] text-shadow"
           style={{ fontFamily: 'var(--font-audiowide)' }}
         >
           {`Ronda ${turnCounter} — Fase de Estrategia`}
         </h2>
         <div className="flex gap-2">
-          <button
-            onClick={resetStrategyPhase}
-            className="text-sm px-4 py-2 border border-gray-600 text-gray-400 hover:text-white rounded transition-colors"
-          >
+          <Button onClick={resetStrategyPhase} variant="ghost" size="sm" icon={RotateCcw}>
             {'Reiniciar'}
-          </button>
+          </Button>
           {allPicked && !swapMode && (
-            <button
-              onClick={endStrategyPhase}
-              className="text-sm px-4 py-2 border border-orange-500 bg-orange-500/20 text-orange-300 hover:bg-orange-500/40 rounded transition-colors"
-              style={{ fontFamily: 'var(--font-aldrich)' }}
-            >
-              {'Efectos de Fase ⚡'}
-            </button>
+            <Button onClick={endStrategyPhase} variant="primary" size="sm" icon={Zap}>
+              {'Efectos de Fase'}
+            </Button>
           )}
         </div>
       </div>
 
-      {/* Current picker */}
-      {!allPicked && currentFaction && currentPickerIdx !== NO_PLAYER && (
-        <div className="flex items-center gap-4 p-4 rounded border border-orange-500/30 bg-orange-500/5">
-          <div className="w-20 h-20 relative flex-shrink-0">
-            <Image
-              src={currentFaction.iconPath}
-              alt={currentFaction.shortName}
-              fill
-              className="object-contain"
-              unoptimized
-            />
+      {/* Picker box — always mounted to avoid layout jump when selection completes */}
+      <Panel
+        variant={allPicked ? 'surface' : 'accent'}
+        className="flex items-center gap-4 p-4 transition-colors"
+      >
+        {!allPicked && currentFaction && currentPicker ? (
+          <>
+            <div className="w-20 h-20 relative flex-shrink-0">
+              <Image
+                src={currentFaction.iconPath}
+                alt={currentFaction.shortName}
+                fill
+                className="object-contain"
+                unoptimized
+              />
+            </div>
+            <div>
+              <p className="text-2xl text-white text-shadow">
+                {currentFaction.nameEs} ({currentPicker.name})
+              </p>
+              <p className="text-base text-[color:var(--accent-soft)]">
+                {'selecciona tu Estrategia'}
+              </p>
+            </div>
+          </>
+        ) : (
+          <div className="flex items-center gap-3">
+            <Zap size={32} className="text-[color:var(--accent-soft)]" strokeWidth={2} aria-hidden />
+            <div>
+              <p
+                className="text-xl text-white"
+                style={{ fontFamily: 'var(--font-audiowide)' }}
+              >
+                {'Selección completa'}
+              </p>
+              <p className="text-sm text-[color:var(--text-secondary)]">
+                {'Continúa con los efectos de fase.'}
+              </p>
+            </div>
           </div>
-          <div>
-            <p className="text-2xl text-white text-shadow">
-              {currentFaction.nameEs} ({currentPicker!.name})
-            </p>
-            <p className="text-base text-orange-300">
-              {'selecciona tu Estrategia'}
-            </p>
-          </div>
-        </div>
-      )}
+        )}
+      </Panel>
 
       {/* Swap mode banner */}
       {swapMode && (
-        <div className="flex items-center justify-between px-3 py-2 rounded border border-blue-500/40 bg-blue-500/10">
-          <p className="text-sm text-blue-300">
+        <div className="flex items-center justify-between px-3 py-2 rounded-[var(--radius)] border border-[color:var(--info)]/40 bg-[color:var(--info)]/10">
+          <p className="text-sm text-[color:var(--info)]">
             {swapFirstIdx !== null
               ? 'Selecciona la segunda carta para intercambiar'
               : 'Selecciona la primera carta para intercambiar'}
           </p>
-          <button
+          <Button
             onClick={() => {
               setSwapMode(false);
               setSwapFirstIdx(null);
               openModal('strategyEnd');
             }}
-            className="text-xs px-3 py-1 border border-blue-500/50 text-blue-300 hover:bg-blue-500/20 rounded"
+            variant="secondary"
+            size="sm"
           >
             {'Hecho'}
-          </button>
+          </Button>
         </div>
       )}
 
       {/* Strategy grid (slots 1-8) */}
-      <div className="grid gap-2" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
+      <div className="grid gap-2" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
         {strategies.slice(1).map((st, i) => {
           const stratIdx = i + 1;
           const isSwapFirst = swapMode && swapFirstIdx === stratIdx;
@@ -165,7 +189,7 @@ export default function StrategyPhase() {
           return (
             <div
               key={stratIdx}
-              className={isSwapFirst ? 'ring-2 ring-blue-400 rounded' : ''}
+              className={isSwapFirst ? 'ring-2 ring-[color:var(--info)] rounded-[var(--radius)]' : ''}
             >
               <StrategyCard
                 strategy={st}
@@ -185,154 +209,128 @@ export default function StrategyPhase() {
 
       {/* Speaker selection if needed (first round) */}
       {turnCounter === 1 && speakerIdx === NO_PLAYER && (
-        <button
-          onClick={() => openModal('speaker')}
-          className="mt-2 px-4 py-2 text-sm border border-yellow-500/50 text-yellow-300 hover:bg-yellow-500/10 rounded"
-        >
-          👑 {'Seleccionar Portavoz'}
-        </button>
+        <Button onClick={() => openModal('speaker')} variant="warning" size="md" icon={Crown} className="mt-2 self-start">
+          {'Seleccionar Portavoz'}
+        </Button>
       )}
 
       {activeModal === 'speaker' && <SpeakerModal />}
 
       {/* End Phase Effects modal */}
-      {activeModal === 'strategyEnd' && (
-        <div
-          className="modal-overlay"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) closeModal();
-          }}
-        >
-          <div className="bg-gray-900 border border-orange-500/40 rounded-lg w-full max-w-sm mx-4 overflow-hidden shadow-2xl">
-            <div className="px-5 py-4 border-b border-gray-700">
-              <h2
-                className="text-base text-orange-400 text-shadow"
-                style={{ fontFamily: 'var(--font-audiowide)' }}
-              >
-                {'Efectos de Fin de Fase'}
-              </h2>
-            </div>
-            <div className="px-5 py-4 flex flex-col gap-3">
-              {naaluInGame && (
-                <button
-                  onClick={() => openModal('naalu')}
-                  className="w-full py-2.5 text-sm border border-purple-500/50 bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 rounded transition-all flex items-center justify-center gap-2"
-                  style={{ fontFamily: 'var(--font-aldrich)' }}
-                >
-                  <span>🧠 {'Naalu Telepática'}</span>
-                  {telephaticPlayerIdx !== NO_PLAYER && (
-                    <span className="text-xs text-green-400">
-                      ✓ {FACTIONS[players[telephaticPlayerIdx].faction].nameEs}
-                    </span>
-                  )}
-                </button>
+      <Modal
+        open={activeModal === 'strategyEnd'}
+        onClose={closeModal}
+        title="Efectos de Fin de Fase"
+      >
+        <div className="px-5 py-4 flex flex-col gap-3">
+          {naaluInGame && (
+            <Button
+              onClick={() => openModal('naalu')}
+              variant="secondary"
+              size="md"
+              icon={Brain}
+              fullWidth
+            >
+              <span className="flex-1 text-left">{'Naalu Telepática'}</span>
+              {telephaticPlayerIdx !== NO_PLAYER && (
+                <span className="inline-flex items-center gap-1 text-xs text-[color:var(--success)] normal-case">
+                  <Check size={12} strokeWidth={2} aria-hidden />
+                  {FACTIONS[players[telephaticPlayerIdx].faction].nameEs}
+                </span>
               )}
-              {swapInGame && (
-                <button
-                  onClick={() => {
-                    closeModal();
-                    setSwapMode(true);
-                    setSwapFirstIdx(null);
-                  }}
-                  className="w-full py-2.5 text-sm border border-blue-500/50 bg-blue-500/10 hover:bg-blue-500/20 text-blue-300 rounded transition-all"
-                  style={{ fontFamily: 'var(--font-aldrich)' }}
-                >
-                  🔄 {'Intercambiar Estrategias'}
-                </button>
-              )}
-              {!naaluInGame && !swapInGame && (
-                <p className="text-sm text-gray-400 text-center py-2">
-                  {'No hay efectos especiales disponibles.'}
-                </p>
-              )}
-            </div>
-            <div className="px-5 py-3 border-t border-gray-700 flex justify-end">
-              <button
-                onClick={finalizeStrategyPhase}
-                className="px-5 py-2 text-sm border border-orange-500 bg-orange-500/10 hover:bg-orange-500/30 text-orange-300 rounded transition-all"
-                style={{ fontFamily: 'var(--font-aldrich)' }}
-              >
-                {'Iniciar Fase de Acción →'}
-              </button>
-            </div>
-          </div>
+            </Button>
+          )}
+          {swapInGame && (
+            <Button
+              onClick={() => {
+                closeModal();
+                setSwapMode(true);
+                setSwapFirstIdx(null);
+              }}
+              variant="secondary"
+              size="md"
+              icon={RefreshCw}
+              fullWidth
+            >
+              {'Intercambiar Estrategias'}
+            </Button>
+          )}
+          {!naaluInGame && !swapInGame && (
+            <p className="text-sm text-[color:var(--text-muted)] text-center py-2">
+              {'No hay efectos especiales disponibles.'}
+            </p>
+          )}
         </div>
-      )}
+        <div className="px-5 py-3 border-t border-[color:var(--accent-border-faint)] flex justify-end">
+          <Button onClick={finalizeStrategyPhase} variant="primary" size="md" icon={ArrowRight} iconPosition="right">
+            {'Iniciar Fase de Acción'}
+          </Button>
+        </div>
+      </Modal>
 
       {/* Naalu Telepathic target picker */}
-      {activeModal === 'naalu' && (
-        <div className="modal-overlay">
-          <div className="bg-gray-900 border border-purple-500/40 rounded-lg w-full max-w-sm mx-4 overflow-hidden shadow-2xl">
-            <div className="px-5 py-4 border-b border-gray-700">
-              <h2
-                className="text-base text-purple-400 text-shadow"
-                style={{ fontFamily: 'var(--font-audiowide)' }}
-              >
-                {'Telepática: Elegir Objetivo'}
-              </h2>
-              <p className="text-xs text-gray-400 mt-1">
-                {'El jugador elegido actuará con iniciativa 0'}
-              </p>
-            </div>
-            <div className="px-5 py-4 flex flex-col gap-2 max-h-80 overflow-y-auto">
-              {players.slice(0, nbPlayers).map((player, i) => {
-                const faction = FACTIONS[player.faction];
-                const playerStrat = strategies.find(
-                  (st) => st.playerIdx === i && !st.isNaaluSlot
-                );
-                if (!playerStrat) return null;
-                const colorVal = PLAYER_COLOR_VALUES[PLAYER_COLORS[player.color]];
-                const isSelected = telephaticPlayerIdx === i;
-                return (
-                  <button
-                    key={i}
-                    onClick={() => {
-                      setNaaluTarget(i);
-                      openModal('strategyEnd');
-                    }}
-                    className={`flex items-center gap-3 p-2.5 rounded border text-left transition-all ${
-                      isSelected
-                        ? 'border-purple-400 bg-purple-500/20'
-                        : 'border-gray-700 hover:border-purple-500/50 hover:bg-purple-500/10'
-                    }`}
-                  >
-                    <div
-                      className="w-1 self-stretch rounded-full flex-shrink-0"
-                      style={{ backgroundColor: colorVal }}
-                    />
-                    <div className="w-8 h-8 relative flex-shrink-0">
-                      <Image
-                        src={faction.iconPath}
-                        alt={faction.shortName}
-                        fill
-                        className="object-contain"
-                        unoptimized
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-white truncate">
-                        {faction.nameEs}
-                      </p>
-                      <p className="text-xs text-gray-400 truncate">
-                        {playerStrat.nameEs}
-                      </p>
-                    </div>
-                    {isSelected && <span className="text-purple-400 text-lg">✓</span>}
-                  </button>
-                );
-              })}
-            </div>
-            <div className="px-5 py-3 border-t border-gray-700 flex justify-end">
-              <button
-                onClick={() => openModal('strategyEnd')}
-                className="px-5 py-2 text-sm border border-gray-600 text-gray-300 hover:border-white rounded"
-              >
-                {'Cancelar'}
-              </button>
-            </div>
-          </div>
+      <Modal
+        open={activeModal === 'naalu'}
+        onClose={() => openModal('strategyEnd')}
+        title="Telepática: Elegir Objetivo"
+      >
+        <div className="px-5 pt-3 pb-2">
+          <p className="text-xs text-[color:var(--text-muted)]">
+            {'El jugador elegido actuará con iniciativa 0'}
+          </p>
         </div>
-      )}
+        <div className="px-5 pb-4 flex flex-col gap-2">
+          {players.slice(0, nbPlayers).map((player, i) => {
+            const faction = FACTIONS[player.faction];
+            const playerStrat = strategies.find(
+              (st) => st.playerIdx === i && !st.isNaaluSlot
+            );
+            if (!playerStrat) return null;
+            const colorVal = PLAYER_COLOR_VALUES[PLAYER_COLORS[player.color]];
+            const isSelected = telephaticPlayerIdx === i;
+            return (
+              <button
+                key={i}
+                onClick={() => {
+                  setNaaluTarget(i);
+                  openModal('strategyEnd');
+                }}
+                className={`flex items-center gap-3 p-2.5 rounded-[var(--radius)] border text-left transition-all pointer-events-auto ${
+                  isSelected
+                    ? 'border-[color:var(--accent-border-strong)] bg-[color:var(--accent)]/15'
+                    : 'border-white/8 hover:border-[color:var(--accent-border)] hover:bg-white/5'
+                }`}
+              >
+                <div
+                  className="w-1 self-stretch rounded-full flex-shrink-0"
+                  style={{ backgroundColor: colorVal }}
+                />
+                <div className="w-8 h-8 relative flex-shrink-0">
+                  <Image
+                    src={faction.iconPath}
+                    alt={faction.shortName}
+                    fill
+                    className="object-contain"
+                    unoptimized
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-white truncate">{faction.nameEs}</p>
+                  <p className="text-xs text-[color:var(--text-muted)] truncate">{playerStrat.nameEs}</p>
+                </div>
+                {isSelected && (
+                  <Check size={16} className="text-[color:var(--accent-soft)]" strokeWidth={2} aria-hidden />
+                )}
+              </button>
+            );
+          })}
+        </div>
+        <div className="px-5 py-3 border-t border-[color:var(--accent-border-faint)] flex justify-end">
+          <Button onClick={() => openModal('strategyEnd')} variant="ghost" size="md">
+            {'Cancelar'}
+          </Button>
+        </div>
+      </Modal>
     </div>
   );
 }

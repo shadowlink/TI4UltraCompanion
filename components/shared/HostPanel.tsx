@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useGameStore } from '@/store/gameStore';
+import Modal from '@/components/ui/Modal';
+import { AlertTriangle } from '@/components/ui/icons';
 
 export default function HostPanel() {
   const closeModal = useGameStore((s) => s.closeModal);
@@ -36,7 +38,6 @@ export default function HostPanel() {
 
   useEffect(() => {
     if (roomCode) {
-      // Room already exists, just rebuild the URL
       fetch('/api/network-info')
         .then((r) => r.json())
         .then(({ addresses, port }) => {
@@ -52,71 +53,56 @@ export default function HostPanel() {
   const displayCode = roomCode;
 
   return (
-    <div
-      className="modal-overlay"
-      onClick={(e) => { if (e.target === e.currentTarget) closeModal(); }}
-    >
-      <div className="bg-gray-900 border border-orange-500/40 rounded-lg w-full max-w-md mx-4 overflow-hidden shadow-2xl">
-        <div className="px-5 py-4 border-b border-gray-700 flex items-center justify-between">
-          <h2
-            className="text-lg text-orange-400 text-shadow"
-            style={{ fontFamily: 'var(--font-audiowide)' }}
-          >
-            {'Compartir Partida'}
-          </h2>
-          <button
-            onClick={closeModal}
-            className="text-gray-400 hover:text-white text-xl leading-none"
-          >
-            &times;
-          </button>
-        </div>
+    <Modal open onClose={closeModal} title="Compartir Partida">
+      <div className="px-5 py-6 flex flex-col items-center gap-4">
+        {error && (
+          <p className="inline-flex items-center gap-1.5 text-sm text-[color:var(--danger)]">
+            <AlertTriangle size={14} strokeWidth={2} aria-hidden />
+            {error}
+          </p>
+        )}
 
-        <div className="px-5 py-6 flex flex-col items-center gap-4">
-          {error && (
-            <p className="text-red-400 text-sm">{error}</p>
-          )}
+        {creating && !watchUrl && (
+          <div className="flex items-center gap-3 text-sm text-[color:var(--text-secondary)]">
+            <span
+              className="spinner inline-block w-4 h-4 rounded-full border-2 border-[color:var(--accent)]/30 border-t-[color:var(--accent)]"
+              aria-hidden
+            />
+            {'Creando sala...'}
+          </div>
+        )}
 
-          {creating && !watchUrl && (
-            <p className="text-gray-400 text-sm">
-              {'Creando sala...'}
+        {watchUrl && displayCode && (
+          <>
+            <p className="text-[color:var(--text-secondary)] text-sm text-center">
+              {'Escanea el QR desde tu móvil para ver la partida en directo'}
             </p>
-          )}
 
-          {watchUrl && displayCode && (
-            <>
-              <p className="text-gray-300 text-sm text-center">
-                {'Escanea el QR desde tu móvil para ver la partida en directo'}
-              </p>
+            <div className="bg-white p-4 rounded-[var(--radius-lg)] shadow-[var(--elevation-2)]">
+              <QRCodeSVG value={watchUrl} size={200} />
+            </div>
 
-              <div className="bg-white p-4 rounded-lg">
-                <QRCodeSVG value={watchUrl} size={200} />
-              </div>
+            <span
+              className="text-3xl text-[color:var(--accent-soft)] font-bold tracking-widest"
+              style={{ fontFamily: 'var(--font-share-tech-mono)' }}
+            >
+              {displayCode}
+            </span>
 
-              <div className="flex items-center gap-2">
-                <span
-                  className="text-3xl text-orange-400 font-bold tracking-widest"
-                  style={{ fontFamily: 'var(--font-share-tech-mono)' }}
-                >
-                  {displayCode}
-                </span>
-              </div>
+            <p
+              className="text-xs text-[color:var(--text-muted)] text-center break-all select-all cursor-text"
+              style={{ fontFamily: 'var(--font-share-tech-mono)' }}
+            >
+              {watchUrl}
+            </p>
 
-              <p
-                className="text-xs text-gray-500 text-center break-all select-all cursor-text"
-                style={{ fontFamily: 'var(--font-share-tech-mono)' }}
-              >
-                {watchUrl}
-              </p>
-
-              <div className="flex items-center gap-2 text-sm text-green-400">
-                <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-                {'Transmitiendo en directo'}
-              </div>
-            </>
-          )}
-        </div>
+            <div className="inline-flex items-center gap-2 text-sm text-[color:var(--success)]">
+              <span className="w-2 h-2 rounded-full bg-[color:var(--success)] animate-pulse" />
+              {'Transmitiendo en directo'}
+            </div>
+          </>
+        )}
       </div>
-    </div>
+    </Modal>
   );
 }

@@ -7,6 +7,8 @@ import { getFactionSheet, TECH_COLOR_HEX } from '@/data/factionSheets';
 import { FACTION_TECHNOLOGIES, getPrereqs } from '@/data/technologies';
 import MobileUnitCard from '@/components/mobile/MobileUnitCard';
 import { FACTION_ART_BY_IDX } from '@/data/factionExtras';
+import Badge from '@/components/ui/Badge';
+import { Lock } from '@/components/ui/icons';
 
 interface Props {
   factionIdx: number;
@@ -44,30 +46,27 @@ export default function FactionDetailView({ factionIdx }: Props) {
   return (
     <div className="max-w-6xl mx-auto px-8 py-8 flex flex-col gap-7">
       {/* Header */}
-      <header className="flex items-center gap-6 pb-5 border-b border-orange-500/30">
+      <header className="flex items-center gap-6 pb-5 border-b border-[color:var(--accent-border-faint)]">
         <div className="w-36 h-36 relative flex-shrink-0">
           <Image
             src={faction.iconPath}
             alt={faction.shortName}
             fill
-            className="object-contain drop-shadow-[0_0_14px_rgba(255,165,0,0.55)]"
+            className="object-contain drop-shadow-[0_0_14px_var(--accent-glow)]"
             unoptimized
           />
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-3 flex-wrap">
             <h1
-              className="text-4xl md:text-5xl text-orange-300 leading-tight"
+              className="text-4xl md:text-5xl text-[color:var(--accent-soft)] leading-tight"
               style={{ fontFamily: 'var(--font-audiowide)' }}
             >
               {title}
             </h1>
-            <span
-              className="text-xs px-2.5 py-1 rounded uppercase tracking-wider border"
-              style={{ borderColor: exp.color, color: exp.color, fontFamily: 'var(--font-aldrich)' }}
-            >
+            <Badge tone="custom" color={exp.color} size="sm">
               {exp.label}
-            </span>
+            </Badge>
           </div>
           <p className="text-lg text-gray-400 mt-2" style={{ fontFamily: 'var(--font-electrolize)' }}>
             {faction.nameEs}
@@ -282,8 +281,9 @@ export default function FactionDetailView({ factionIdx }: Props) {
                     </span>
                   </div>
                   {(ldr.unlockEs) && (
-                    <p className="text-sm text-gray-400 italic mb-3">
-                      🔒 {ldr.unlockEs}
+                    <p className="text-sm text-gray-400 italic mb-3 inline-flex items-center gap-1.5">
+                      <Lock size={14} strokeWidth={2} aria-hidden />
+                      {ldr.unlockEs}
                     </p>
                   )}
                   <p className="text-base text-gray-200 leading-relaxed" style={{ fontFamily: 'var(--font-electrolize)' }}>

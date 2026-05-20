@@ -9,6 +9,8 @@ import { clearSavedGame } from '@/lib/persistence';
 import FactionPickerModal from '@/components/shared/FactionPickerModal';
 import SpeakerModal from '@/components/shared/SpeakerModal';
 import OptionsPanel from '@/components/shared/OptionsPanel';
+import Button from '@/components/ui/Button';
+import { Crown, Settings, ArrowRight, AlertTriangle, Rocket } from '@/components/ui/icons';
 
 export default function SetupScreen() {
   const nbPlayers = useGameStore((s) => s.nbPlayers);
@@ -26,7 +28,6 @@ export default function SetupScreen() {
 
   const allNamed = players.slice(0, nbPlayers).every((p) => p.name.trim());
 
-  // Clicking "Next": require names + speaker before advancing
   const handleNext = () => {
     if (!allNamed) return;
     if (speakerIdx === NO_PLAYER) {
@@ -37,7 +38,6 @@ export default function SetupScreen() {
     setStep('galaxy');
   };
 
-  // After speaker is selected: if we were waiting to advance, proceed to galaxy
   const handleSpeakerChosen = () => {
     setShowSpeaker(false);
     if (pendingGalaxy) {
@@ -46,7 +46,6 @@ export default function SetupScreen() {
     }
   };
 
-  // Speaker guaranteed by handleNext at this point
   const handleStartGame = () => {
     clearSavedGame();
     startFirstRound();
@@ -57,16 +56,13 @@ export default function SetupScreen() {
       {step === 'setup' ? (
         <div className="flex flex-col items-center py-8 px-4">
           <div className="w-full max-w-2xl flex justify-end mb-2">
-            <button
-              onClick={() => openModal('options')}
-              className="text-gray-500 hover:text-orange-400 transition-colors text-sm flex items-center gap-1"
-            >
-              ⚙ {'Opciones'}
-            </button>
+            <Button onClick={() => openModal('options')} variant="ghost" size="sm" icon={Settings}>
+              {'Opciones'}
+            </Button>
           </div>
 
           <h1
-            className="text-2xl md:text-3xl text-orange-400 text-shadow mb-6"
+            className="text-2xl md:text-3xl text-[color:var(--accent-soft)] text-shadow mb-6"
             style={{ fontFamily: 'var(--font-audiowide)' }}
           >
             {'Configuración de Partida'}
@@ -74,7 +70,7 @@ export default function SetupScreen() {
 
           {/* Player count slider */}
           <div className="mb-6 w-full max-w-md">
-            <label className="text-sm text-gray-300 block mb-2">
+            <label className="text-sm text-[color:var(--text-secondary)] block mb-2">
               {nbPlayers} {'jugadores'}
             </label>
             <input
@@ -83,9 +79,10 @@ export default function SetupScreen() {
               max={8}
               value={nbPlayers}
               onChange={(e) => setNbPlayers(Number(e.target.value))}
-              className="w-full accent-orange-400"
+              className="w-full"
+              style={{ accentColor: 'var(--accent)' }}
             />
-            <div className="flex justify-between text-xs text-gray-500 mt-1">
+            <div className="flex justify-between text-xs text-[color:var(--text-muted)] mt-1">
               {[3, 4, 5, 6, 7, 8].map((n) => (
                 <span key={n}>{n}</span>
               ))}
@@ -105,15 +102,20 @@ export default function SetupScreen() {
                 <button
                   key={i}
                   onClick={() => setEditingPlayer(i)}
-                  className="flex flex-col items-center gap-2 p-3 rounded border hover:bg-white/5 transition-all"
-                  style={{ borderColor: colorValue, borderWidth: 2 }}
+                  className="flex flex-col items-center gap-2 p-3 rounded-[var(--radius)] border-2 hover:bg-white/5 transition-all pointer-events-auto"
+                  style={{ borderColor: colorValue }}
                 >
                   <div className="w-16 h-16 relative">
                     <Image src={faction.iconPath} alt={faction.nameEn} fill className="object-contain" unoptimized />
                   </div>
-                  {isSpeaker && <span className="text-xs text-yellow-400">👑 Speaker</span>}
+                  {isSpeaker && (
+                    <span className="inline-flex items-center gap-1 text-xs text-[color:var(--warning)]">
+                      <Crown size={12} strokeWidth={2} aria-hidden />
+                      {'Speaker'}
+                    </span>
+                  )}
                   {player.name && (
-                    <span className="text-sm text-orange-300 text-shadow text-center leading-tight font-bold">
+                    <span className="text-sm text-[color:var(--accent-soft)] text-shadow text-center leading-tight font-bold">
                       {player.name}
                     </span>
                   )}
@@ -130,35 +132,36 @@ export default function SetupScreen() {
           </div>
 
           {/* Speaker button */}
-          <button
+          <Button
             onClick={() => setShowSpeaker(true)}
-            className="mb-4 px-4 py-2 text-sm border border-yellow-500/50 text-yellow-300 hover:bg-yellow-500/10 rounded transition-colors"
-            style={{ fontFamily: 'var(--font-aldrich)' }}
+            variant="warning"
+            size="md"
+            icon={Crown}
+            className="mb-4"
           >
-            👑 {'Seleccionar Portavoz'}
+            {'Seleccionar Portavoz'}
             {speakerIdx !== NO_PLAYER && (
-              <span className="ml-2 text-white">— {FACTIONS[players[speakerIdx].faction].shortName}</span>
+              <span className="ml-2 text-white normal-case">— {FACTIONS[players[speakerIdx].faction].shortName}</span>
             )}
-          </button>
+          </Button>
 
           {/* Next */}
           {!allNamed && (
-            <p className="text-sm text-red-400">
+            <p className="flex items-center gap-1.5 text-sm text-[color:var(--danger)] mb-3">
+              <AlertTriangle size={14} strokeWidth={2} aria-hidden />
               {'Todos los jugadores necesitan un nombre'}
             </p>
           )}
-          <button
+          <Button
             onClick={handleNext}
             disabled={!allNamed}
-            className={`px-8 py-3 text-lg border-2 rounded transition-all ${
-              allNamed
-                ? 'border-orange-500 bg-orange-500/10 hover:bg-orange-500/30 text-orange-300'
-                : 'border-gray-700 bg-gray-800/30 text-gray-600 cursor-not-allowed'
-            }`}
-            style={{ fontFamily: 'var(--font-aldrich)' }}
+            variant="primary"
+            size="lg"
+            icon={ArrowRight}
+            iconPosition="right"
           >
-            {'Siguiente'} →
-          </button>
+            {'Siguiente'}
+          </Button>
         </div>
       ) : (
         <GalaxyScreen onStart={handleStartGame} />
@@ -181,7 +184,6 @@ export default function SetupScreen() {
 function GalaxyScreen({ onStart }: { onStart: () => void }) {
   const [frame, setFrame] = useState(1);
 
-  // Local animation — doesn't depend on game clock which hasn't started yet
   useEffect(() => {
     const id = setInterval(() => setFrame((f) => (f % 7) + 1), 800);
     return () => clearInterval(id);
@@ -190,7 +192,7 @@ function GalaxyScreen({ onStart }: { onStart: () => void }) {
   return (
     <div className="flex-1 flex flex-col items-center justify-center px-4">
       <h2
-        className="text-2xl text-orange-400 text-shadow mb-6"
+        className="text-2xl text-[color:var(--accent-soft)] text-shadow mb-6"
         style={{ fontFamily: 'var(--font-audiowide)' }}
       >
         {'Construyendo la Galaxia...'}
@@ -204,13 +206,9 @@ function GalaxyScreen({ onStart }: { onStart: () => void }) {
           unoptimized
         />
       </div>
-      <button
-        onClick={onStart}
-        className="px-8 py-4 text-xl border-2 border-orange-500 bg-orange-500/20 hover:bg-orange-500/40 text-orange-300 rounded transition-all"
-        style={{ fontFamily: 'var(--font-aldrich)' }}
-      >
+      <Button onClick={onStart} variant="primary" size="lg" icon={Rocket}>
         {'¡Comenzar la primera ronda!'}
-      </button>
+      </Button>
     </div>
   );
 }
