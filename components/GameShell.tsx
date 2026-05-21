@@ -108,14 +108,20 @@ export default function GameShell() {
   const showNav = phase !== PHASE_INIT && phase !== PHASE_END;
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden">
-      {showNav && <VPBar />}
-      {showNav && <PublicObjectivesBar />}
-      {showNav && <NavBar />}
+    <div className="flex flex-row h-screen overflow-hidden">
+      {showNav && (
+        <aside className="w-72 flex-shrink-0 flex flex-col border-r border-[color:var(--accent-border-faint)] overflow-hidden">
+          <VPBar />
+          <NavBar />
+        </aside>
+      )}
 
-      <main className="flex-1 overflow-y-auto">
-        {renderPhase()}
-      </main>
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {showNav && <PublicObjectivesBar />}
+        <main className="flex-1 overflow-y-auto">
+          {renderPhase()}
+        </main>
+      </div>
 
       <Modal
         open={activeModal === 'inactivity'}

@@ -30,34 +30,45 @@ export default function NavBar() {
   };
 
   return (
-    <nav className="flex items-center justify-between px-3 py-2 border-b border-[color:var(--accent-border-faint)] bg-[var(--bg-surface)]">
+    <nav className="flex flex-col px-3 py-3 gap-2 bg-[var(--bg-surface)] border-t border-[color:var(--accent-border-faint)]">
       {/* Clock */}
       <button
         onClick={handleClockClick}
         className="flex items-center gap-2 pointer-events-auto"
-        style={{ fontFamily: 'var(--font-share-tech-mono)' }}
         title={clockRun === 1 ? 'Pause' : 'Resume'}
       >
-        <Timer size={18} className="text-[color:var(--accent)]" strokeWidth={2} aria-hidden />
-        <span className={`text-lg ${clockRun !== 1 ? 'text-[color:var(--text-muted)]' : 'text-white'}`}>
+        <Timer size={16} className="text-[color:var(--accent)]" strokeWidth={2} aria-hidden />
+        <span
+          className={`text-base ${clockRun !== 1 ? 'text-[color:var(--text-muted)]' : 'text-white'}`}
+          style={{ fontFamily: 'var(--font-share-tech-mono)' }}
+        >
           {clockRun === 0 ? '—Pausa—' : formatTime(gameDuration)}
         </span>
       </button>
 
-      {/* Center: phase + decision timer */}
-      <div className="flex flex-col items-center gap-1 flex-1 mx-4">
-        {phaseLabel ? (
+      {/* Phase + round */}
+      {phaseLabel ? (
+        <div className="flex flex-col gap-0.5">
           <span
-            className="text-base text-[color:var(--accent-soft)] text-shadow"
+            className="text-xs text-[color:var(--text-muted)]"
+            style={{ fontFamily: 'var(--font-aldrich)' }}
+          >
+            {`Ronda ${turnCounter}`}
+          </span>
+          <span
+            className="text-sm text-[color:var(--accent-soft)] text-shadow"
             style={{ fontFamily: 'var(--font-audiowide)' }}
           >
-            {`Ronda ${turnCounter}`} — {phaseLabel}
+            {phaseLabel}
           </span>
-        ) : null}
-        {/* Decision timer progress bar */}
-        <div className="w-full max-w-md h-2.5 bg-white/5 rounded-[var(--radius-sm)] overflow-hidden">
+        </div>
+      ) : null}
+
+      {/* Decision timer */}
+      <div className="flex flex-col gap-1">
+        <div className="w-full h-2 bg-white/5 rounded overflow-hidden">
           <div
-            className="h-full rounded-[var(--radius-sm)] transition-[width,background-color] duration-500 ease-out"
+            className="h-full rounded transition-[width,background-color] duration-500 ease-out"
             style={{
               width: `${progressPct}%`,
               background: isDecisionRed ? 'var(--danger)' : 'var(--accent)',
@@ -65,7 +76,7 @@ export default function NavBar() {
           />
         </div>
         <span
-          className="text-2xl font-bold transition-colors duration-300"
+          className="text-2xl font-bold text-center transition-colors duration-300"
           style={{
             fontFamily: 'var(--font-share-tech-mono)',
             color: isDecisionRed ? 'var(--danger)' : 'var(--text-secondary)',
@@ -76,14 +87,14 @@ export default function NavBar() {
       </div>
 
       {/* Broadcast + Options */}
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1 mt-auto pt-2 border-t border-white/10">
         <button
           onClick={() => openModal('broadcast')}
           className="text-[color:var(--accent)] hover:text-[color:var(--accent-soft)] p-2 transition-colors pointer-events-auto"
           title="Compartir partida"
           aria-label="Compartir partida"
         >
-          <Radio size={20} strokeWidth={2} aria-hidden />
+          <Radio size={18} strokeWidth={2} aria-hidden />
         </button>
         <button
           onClick={() => openModal('options')}
@@ -91,7 +102,7 @@ export default function NavBar() {
           title="Opciones"
           aria-label="Opciones"
         >
-          <Settings size={20} strokeWidth={2} aria-hidden />
+          <Settings size={18} strokeWidth={2} aria-hidden />
         </button>
       </div>
     </nav>

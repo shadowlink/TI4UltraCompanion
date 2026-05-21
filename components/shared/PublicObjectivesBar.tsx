@@ -27,11 +27,10 @@ export default function PublicObjectivesBar() {
     <>
       <div
         className="flex-shrink-0 border-b border-orange-500/20 bg-gray-900"
-        style={{ minHeight: 200 }}
       >
         <div
-          className="grid gap-2 px-3 py-2"
-          style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))' }}
+          className="grid gap-1 px-2 py-2"
+          style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))' }}
         >
           {objectiveDeck.map((id, idx) => {
             const obj = OBJECTIVES_BY_ID[id];
@@ -45,7 +44,7 @@ export default function PublicObjectivesBar() {
                 <div
                   key={`${id}-${idx}`}
                   className="rounded border border-gray-700/60 bg-black/40 flex items-center justify-center p-2"
-                  style={{ minHeight: 180 }}
+                  style={{ minHeight: 240 }}
                 >
                   <Lock size={32} className="text-gray-600" strokeWidth={2} aria-label="Oculta" />
                 </div>

@@ -181,7 +181,7 @@ export default function StrategyPhase() {
       )}
 
       {/* Strategy grid (slots 1-8) */}
-      <div className="grid gap-2" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
+      <div className="grid gap-1" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))' }}>
         {strategies.slice(1).map((st, i) => {
           const stratIdx = i + 1;
           const isSwapFirst = swapMode && swapFirstIdx === stratIdx;
