@@ -1,4 +1,4 @@
-import type { SyncState } from '@/types/game';
+import type { SyncState, AgendaVoteType } from '@/types/game';
 
 export interface RoomPairing {
   factionIdx: number;
@@ -25,7 +25,14 @@ export type MobileCommand =
   | { type: 'assimilateTech'; techId: string }
   | { type: 'unassimilateTech'; techId: string }
   | { type: 'nekroGainTech'; techId: string }
-  | { type: 'nekroUngainTech'; techId: string };
+  | { type: 'nekroUngainTech'; techId: string }
+  // Speaker-only game flow commands
+  | { type: 'finalizeStrategyPhase' }
+  | { type: 'startAgenda' }
+  | { type: 'startNewRound' }
+  | { type: 'advanceAgendaStep' }
+  | { type: 'setupAgendaVote'; voteType: AgendaVoteType; columns: string[] }
+  | { type: 'setSpeaker'; playerIdx: number };
 
 export interface PendingCommand {
   deviceId: string;

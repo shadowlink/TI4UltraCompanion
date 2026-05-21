@@ -4,8 +4,13 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { useGameStore } from '@/store/gameStore';
 import { FACTIONS, PLAYER_COLORS, PLAYER_COLOR_VALUES } from '@/data/factions';
-import { NO_PLAYER, VOTE_PASS } from '@/lib/constants';
+import { NO_PLAYER, VOTE_PASS, STRATEGY_DISABLED } from '@/lib/constants';
+import { Crown } from '@/components/ui/icons';
+import { PLANETS } from '@/data/planets';
+import { LAWS } from '@/data/laws';
+import { OBJECTIVES_BY_ID } from '@/data/publicObjectives';
 import type { MobileCommand } from '@/lib/sync/types';
+import type { AgendaVoteType } from '@/types/game';
 
 interface Props {
   myPlayerIdx: number;
@@ -33,9 +38,20 @@ export default function MobileAgendaPhase({ myPlayerIdx, sendCommand }: Props) {
   const agendaStage = useGameStore((s) => s.agendaStage);
   const agendaVoteType = useGameStore((s) => s.agendaVoteType);
   const agendaColumns = useGameStore((s) => s.agendaColumns);
+  const speakerIdx = useGameStore((s) => s.speakerIdx);
+  const strategies = useGameStore((s) => s.strategies);
+  const objectiveDeck = useGameStore((s) => s.objectiveDeck);
+  const revealedCount = useGameStore((s) => s.revealedCount);
   const [selectedColumn, setSelectedColumn] = useState<number | null>(null);
   const [amount, setAmount] = useState(0);
   const [busy, setBusy] = useState(false);
+  // Speaker-only state for vote setup
+  const [selectedVoteType, setSelectedVoteType] = useState<AgendaVoteType | null>(null);
+  const [setupColumns, setSetupColumns] = useState<string[]>([]);
+  const [pickerSearch, setPickerSearch] = useState('');
+  const [planetTypeFilter, setPlanetTypeFilter] = useState<string | null>(null);
+
+  const isSpeaker = myPlayerIdx >= 0 && myPlayerIdx === speakerIdx;
 
   const agendaLabel =
     agendaStep === 1
@@ -87,8 +103,247 @@ export default function MobileAgendaPhase({ myPlayerIdx, sendCommand }: Props) {
     setBusy(false);
   };
 
+  const handleSelectVoteType = (voteType: AgendaVoteType) => {
+    setSelectedVoteType(voteType);
+    setPickerSearch('');
+    setPlanetTypeFilter(null);
+    if (voteType === 'ForAgainst') {
+      setSetupColumns(['A Favor', 'En Contra']);
+    } else if (voteType === 'ElectPlayer') {
+      setSetupColumns(players.slice(0, nbPlayers).map((p) => FACTIONS[p.faction].nameEs));
+    } else if (voteType === 'ElectStrategy') {
+      setSetupColumns(
+        strategies.slice(1).filter((st) => st.status !== STRATEGY_DISABLED && !st.isNaaluSlot).map((st) => st.nameEs)
+      );
+    } else if (voteType === 'ElectOther') {
+      setSetupColumns(['', '']);
+    } else {
+      // ElectPlanet, ElectLaw, ElectObjective — picker-based, start empty
+      setSetupColumns([]);
+    }
+  };
+
+  const handleSubmitVoteSetup = async () => {
+    if (!selectedVoteType || busy) return;
+    const cols = setupColumns.filter((c) => c.trim());
+    if (cols.length === 0) return;
+    setBusy(true);
+    await sendCommand({ type: 'setupAgendaVote', voteType: selectedVoteType, columns: cols });
+    setBusy(false);
+  };
+
+  const handleAdvanceStep = async () => {
+    if (busy) return;
+    setBusy(true);
+    await sendCommand({ type: 'advanceAgendaStep' });
+    // Reset vote setup for next step
+    setSelectedVoteType(null);
+    setSetupColumns(['', '']);
+    setBusy(false);
+  };
+
+  const handleStartNewRound = async () => {
+    if (busy) return;
+    setBusy(true);
+    await sendCommand({ type: 'startNewRound' });
+    setBusy(false);
+  };
+
   // ── Type select stage ──────────────────────────────────────────────────────
   if (agendaStage === 'type_select') {
+    if (isSpeaker) {
+      const isPickerType = selectedVoteType === 'ElectPlanet' || selectedVoteType === 'ElectLaw' || selectedVoteType === 'ElectObjective';
+      const isAutoType = selectedVoteType === 'ForAgainst' || selectedVoteType === 'ElectPlayer' || selectedVoteType === 'ElectStrategy';
+      const isTextType = selectedVoteType === 'ElectOther';
+      const canSubmit = setupColumns.filter((c) => c.trim()).length > 0;
+
+      // Build picker candidate list (unselected items only)
+      const allPickerItems: string[] = (() => {
+        if (selectedVoteType === 'ElectPlanet') {
+          const filtered = planetTypeFilter
+            ? PLANETS.filter((p) => p.type === planetTypeFilter)
+            : PLANETS;
+          return filtered.map((p) => p.name).filter((n) =>
+            n.toLowerCase().includes(pickerSearch.toLowerCase())
+          );
+        }
+        if (selectedVoteType === 'ElectLaw') {
+          return LAWS.map((l) => l.es).filter((n) =>
+            n.toLowerCase().includes(pickerSearch.toLowerCase())
+          );
+        }
+        if (selectedVoteType === 'ElectObjective') {
+          return objectiveDeck
+            .slice(0, revealedCount)
+            .map((id) => OBJECTIVES_BY_ID[id]?.nameEn)
+            .filter((n): n is string => !!n && n.toLowerCase().includes(pickerSearch.toLowerCase()));
+        }
+        return [];
+      })();
+      const pickerItems = allPickerItems.filter((item) => !setupColumns.includes(item));
+
+      return (
+        <div className="flex flex-col gap-3 p-3 pointer-events-auto">
+          <div className="flex items-center gap-2">
+            <Crown size={14} className="text-[color:var(--warning)]" strokeWidth={2} aria-hidden />
+            <span className="text-xs text-orange-300 uppercase tracking-wider" style={{ fontFamily: 'var(--font-aldrich)' }}>
+              {`Portavoz — ${agendaLabel}`}
+            </span>
+          </div>
+          <p className="text-xs text-gray-400">{'Elige el tipo de votación de la carta de agenda:'}</p>
+          <div className="flex flex-wrap gap-1.5">
+            {(Object.keys(VOTE_TYPE_LABELS) as AgendaVoteType[]).map((vt) => (
+              <button
+                key={vt}
+                onClick={() => handleSelectVoteType(vt)}
+                className={`px-2.5 py-1.5 rounded-full border text-xs ${
+                  selectedVoteType === vt
+                    ? 'border-orange-400 bg-orange-500/30 text-white'
+                    : 'border-gray-600 text-gray-300 bg-gray-900/40'
+                }`}
+              >
+                {VOTE_TYPE_LABELS[vt].es}
+              </button>
+            ))}
+          </div>
+
+          {/* ── Per-type column setup ── */}
+          {selectedVoteType && (
+            <div className="flex flex-col gap-2 mt-1">
+
+              {/* Auto-populated: read-only preview chips */}
+              {isAutoType && (
+                <>
+                  <p className="text-xs text-gray-400">{'Columnas:'}</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {setupColumns.map((col, i) => (
+                      <span key={i} className="px-2.5 py-1 rounded-full bg-gray-700 border border-gray-600 text-xs text-white">
+                        {col}
+                      </span>
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {/* Free text inputs (ElectOther) */}
+              {isTextType && (
+                <>
+                  <p className="text-xs text-gray-400">{'Etiquetas de columna:'}</p>
+                  {setupColumns.map((col, i) => (
+                    <input
+                      key={i}
+                      type="text"
+                      value={col}
+                      onChange={(e) => {
+                        const next = [...setupColumns];
+                        next[i] = e.target.value;
+                        setSetupColumns(next);
+                      }}
+                      placeholder={`Columna ${i + 1}`}
+                      className="w-full px-3 py-2 rounded border border-gray-600 bg-gray-900 text-white text-sm outline-none focus:border-orange-400"
+                    />
+                  ))}
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setSetupColumns([...setupColumns, ''])}
+                      disabled={setupColumns.length >= 8}
+                      className="text-xs text-blue-400 underline disabled:opacity-30"
+                    >
+                      {'+ Añadir columna'}
+                    </button>
+                    {setupColumns.length > 2 && (
+                      <button
+                        onClick={() => setSetupColumns(setupColumns.slice(0, -1))}
+                        className="text-xs text-red-400 underline"
+                      >
+                        {'− Quitar'}
+                      </button>
+                    )}
+                  </div>
+                </>
+              )}
+
+              {/* Picker (ElectPlanet / ElectLaw / ElectObjective) */}
+              {isPickerType && (
+                <>
+                  {/* Selected chips */}
+                  {setupColumns.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {setupColumns.map((col, i) => (
+                        <button
+                          key={i}
+                          onClick={() => setSetupColumns(setupColumns.filter((_, j) => j !== i))}
+                          className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-600/30 border border-blue-500/60 text-xs text-blue-200 active:bg-blue-600/50"
+                        >
+                          <span>{col}</span>
+                          <span className="text-blue-400 leading-none">×</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Planet type filter */}
+                  {selectedVoteType === 'ElectPlanet' && (
+                    <div className="flex gap-1.5 flex-wrap">
+                      {(['cultural', 'hazardous', 'industrial', 'homeworld'] as const).map((pt) => (
+                        <button
+                          key={pt}
+                          onClick={() => setPlanetTypeFilter(planetTypeFilter === pt ? null : pt)}
+                          className={`px-2 py-0.5 rounded border text-[10px] capitalize ${
+                            planetTypeFilter === pt
+                              ? 'border-blue-400 bg-blue-500/30 text-white'
+                              : 'border-gray-600 text-gray-400 bg-gray-900/40'
+                          }`}
+                        >
+                          {pt}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Search */}
+                  <input
+                    type="text"
+                    value={pickerSearch}
+                    onChange={(e) => setPickerSearch(e.target.value)}
+                    placeholder={'Buscar...'}
+                    className="w-full px-3 py-2 rounded border border-gray-600 bg-gray-900 text-white text-sm outline-none focus:border-orange-400"
+                  />
+
+                  {/* Item list */}
+                  <div className="max-h-44 overflow-y-auto flex flex-col gap-0.5 rounded border border-gray-700 bg-gray-950/60 p-1">
+                    {pickerItems.length > 0 ? pickerItems.map((item, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setSetupColumns([...setupColumns, item])}
+                        className="text-left px-3 py-1.5 rounded text-xs text-gray-200 hover:bg-gray-800 active:bg-gray-700"
+                      >
+                        {item}
+                      </button>
+                    )) : (
+                      <p className="text-xs text-gray-500 italic text-center py-3">
+                        {setupColumns.length > 0 && allPickerItems.length === pickerItems.length + setupColumns.length
+                          ? 'Todo seleccionado'
+                          : 'Sin resultados'}
+                      </p>
+                    )}
+                  </div>
+                </>
+              )}
+
+              <button
+                onClick={handleSubmitVoteSetup}
+                disabled={!canSubmit || busy}
+                className="w-full py-3 rounded-lg border-2 border-orange-500/60 bg-orange-500/15 text-orange-200 text-sm active:bg-orange-500/30 disabled:opacity-30 mt-1"
+                style={{ fontFamily: 'var(--font-aldrich)' }}
+              >
+                {'Iniciar votación →'}
+              </button>
+            </div>
+          )}
+        </div>
+      );
+    }
     return (
       <div className="flex flex-col items-center justify-center gap-4 px-6 py-12 text-center">
         <div className="w-12 h-12 border-4 border-orange-500/30 border-t-orange-400 rounded-full animate-spin" />
@@ -96,7 +351,7 @@ export default function MobileAgendaPhase({ myPlayerIdx, sendCommand }: Props) {
           {agendaLabel}
         </p>
         <p className="text-xs text-gray-400">
-          {'Esperando a que el host elija el tipo de votación...'}
+          {'Esperando a que el portavoz elija el tipo de votación...'}
         </p>
       </div>
     );
@@ -184,6 +439,16 @@ export default function MobileAgendaPhase({ myPlayerIdx, sendCommand }: Props) {
               })}
             </div>
           </div>
+        )}
+
+        {/* Speaker advance controls */}
+        {isSpeaker && (
+          <SpeakerAdvancePanel
+            agendaStep={agendaStep}
+            busy={busy}
+            onAdvance={handleAdvanceStep}
+            onSkipToNewRound={handleStartNewRound}
+          />
         )}
       </div>
     );
@@ -355,6 +620,57 @@ export default function MobileAgendaPhase({ myPlayerIdx, sendCommand }: Props) {
           </div>
         </div>
       )}
+
+      {/* Speaker advance controls */}
+      {isSpeaker && (
+        <SpeakerAdvancePanel
+          agendaStep={agendaStep}
+          busy={busy}
+          onAdvance={handleAdvanceStep}
+          onSkipToNewRound={handleStartNewRound}
+        />
+      )}
+    </div>
+  );
+}
+
+// ─── Reusable speaker advance panel ─────────────────────────────────────────
+
+function SpeakerAdvancePanel({
+  agendaStep,
+  busy,
+  onAdvance,
+  onSkipToNewRound,
+}: {
+  agendaStep: number;
+  busy: boolean;
+  onAdvance: () => void;
+  onSkipToNewRound: () => void;
+}) {
+  return (
+    <div className="rounded-lg border-2 border-orange-500/40 bg-orange-500/5 px-3 py-3 flex flex-col gap-2 pointer-events-auto mt-2">
+      <div className="flex items-center gap-2">
+        <Crown size={14} className="text-[color:var(--warning)]" strokeWidth={2} aria-hidden />
+        <span className="text-xs text-orange-300 uppercase tracking-wider" style={{ fontFamily: 'var(--font-aldrich)' }}>
+          {'Portavoz'}
+        </span>
+      </div>
+      <button
+        onClick={onAdvance}
+        disabled={busy}
+        className="w-full py-2.5 rounded-lg border-2 border-orange-500/60 bg-orange-500/15 text-orange-200 text-sm active:bg-orange-500/30 disabled:opacity-30"
+        style={{ fontFamily: 'var(--font-aldrich)' }}
+      >
+        {agendaStep === 1 ? 'Avanzar al paso 2 →' : 'Finalizar agenda → Nueva ronda →'}
+      </button>
+      <button
+        onClick={onSkipToNewRound}
+        disabled={busy}
+        className="w-full py-2 rounded-lg border border-gray-500/50 bg-gray-700/20 text-gray-400 text-xs active:bg-gray-700/40 disabled:opacity-30"
+        style={{ fontFamily: 'var(--font-aldrich)' }}
+      >
+        {'Saltar directamente a nueva ronda'}
+      </button>
     </div>
   );
 }

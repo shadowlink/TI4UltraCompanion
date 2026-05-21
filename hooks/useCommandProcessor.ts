@@ -203,6 +203,58 @@ function processCommand(cmd: PendingCommand): void {
       store.unresearchTech(playerIdx, cmd.command.techId);
       return;
     }
+
+    // ── Speaker-only game flow ──────────────────────────────────────────────
+    case 'finalizeStrategyPhase': {
+      if (store.phase !== PHASE_STRATEGY) return;
+      if (playerIdx !== store.speakerIdx) return;
+      // Require all players to have picked their cards
+      const counts: Record<number, number> = {};
+      store.strategies.forEach((st) => {
+        if (st.playerIdx !== NO_PLAYER && st.playerIdx < 8) counts[st.playerIdx] = (counts[st.playerIdx] ?? 0) + 1;
+        if (st.secondPickPlayerIdx !== undefined && st.secondPickPlayerIdx < 8) counts[st.secondPickPlayerIdx] = (counts[st.secondPickPlayerIdx] ?? 0) + 1;
+      });
+      const maxPicks = store.nbPlayers <= 4 ? 2 : 1;
+      const pickOrder = Array.from({ length: store.nbPlayers }, (_, i) => (store.speakerIdx + i) % store.nbPlayers);
+      if (!pickOrder.every((idx) => (counts[idx] ?? 0) >= maxPicks)) return;
+      store.finalizeStrategyPhase();
+      return;
+    }
+    case 'startAgenda': {
+      if (store.phase !== PHASE_STATUS) return;
+      if (playerIdx !== store.speakerIdx) return;
+      if (store.revealedCount < store.objectiveDeck.length) store.revealNextObjective();
+      store.newAgenda();
+      return;
+    }
+    case 'startNewRound': {
+      if (store.phase !== PHASE_STATUS && store.phase !== PHASE_AGENDA) return;
+      if (playerIdx !== store.speakerIdx) return;
+      if (store.phase === PHASE_STATUS && store.revealedCount < store.objectiveDeck.length) store.revealNextObjective();
+      store.newTurn();
+      return;
+    }
+    case 'advanceAgendaStep': {
+      if (store.phase !== PHASE_AGENDA) return;
+      if (playerIdx !== store.speakerIdx) return;
+      store.advanceAgendaStep();
+      return;
+    }
+    case 'setupAgendaVote': {
+      if (store.phase !== PHASE_AGENDA) return;
+      if (playerIdx !== store.speakerIdx) return;
+      store.setAgendaVoteType(cmd.command.voteType);
+      store.setAgendaColumns(cmd.command.columns);
+      store.setAgendaStage('voting');
+      return;
+    }
+    case 'setSpeaker': {
+      if (playerIdx !== store.speakerIdx) return;
+      const newIdx = cmd.command.playerIdx;
+      if (newIdx < 0 || newIdx >= store.nbPlayers) return;
+      store.setSpeaker(newIdx);
+      return;
+    }
   }
 }
 

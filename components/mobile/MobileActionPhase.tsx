@@ -114,12 +114,12 @@ export default function MobileActionPhase({ myPlayerIdx, sendCommand }: Props) {
             <button
               onClick={() => handleAction('strat1')}
               disabled={busy || s1Done}
-              className="py-3 text-sm rounded border-2 border-blue-500/60 bg-blue-500/15 text-blue-200 active:bg-blue-500/30 disabled:opacity-30"
+              className={`py-3 text-sm rounded border-2 border-blue-500/60 bg-blue-500/15 text-blue-200 active:bg-blue-500/30 disabled:opacity-30 ${!mySecondStrategy ? 'col-span-2' : ''}`}
               style={{ fontFamily: 'var(--font-aldrich)' }}
             >
               {'Estratégica 1'}
             </button>
-            {mySecondStrategy ? (
+            {mySecondStrategy && (
               <button
                 onClick={() => handleAction('strat2')}
                 disabled={busy || s2Done}
@@ -128,8 +128,6 @@ export default function MobileActionPhase({ myPlayerIdx, sendCommand }: Props) {
               >
                 {'Estratégica 2'}
               </button>
-            ) : (
-              <div />
             )}
             <button
               onClick={() => handleAction('tactical')}

@@ -6,7 +6,7 @@ import { useGameStore } from '@/store/gameStore';
 import { FACTIONS, PLAYER_COLORS, PLAYER_COLOR_VALUES } from '@/data/factions';
 import { NO_PLAYER, STRATEGY_DISABLED, STRATEGY_AVAILABLE, STRATEGY_PICKED } from '@/lib/constants';
 import { getStrategyActions } from '@/data/strategyActions';
-import { Info, X } from '@/components/ui/icons';
+import { Info, X, Crown } from '@/components/ui/icons';
 import type { MobileCommand } from '@/lib/sync/types';
 import type { StrategyEntry } from '@/types/game';
 
@@ -33,11 +33,20 @@ export default function MobileStrategyPhase({ myPlayerIdx, sendCommand }: Props)
   const maxPicks = nbPlayers <= 4 ? 2 : 1;
   const currentPickerIdx = pickOrder.find((idx) => (counts[idx] ?? 0) < maxPicks) ?? NO_PLAYER;
   const isMyTurn = myPlayerIdx >= 0 && currentPickerIdx === myPlayerIdx;
+  const isSpeaker = myPlayerIdx >= 0 && myPlayerIdx === speakerIdx;
+  const allPicked = currentPickerIdx === NO_PLAYER;
 
   const handlePick = async (stratIdx: number) => {
     if (!isMyTurn || busy) return;
     setBusy(true);
     await sendCommand({ type: 'pickStrategy', stratIdx });
+    setBusy(false);
+  };
+
+  const handleFinalizeStrategy = async () => {
+    if (!allPicked || busy) return;
+    setBusy(true);
+    await sendCommand({ type: 'finalizeStrategyPhase' });
     setBusy(false);
   };
 
@@ -148,6 +157,27 @@ export default function MobileStrategyPhase({ myPlayerIdx, sendCommand }: Props)
           stratIdx={detailStrat.stratIdx}
           onClose={() => setDetailStrat(null)}
         />
+      )}
+
+      {/* Speaker panel */}
+      {isSpeaker && (
+        <div className="border-t-2 border-orange-500/40 bg-orange-500/5 px-3 py-3 flex flex-col gap-2 pointer-events-auto">
+          <div className="flex items-center gap-2">
+            <Crown size={14} className="text-[color:var(--warning)]" strokeWidth={2} aria-hidden />
+            <span className="text-xs text-orange-300 uppercase tracking-wider" style={{ fontFamily: 'var(--font-aldrich)' }}>
+              {'Portavoz'}
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={handleFinalizeStrategy}
+            disabled={!allPicked || busy}
+            className="w-full py-3 rounded-lg border-2 border-orange-500/60 bg-orange-500/15 text-orange-200 text-sm active:bg-orange-500/30 disabled:opacity-30"
+            style={{ fontFamily: 'var(--font-aldrich)' }}
+          >
+            {allPicked ? 'Finalizar fase de estrategia →' : 'Esperando a que todos elijan...'}
+          </button>
+        </div>
       )}
     </div>
   );
