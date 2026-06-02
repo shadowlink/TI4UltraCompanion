@@ -88,7 +88,7 @@ export default function MobileActionPhase({ myPlayerIdx, sendCommand }: Props) {
             {activeFaction.nameEs}
           </p>
           {activePlayer.name && (
-            <p className="text-xs" style={{ color: activeColor, fontFamily: 'var(--font-aldrich)' }}>
+            <p className="text-sm" style={{ color: activeColor, fontFamily: 'var(--font-aldrich)' }}>
               {activePlayer.name}
             </p>
           )}

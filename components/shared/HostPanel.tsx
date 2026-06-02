@@ -12,8 +12,14 @@ export default function HostPanel() {
   const setRoomCode = useGameStore((s) => s.setRoomCode);
 
   const [watchUrl, setWatchUrl] = useState<string | null>(null);
+  const [mirrorUrl, setMirrorUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
+
+  const buildUrls = (ip: string, port: number | string, code: string) => {
+    setWatchUrl(`http://${ip}:${port}/game?viewer=${code}`);
+    setMirrorUrl(`http://${ip}:${port}/game?mirror=${code}`);
+  };
 
   const createRoom = async () => {
     setCreating(true);
@@ -26,9 +32,8 @@ export default function HostPanel() {
       const { code } = await roomRes.json();
       const { addresses, port } = await netRes.json();
       const ip = addresses?.[0]?.ip ?? 'localhost';
-      const url = `http://${ip}:${port}/game?viewer=${code}`;
       setRoomCode(code);
-      setWatchUrl(url);
+      buildUrls(ip, port, code);
     } catch {
       setError('Error al crear sala');
     } finally {
@@ -42,7 +47,7 @@ export default function HostPanel() {
         .then((r) => r.json())
         .then(({ addresses, port }) => {
           const ip = addresses?.[0]?.ip ?? 'localhost';
-          setWatchUrl(`http://${ip}:${port}/game?viewer=${roomCode}`);
+          buildUrls(ip, port, roomCode);
         })
         .catch(() => {});
     } else {
@@ -75,7 +80,7 @@ export default function HostPanel() {
         {watchUrl && displayCode && (
           <>
             <p className="text-[color:var(--text-secondary)] text-sm text-center">
-              {'Escanea el QR desde tu móvil para ver la partida en directo'}
+              {'Escanea el QR desde tu móvil para ver y jugar la partida en directo'}
             </p>
 
             <div className="bg-white p-4 rounded-[var(--radius-lg)] shadow-[var(--elevation-2)]">
@@ -89,16 +94,25 @@ export default function HostPanel() {
               {displayCode}
             </span>
 
-            <p
-              className="text-xs text-[color:var(--text-muted)] text-center break-all select-all cursor-text"
-              style={{ fontFamily: 'var(--font-share-tech-mono)' }}
-            >
-              {watchUrl}
-            </p>
-
             <div className="inline-flex items-center gap-2 text-sm text-[color:var(--success)]">
               <span className="w-2 h-2 rounded-full bg-[color:var(--success)] animate-pulse" />
               {'Transmitiendo en directo'}
+            </div>
+
+            {/* Mirror screens (TV/PC): no scanning — open the app and enter the code, or this URL */}
+            <div className="w-full mt-1 pt-3 border-t border-[color:var(--accent-border-faint)] flex flex-col items-center gap-1">
+              <p className="text-[color:var(--text-secondary)] text-sm text-center">
+                {'¿Pantalla espejo (TV/PC)? Abre la app y entra en «Pantalla espejo» con el código '}
+                <span className="text-[color:var(--accent-soft)] font-bold tracking-widest" style={{ fontFamily: 'var(--font-share-tech-mono)' }}>{displayCode}</span>
+              </p>
+              {mirrorUrl && (
+                <p
+                  className="text-[11px] text-[color:var(--text-muted)] text-center break-all select-all cursor-text"
+                  style={{ fontFamily: 'var(--font-share-tech-mono)' }}
+                >
+                  {mirrorUrl}
+                </p>
+              )}
             </div>
           </>
         )}

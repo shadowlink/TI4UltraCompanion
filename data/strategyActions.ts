@@ -15,51 +15,51 @@ export interface StrategyActionText {
 export const STRATEGY_ACTIONS: Record<string, StrategyActionText> = {
   Leadership: {
     primaryEs:
-      'Gana 3 fichas de mando. Después, puedes gastar cualquier cantidad de influencia para ganar 1 ficha por cada 3 gastados.',
+      "Ganas 3 fichas de Mando. Gasta cualquier cantidad de Influencia para ganar 1 ficha de Mando por cada 3 de Influencia gastada.",
     secondaryEs:
-      'Puedes gastar cualquier cantidad de influencia para ganar 1 ficha de mando por cada 3 gastados.',
+      "Gasta cualquier cantidad de Influencia para ganar 1 ficha de Mando por cada 3 de Influencia gastada.",
   },
   Diplomacy: {
     primaryEs:
-      'Elige 1 sistema con un planeta tuyo. Otros jugadores no pueden activar ese sistema este turno. Después, endereza hasta 2 de tus planetas agotados.',
+      "Elige 1 sistema que no sea el de Mecatol Rex y que contenga un planeta controlado por ti; todos los demás jugadores cogen 1 ficha de Mando de sus refuerzos y la colcan en el sistema elegido. Luego prepara hasta 2 planetas agotados que controles.",
     secondaryEs:
-      'Gasta 1 ficha de estrategia para enderezar hasta 2 de tus planetas agotados.',
+      "Gasta 1 ficha de tu reserva de Estrategia para preparar hasta 2 planetas agotados que controles.",
   },
   Politics: {
     primaryEs:
-      'Elige a otro jugador como Portavoz. Roba 2 cartas de acción. Mira las 2 cartas superiores del mazo de agenda y colócalas en cualquier orden.',
+      "Elige a un jugador que no sea el Portavoz. Ese jugador gana el indicador de Portavoz. Roba 2 cartas de acción. Mira las 2 primeras cartas de Consejo Galáctico del mazo. Coloca cada carta en la parte superior o en la parte inferior del mazo en el orden que prefieras.",
     secondaryEs:
-      'Gasta 1 ficha de estrategia para robar 2 cartas de acción.',
+      "Gasta 1 ficha de tu reserva de Estrategia para robar 2 cartas de acción.",
   },
   Construction: {
     primaryEs:
-      'Coloca 1 Fábrica Defensiva y 1 unidad de Infantería en 1 planeta tuyo, o 2 FD en planetas distintos.',
+      "Coloca 1 SDP o bien un Puerto espacial en un planeta que controles. Coloca 1 SPD en un planeta que controles.",
     secondaryEs:
-      'Gasta 1 ficha de tácticas (no de estrategia) para colocar 1 FD o 1 Infantería en un planeta tuyo.',
+      "Gasta 1 ficha de tu reserva de Estrategia y colócala en cualquier sistema; puedes colocar 1 Puerto espacial o bien 1 SPD en un planeta que controles en ese sistema.",
   },
   Trade: {
     primaryEs:
-      'Gana 3 Bienes de Comercio. Repón tus mercancías (Exportaciones). Permite a otros jugadores reponer sus mercancías.',
+      "Ganas 3 Mercancias. Repón tus Exportaciones. Elige cualquier cantidad de jugadores (excluyéndote a ti). Los jugadores elegidos utilizan la capacidad secundaria de esta carta de Estrategia sin gastar una ficha de Mando.",
     secondaryEs:
-      'Gasta 1 ficha de estrategia para reponer tus mercancías (Exportaciones).',
+      "Gasta 1 ficha de tu reserva de Estrategia para reponer tus Exportaciones.",
   },
   Warfare: {
     primaryEs:
-      'Retira 1 de tus fichas de mando del tablero. Después, realiza 1 activación táctica adicional usando la acción secundaria de esta carta.',
+      "Retira del tablero 1 de tus fichas de Mando; luego ganas 1 ficha de Mando. Redistribuye cualquier cantidad de las fichas de Mando que tengas en tu hoja de mando.",
     secondaryEs:
-      'Gasta 1 ficha de estrategia para usar la habilidad de Producción de 1 estructura de tu zona natal.',
+      "Gasta 1 ficha de tu reserva de Estrategia para utilizar la capacidad de PRODUCCIÓN de 1 Puerto espacial que tengas en tu sistema de origen.",
   },
   Technology: {
     primaryEs:
-      'Investiga 1 tecnología. Después, puedes gastar 6 recursos para investigar otra tecnología.',
+      "Investiga 1 Tecnología. Gasta 6 Recursos para investigar 1 Tecnología.",
     secondaryEs:
-      'Gasta 1 ficha de estrategia y 4 recursos para investigar 1 tecnología.',
+      "Gasta 1 ficha de tu reserva de Estrategia y 4 Recursos para investigar 1 Tecnología.",
   },
   Imperial: {
     primaryEs:
-      'Si controlas Mecatol Rex, gana 1 PV; si no, gana 1 BC. Roba 1 objetivo secreto.',
+      "Anótate inmediatamente los puntos proporcionados por 1 Objetivo público si cumples sus condiciones. Ganas 1 punto de victoria si controlas Mecatol Rex; en caso contrario,  roba una carta de Objetivo secreto.",
     secondaryEs:
-      'Gasta 1 ficha de estrategia para puntuar 1 objetivo público cuyos requisitos cumplas.',
+      "Gasta 1 ficha de tu reserva de Estrategia para robar 1 carta de Objetivo secreto.",
   },
 };
 

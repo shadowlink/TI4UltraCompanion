@@ -28,6 +28,7 @@ export const ACTION_STRAT_OTHER = 3;
 export const HACAN_FACTION = 4;
 export const NAALU_FACTION = 9;
 export const NEKRO_FACTION = 10;
+export const JOL_NAR_FACTION = 12;
 export const WINNU_FACTION = 13;
 export const POK_FACTION = 17;
 export const CODEX_FACTION = 24;
@@ -35,8 +36,10 @@ export const TE_FACTION = 25;
 export const DS_FACTION = 30;
 export const DRAHN_FACTION = 64;
 
-// App version for save/load compatibility
-export const APP_VERSION = 800; // 8.0.0
+// App version for save/load compatibility.
+// Minor bumps within the same major are backward-compatible (loadGame accepts
+// them and hydrateFromSave fills missing fields with safe defaults).
+export const APP_VERSION = 810; // 8.1.0
 
 // Image path base (served from /public/ti4-img/)
 export const IMG_BASE = '/ti4-img/';

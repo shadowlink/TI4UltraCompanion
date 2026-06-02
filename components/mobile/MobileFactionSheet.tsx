@@ -424,6 +424,7 @@ export default function MobileFactionSheet({
           exhaustedIds={myExhausted}
           sendCommand={sendCommand}
           onClose={() => setOpenUpgrade(null)}
+          viewerFactionIdx={factionIdx}
         />
       )}
     </div>

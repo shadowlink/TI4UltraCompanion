@@ -36,7 +36,7 @@ import {
   type AgendaStage,
   type AgendaVoteType,
 } from '@/types/game';
-import { saveGame, clearSavedGame } from '@/lib/persistence';
+import { clearSavedGame, extractSaveState } from '@/lib/persistence';
 import { STAGE_I_OBJECTIVES, STAGE_II_OBJECTIVES, OBJECTIVES_BY_ID } from '@/data/publicObjectives';
 import { TECH_BY_ID, canResearch } from '@/data/technologies';
 import { getFactionSheet } from '@/data/factionSheets';
@@ -192,7 +192,6 @@ interface GameState {
   hydrateFromSave: (saved: SaveState) => void;
   hydrateFromSync: (synced: SyncState) => void;
   extractSyncState: () => SyncState;
-  persistGame: () => void;
 }
 
 // ─── Initial state ────────────────────────────────────────────────────────────
@@ -286,7 +285,6 @@ export const useGameStore = create<GameState>()((set, get) => ({
       clockRun: phase === PHASE_END ? 0 : 1,
     });
     setTimeout(() => set({ showTransition: false }), 2000);
-    get().persistGame();
   },
 
   startFirstRound: () => {
@@ -362,7 +360,6 @@ export const useGameStore = create<GameState>()((set, get) => ({
         ...(isNaalu ? { naaluStrategyIdx: stratIdx } : {}),
       };
     });
-    get().persistGame();
   },
 
   setNaaluTarget: (playerIdx) => {
@@ -477,7 +474,6 @@ export const useGameStore = create<GameState>()((set, get) => ({
     set({ activeStrategyIdx: idx, currentPlayerTimer: 0 });
     get().resetDecisionTimer();
     get().setClock(1);
-    get().persistGame();
   },
 
   resolveAction: ({ s1, s2, pass }) => {
@@ -543,7 +539,6 @@ export const useGameStore = create<GameState>()((set, get) => ({
       players[playerIdx] = { ...players[playerIdx], vp: newVP };
       return { players };
     });
-    get().persistGame();
   },
 
   adjustTokens: (playerIdx, pool, delta) => {
@@ -560,7 +555,6 @@ export const useGameStore = create<GameState>()((set, get) => ({
       };
       return { players };
     });
-    get().persistGame();
   },
 
   adjustCommodities: (playerIdx, delta) => {
@@ -575,7 +569,6 @@ export const useGameStore = create<GameState>()((set, get) => ({
       players[playerIdx] = { ...player, commodities: next };
       return { players };
     });
-    get().persistGame();
   },
 
   adjustTradeGoods: (playerIdx, delta) => {
@@ -589,7 +582,6 @@ export const useGameStore = create<GameState>()((set, get) => ({
       players[playerIdx] = { ...player, tradeGoods: next };
       return { players };
     });
-    get().persistGame();
   },
 
   // ── Status ─────────────────────────────────────────────────────────────────
@@ -700,7 +692,6 @@ export const useGameStore = create<GameState>()((set, get) => ({
         },
       };
     });
-    get().persistGame();
   },
 
   unscoreObjective: (objectiveId, playerIdx) => {
@@ -723,7 +714,6 @@ export const useGameStore = create<GameState>()((set, get) => ({
       }
       return { players, objectivesScoredBy: nextScoredBy };
     });
-    get().persistGame();
   },
 
   researchTech: (playerIdx, techId) => {
@@ -741,7 +731,6 @@ export const useGameStore = create<GameState>()((set, get) => ({
         },
       };
     });
-    get().persistGame();
   },
 
   /** Bypass prereq validation. Caller (command processor) must have validated the bypass conditions. */
@@ -757,7 +746,6 @@ export const useGameStore = create<GameState>()((set, get) => ({
         },
       };
     });
-    get().persistGame();
   },
 
   unresearchTech: (playerIdx, techId) => {
@@ -785,7 +773,6 @@ export const useGameStore = create<GameState>()((set, get) => ({
       }
       return { researchedTechs: next, exhaustedTechs: nextExh };
     });
-    get().persistGame();
   },
 
   exhaustTech: (playerIdx, techId) => {
@@ -802,7 +789,6 @@ export const useGameStore = create<GameState>()((set, get) => ({
         },
       };
     });
-    get().persistGame();
   },
 
   readyTech: (playerIdx, techId) => {
@@ -818,7 +804,6 @@ export const useGameStore = create<GameState>()((set, get) => ({
       }
       return { exhaustedTechs: next };
     });
-    get().persistGame();
   },
 
   readyAllMyTechs: (playerIdx) => {
@@ -828,7 +813,6 @@ export const useGameStore = create<GameState>()((set, get) => ({
       delete next[playerIdx];
       return { exhaustedTechs: next };
     });
-    get().persistGame();
   },
 
   readyAllTechs: () => {
@@ -836,7 +820,6 @@ export const useGameStore = create<GameState>()((set, get) => ({
       if (Object.keys(s.exhaustedTechs).length === 0) return {};
       return { exhaustedTechs: {} };
     });
-    get().persistGame();
   },
 
   assimilateTech: (playerIdx, techId) => {
@@ -857,7 +840,6 @@ export const useGameStore = create<GameState>()((set, get) => ({
         : { ...s.researchedTechs, [playerIdx]: [...researched, techId] };
       return { nekroAssimilated: nextAssim, researchedTechs: nextResearched };
     });
-    get().persistGame();
   },
 
   unassimilateTech: (playerIdx, techId) => {
@@ -891,7 +873,6 @@ export const useGameStore = create<GameState>()((set, get) => ({
         exhaustedTechs: nextExhausted,
       };
     });
-    get().persistGame();
   },
 
   // ── Clock ──────────────────────────────────────────────────────────────────
@@ -976,6 +957,16 @@ export const useGameStore = create<GameState>()((set, get) => ({
       researchedTechs: saved.researchedTechs ?? {},
       exhaustedTechs: saved.exhaustedTechs ?? {},
       nekroAssimilated: saved.nekroAssimilated ?? {},
+      // Live state — restore so a refresh mid-vote/mid-turn doesn't lose progress.
+      // Old saves (v8.0.x) lack these; use safe defaults so loading never throws.
+      votes: saved.votes ?? [],
+      votingPlayerIdx: saved.votingPlayerIdx ?? NO_PLAYER,
+      agendaStage: saved.agendaStage ?? 'type_select',
+      agendaVoteType: saved.agendaVoteType ?? null,
+      agendaColumns: saved.agendaColumns ?? [],
+      clockRun: saved.clockRun ?? 0,
+      currentPlayerTimer: saved.currentPlayerTimer ?? 0,
+      lastActivity: saved.lastActivity ?? saved.gameDuration ?? 0,
       decisionTimerRemaining: saved.options.decisionTimerLimit,
     });
   },
@@ -1016,70 +1007,7 @@ export const useGameStore = create<GameState>()((set, get) => ({
     });
   },
 
-  extractSyncState: () => {
-    const s = get();
-    return {
-      nbPlayers: s.nbPlayers,
-      players: s.players,
-      speakerIdx: s.speakerIdx,
-      previousSpeakerIdx: s.previousSpeakerIdx,
-      phase: s.phase,
-      turnCounter: s.turnCounter,
-      roundCounter: s.roundCounter,
-      gameDuration: s.gameDuration,
-      strategies: s.strategies,
-      activeStrategyIdx: s.activeStrategyIdx,
-      playerChooseCount: s.playerChooseCount,
-      naaluStrategyIdx: s.naaluStrategyIdx,
-      telephaticPlayerIdx: s.telephaticPlayerIdx,
-      agendaStep: s.agendaStep,
-      agendaPhase: s.agendaPhase,
-      statusStep: s.statusStep,
-      options: s.options,
-      votes: s.votes,
-      votingPlayerIdx: s.votingPlayerIdx,
-      clockRun: s.clockRun,
-      currentPlayerTimer: s.currentPlayerTimer,
-      agendaStage: s.agendaStage,
-      agendaVoteType: s.agendaVoteType,
-      agendaColumns: s.agendaColumns,
-      objectiveDeck: s.objectiveDeck,
-      revealedCount: s.revealedCount,
-      objectivesScoredBy: s.objectivesScoredBy,
-      researchedTechs: s.researchedTechs,
-      exhaustedTechs: s.exhaustedTechs,
-      nekroAssimilated: s.nekroAssimilated,
-    };
-  },
-
-  persistGame: () => {
-    const s = get();
-    saveGame({
-      nbPlayers: s.nbPlayers,
-      players: s.players,
-      speakerIdx: s.speakerIdx,
-      previousSpeakerIdx: s.previousSpeakerIdx,
-      phase: s.phase,
-      turnCounter: s.turnCounter,
-      roundCounter: s.roundCounter,
-      gameDuration: s.gameDuration,
-      strategies: s.strategies,
-      activeStrategyIdx: s.activeStrategyIdx,
-      playerChooseCount: s.playerChooseCount,
-      naaluStrategyIdx: s.naaluStrategyIdx,
-      telephaticPlayerIdx: s.telephaticPlayerIdx,
-      agendaStep: s.agendaStep,
-      agendaPhase: s.agendaPhase,
-      statusStep: s.statusStep,
-      options: s.options,
-      objectiveDeck: s.objectiveDeck,
-      revealedCount: s.revealedCount,
-      objectivesScoredBy: s.objectivesScoredBy,
-      researchedTechs: s.researchedTechs,
-      exhaustedTechs: s.exhaustedTechs,
-      nekroAssimilated: s.nekroAssimilated,
-    });
-  },
+  extractSyncState: () => extractSaveState(get()),
 }));
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

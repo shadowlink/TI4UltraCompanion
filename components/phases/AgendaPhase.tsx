@@ -590,7 +590,7 @@ function ResultsScreen({
                   <div className="w-8 h-8 relative flex-shrink-0">
                     <Image src={faction.iconPath} alt={faction.shortName} fill className="object-contain" unoptimized />
                   </div>
-                  <span className="text-base text-white" style={{ fontFamily: 'var(--font-electrolize)' }}>
+                  <span className="text-lg text-white" style={{ fontFamily: 'var(--font-electrolize)' }}>
                     {faction.shortName} ({players[pIdx].name})
                   </span>
                   <ArrowRight size={14} className="text-[color:var(--text-muted)]" strokeWidth={2} aria-hidden />

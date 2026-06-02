@@ -28,10 +28,14 @@ export default function ActionPhase() {
   const showFactionClock = useGameStore((s) => s.options.showFactionClock);
   const resolveAction = useGameStore((s) => s.resolveAction);
 
-  const [s1Active, setS1Active] = useState(false);
-  const [s2Active, setS2Active] = useState(false);
-  const [passActive, setPassActive] = useState(false);
-  const [otherActive, setOtherActive] = useState(false);
+  // One action per turn: a single mutually-exclusive selection (TI4 rule).
+  const [selected, setSelected] = useState<'s1' | 's2' | 'other' | 'pass' | null>(null);
+  const s1Active = selected === 's1';
+  const s2Active = selected === 's2';
+  const otherActive = selected === 'other';
+  const passActive = selected === 'pass';
+  const toggle = (k: 's1' | 's2' | 'other' | 'pass') =>
+    setSelected((cur) => (cur === k ? null : k));
 
   const activeStrategy = strategies[activeStrategyIdx];
   const activePlayerIdx = activeStrategy?.playerIdx ?? NO_PLAYER;
@@ -49,18 +53,16 @@ export default function ActionPhase() {
   const isS1Played = activeStrategy?.status === STRATEGY_PLAYED;
   const isS2Played = secondStrategy?.status === STRATEGY_PLAYED;
 
+  // Pass is only allowed once the player's strategy card(s) are already played/passed.
   const canPass =
-    (s1Active || isS1Played) &&
-    (nbPlayers > 4 || secondStratIdx === -1 || s2Active || isS2Played);
+    isS1Played &&
+    (nbPlayers > 4 || secondStratIdx === -1 || isS2Played);
 
-  const anyActionSelected = s1Active || s2Active || otherActive || passActive;
+  const anyActionSelected = selected !== null;
 
   const handleResolve = () => {
     resolveAction({ s1: s1Active, s2: s2Active, pass: passActive });
-    setS1Active(false);
-    setS2Active(false);
-    setPassActive(false);
-    setOtherActive(false);
+    setSelected(null);
   };
 
   const sidebarStrategies = strategies
@@ -153,7 +155,7 @@ export default function ActionPhase() {
                     active={s1Active}
                     done={isS1Played}
                     tone="accent"
-                    onClick={() => setS1Active((v) => !v)}
+                    onClick={() => toggle('s1')}
                   />
                   {secondStrategy && (
                     <ActionBtn
@@ -162,7 +164,7 @@ export default function ActionPhase() {
                       active={s2Active}
                       done={isS2Played}
                       tone="info"
-                      onClick={() => setS2Active((v) => !v)}
+                      onClick={() => toggle('s2')}
                     />
                   )}
                   <ActionBtn
@@ -171,7 +173,7 @@ export default function ActionPhase() {
                     active={otherActive}
                     done={false}
                     tone="success"
-                    onClick={() => setOtherActive((v) => !v)}
+                    onClick={() => toggle('other')}
                   />
                   <ActionBtn
                     label={'Pasar'}
@@ -180,7 +182,7 @@ export default function ActionPhase() {
                     done={false}
                     disabled={!canPass}
                     tone="danger"
-                    onClick={() => setPassActive((v) => !v)}
+                    onClick={() => toggle('pass')}
                   />
                 </div>
               </div>

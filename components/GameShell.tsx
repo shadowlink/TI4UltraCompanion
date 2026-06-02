@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useGameStore } from '@/store/gameStore';
-import { useHydrateOnMount } from '@/hooks/usePersistence';
+import { useHydrateOnMount, useAutoPersist, flushPersistSync } from '@/hooks/usePersistence';
 import { useGameClock } from '@/hooks/useGameClock';
 import { useSyncHost } from '@/hooks/useSyncHost';
 import { useSyncViewer } from '@/hooks/useSyncViewer';
@@ -40,35 +40,61 @@ export default function GameShell() {
   const searchParams = useSearchParams();
   const isContinue = searchParams.get('continue') === '1';
   const viewerCode = searchParams.get('viewer');
+  const mirrorCode = searchParams.get('mirror');
   const isViewer = !!viewerCode;
+  const isMirror = !!mirrorCode;
+  // Both viewer (mobile play) and mirror (desktop dashboard) are read-only clients
+  // that poll the room state; neither pushes, persists, runs the clock, or processes commands.
+  const isReadOnly = isViewer || isMirror;
+  const readCode = viewerCode ?? mirrorCode;
 
-  // Host-only: hydrate from localStorage, run game clock, broadcast state
-  useHydrateOnMount(isContinue && !isViewer);
-  useGameClock(!isViewer);
+  // Host-only: hydrate from localStorage, auto-persist on every change, run clock
+  useHydrateOnMount(isContinue && !isReadOnly);
+  useAutoPersist(!isReadOnly);
+  useGameClock(!isReadOnly);
   const roomCode = useGameStore((s) => s.roomCode);
-  const { pushNow } = useSyncHost(isViewer ? null : roomCode);
-  useCommandProcessor(isViewer ? null : roomCode, pushNow);
+  const { pushNow } = useSyncHost(isReadOnly ? null : roomCode);
+  useCommandProcessor(isReadOnly ? null : roomCode, pushNow);
 
-  // Viewer-only: poll server for state
-  const viewerSync = useSyncViewer(isViewer ? viewerCode : null);
+  // Read-only clients (viewer + mirror): poll server for state
+  const viewerSync = useSyncViewer(isReadOnly ? readCode : null);
 
   const phase = useGameStore((s) => s.phase);
   const activeModal = useGameStore((s) => s.activeModal);
   const closeModal = useGameStore((s) => s.closeModal);
   const setClock = useGameStore((s) => s.setClock);
 
-  // Warn before leaving if game is active (host only)
+  // Persist on tab close/hide and warn before leaving an active game (host only).
+  // pagehide + visibilitychange-hidden are the events the browser fires reliably
+  // on real close, SPA nav away, and mobile background — beforeunload alone is
+  // not enough (it's skipped on some mobile flows).
   useEffect(() => {
-    if (isViewer) return;
+    if (isReadOnly) return;
+    const isActiveGame = phase !== PHASE_INIT && phase !== PHASE_END;
+
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (phase !== PHASE_INIT && phase !== PHASE_END) {
+      flushPersistSync();
+      if (isActiveGame) {
         e.preventDefault();
         e.returnValue = '';
       }
     };
+    const handlePageHide = () => {
+      flushPersistSync();
+    };
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') flushPersistSync();
+    };
+
     window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [phase, isViewer]);
+    window.addEventListener('pagehide', handlePageHide);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('pagehide', handlePageHide);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [phase, isReadOnly]);
 
   // Viewer renders dedicated mobile shell
   if (isViewer) {
@@ -84,44 +110,42 @@ export default function GameShell() {
     );
   }
 
-  // Host rendering
-  const renderPhase = () => {
-    switch (phase) {
-      case PHASE_INIT:
-      case PHASE_GALAXY:
-        return <SetupScreen />;
-      case PHASE_STRATEGY:
-        return <StrategyPhase />;
-      case PHASE_ACTION:
-        return <ActionPhase />;
-      case PHASE_STATUS:
-        return <StatusPhase />;
-      case PHASE_AGENDA:
-        return <AgendaPhase />;
-      case PHASE_END:
-        return <EndGameScreen />;
-      default:
-        return <SetupScreen />;
+  // Mirror: read-only live copy of the host desktop dashboard, on any number of screens.
+  if (isMirror) {
+    if (!viewerSync.connected) {
+      return (
+        <div className="flex flex-col items-center justify-center h-screen gap-4 bg-[var(--bg-surface)] text-center px-6">
+          <span
+            className="spinner inline-block w-8 h-8 rounded-full border-2 border-[color:var(--accent)]/30 border-t-[color:var(--accent)]"
+            aria-hidden
+          />
+          <p className="text-[color:var(--text-secondary)]">
+            {viewerSync.error === 'Room not ready'
+              ? `Conectando a la sala ${mirrorCode}…`
+              : viewerSync.error
+                ? `Sala no encontrada (${mirrorCode})`
+                : `Conectando a la sala ${mirrorCode}…`}
+          </p>
+          <span
+            className="text-2xl text-[color:var(--accent-soft)] font-bold tracking-widest"
+            style={{ fontFamily: 'var(--font-share-tech-mono)' }}
+          >
+            {mirrorCode}
+          </span>
+        </div>
+      );
     }
-  };
+    return (
+      <ViewOnlyContext value={true}>
+        <HostLayout phase={phase} />
+      </ViewOnlyContext>
+    );
+  }
 
-  const showNav = phase !== PHASE_INIT && phase !== PHASE_END;
-
+  // Host rendering
   return (
-    <div className="flex flex-row h-screen overflow-hidden">
-      {showNav && (
-        <aside className="w-72 flex-shrink-0 flex flex-col border-r border-[color:var(--accent-border-faint)] overflow-hidden">
-          <VPBar />
-          <NavBar />
-        </aside>
-      )}
-
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {showNav && <PublicObjectivesBar />}
-        <main className="flex-1 overflow-y-auto">
-          {renderPhase()}
-        </main>
-      </div>
+    <ViewOnlyContext value={false}>
+      <HostLayout phase={phase} />
 
       <Modal
         open={activeModal === 'inactivity'}
@@ -159,6 +183,50 @@ export default function GameShell() {
       {activeModal === 'broadcast' && <HostPanel />}
 
       <TransitionOverlay />
+    </ViewOnlyContext>
+  );
+}
+
+/** Desktop dashboard layout — sidebar (VPBar + NavBar) + objectives + current phase.
+ *  Reused by the host and by read-only mirror screens. */
+function HostLayout({ phase }: { phase: number }) {
+  const renderPhase = () => {
+    switch (phase) {
+      case PHASE_INIT:
+      case PHASE_GALAXY:
+        return <SetupScreen />;
+      case PHASE_STRATEGY:
+        return <StrategyPhase />;
+      case PHASE_ACTION:
+        return <ActionPhase />;
+      case PHASE_STATUS:
+        return <StatusPhase />;
+      case PHASE_AGENDA:
+        return <AgendaPhase />;
+      case PHASE_END:
+        return <EndGameScreen />;
+      default:
+        return <SetupScreen />;
+    }
+  };
+
+  const showNav = phase !== PHASE_INIT && phase !== PHASE_END;
+
+  return (
+    <div className="flex flex-row h-screen overflow-hidden">
+      {showNav && (
+        <aside className="w-72 flex-shrink-0 flex flex-col border-r border-[color:var(--accent-border-faint)] overflow-hidden">
+          <VPBar />
+          <NavBar />
+        </aside>
+      )}
+
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {showNav && <PublicObjectivesBar />}
+        <main className="flex-1 overflow-y-auto">
+          {renderPhase()}
+        </main>
+      </div>
     </div>
   );
 }

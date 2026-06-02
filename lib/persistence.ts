@@ -11,6 +11,43 @@ interface SavePayload {
   state: SaveState;
 }
 
+/** Pick only the SaveState fields from a larger state object (e.g. the store). */
+export function extractSaveState<T extends SaveState>(s: T): SaveState {
+  return {
+    nbPlayers: s.nbPlayers,
+    players: s.players,
+    speakerIdx: s.speakerIdx,
+    previousSpeakerIdx: s.previousSpeakerIdx,
+    phase: s.phase,
+    turnCounter: s.turnCounter,
+    roundCounter: s.roundCounter,
+    gameDuration: s.gameDuration,
+    strategies: s.strategies,
+    activeStrategyIdx: s.activeStrategyIdx,
+    playerChooseCount: s.playerChooseCount,
+    naaluStrategyIdx: s.naaluStrategyIdx,
+    telephaticPlayerIdx: s.telephaticPlayerIdx,
+    agendaStep: s.agendaStep,
+    agendaPhase: s.agendaPhase,
+    statusStep: s.statusStep,
+    options: s.options,
+    objectiveDeck: s.objectiveDeck,
+    revealedCount: s.revealedCount,
+    objectivesScoredBy: s.objectivesScoredBy,
+    researchedTechs: s.researchedTechs,
+    exhaustedTechs: s.exhaustedTechs,
+    nekroAssimilated: s.nekroAssimilated,
+    votes: s.votes,
+    votingPlayerIdx: s.votingPlayerIdx,
+    agendaStage: s.agendaStage,
+    agendaVoteType: s.agendaVoteType,
+    agendaColumns: s.agendaColumns,
+    clockRun: s.clockRun,
+    currentPlayerTimer: s.currentPlayerTimer,
+    lastActivity: s.lastActivity,
+  };
+}
+
 export function saveGame(state: SaveState): void {
   if (typeof window === 'undefined') return;
   const payload: SavePayload = {

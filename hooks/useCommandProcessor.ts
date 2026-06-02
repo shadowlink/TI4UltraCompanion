@@ -9,6 +9,7 @@ import {
   missingPrereqCount,
 } from '@/data/technologies';
 import {
+  JOL_NAR_FACTION,
   NO_PLAYER,
   PHASE_STRATEGY,
   PHASE_ACTION,
@@ -137,6 +138,19 @@ function processCommand(cmd: PendingCommand): void {
       // Apply: exhaust AI Dev + force research
       store.exhaustTech(playerIdx, bypassTechId);
       store.forceResearchTech(playerIdx, techId);
+      return;
+    }
+    case 'researchTechAnalytical': {
+      // Jol-Nar "MENTE ANALÍTICA": ignore 1 prereq when researching a non-unit-upgrade tech.
+      const player = store.players[playerIdx];
+      if (!player || player.faction !== JOL_NAR_FACTION) return;
+      const tech = TECH_BY_ID[cmd.command.techId];
+      if (!tech || tech.category === 'unitUpgrade') return;
+      const owned = store.researchedTechs[playerIdx] ?? [];
+      if (owned.includes(cmd.command.techId)) return;
+      // Must be missing exactly 1 prereq for the ability to enable the research.
+      if (missingPrereqCount(owned, tech) !== 1) return;
+      store.forceResearchTech(playerIdx, cmd.command.techId);
       return;
     }
     case 'unresearchTech': {

@@ -74,7 +74,7 @@ export default function MobileFactionPicker({ serverPairings, myDeviceId, onPick
               <p className="text-sm text-white mt-2 text-center" style={{ fontFamily: 'var(--font-audiowide)' }}>
                 {faction.shortName}
               </p>
-              <p className="text-[11px] text-gray-400 text-center mt-0.5">
+              <p className="text-sm text-gray-400 text-center mt-0.5 truncate max-w-full">
                 {player.name || '—'}
               </p>
               {taken && (

@@ -6,7 +6,7 @@ import { useGameStore } from '@/store/gameStore';
 import { hasSavedGame } from '@/lib/persistence';
 import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
-import { BookOpen, Power, RotateCcw, AlertTriangle } from '@/components/ui/icons';
+import { BookOpen, Power, RotateCcw, AlertTriangle, Eye, Layers, Brain } from '@/components/ui/icons';
 
 export default function StartScreen() {
   const router = useRouter();
@@ -15,6 +15,8 @@ export default function StartScreen() {
   const [passwordModalOpen, setPasswordModalOpen] = useState(false);
   const [password, setPassword] = useState('');
   const [passwordError, setPasswordError] = useState(false);
+  const [mirrorModalOpen, setMirrorModalOpen] = useState(false);
+  const [mirrorCode, setMirrorCode] = useState('');
 
   useEffect(() => {
     setCanContinue(hasSavedGame());
@@ -39,6 +41,13 @@ export default function StartScreen() {
 
   const handleContinue = () => {
     router.push('/game?continue=1');
+  };
+
+  const submitMirror = (e: React.FormEvent) => {
+    e.preventDefault();
+    const code = mirrorCode.trim().toUpperCase();
+    if (code.length < 4) return;
+    router.push(`/game?mirror=${code}`);
   };
 
   return (
@@ -83,6 +92,33 @@ export default function StartScreen() {
         >
           {'Explorar Facciones'}
         </Button>
+        <Button
+          onClick={() => router.push('/guia')}
+          variant="ghost"
+          size="lg"
+          fullWidth
+          icon={Layers}
+        >
+          {'Guía de referencia'}
+        </Button>
+        <Button
+          onClick={() => router.push('/aprende')}
+          variant="ghost"
+          size="lg"
+          fullWidth
+          icon={Brain}
+        >
+          {'Aprende a jugar'}
+        </Button>
+        <Button
+          onClick={() => { setMirrorCode(''); setMirrorModalOpen(true); }}
+          variant="ghost"
+          size="lg"
+          fullWidth
+          icon={Eye}
+        >
+          {'Pantalla espejo'}
+        </Button>
       </div>
 
       <p className="mt-16 text-xs text-[color:var(--text-muted)]" style={{ fontFamily: 'var(--font-share-tech-mono)' }}>
@@ -119,6 +155,39 @@ export default function StartScreen() {
             </Button>
             <Button type="submit" variant="primary">
               {'Entrar'}
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Mirror screen modal — enter the room code shown on the host */}
+      <Modal
+        open={mirrorModalOpen}
+        onClose={() => setMirrorModalOpen(false)}
+        title="Pantalla espejo"
+      >
+        <form onSubmit={submitMirror} className="p-5 flex flex-col gap-4">
+          <p className="text-sm text-[color:var(--text-secondary)]">
+            {'Introduce el código de sala que aparece en la partida (menú Compartir) para ver el tablero en directo.'}
+          </p>
+          <input
+            autoFocus
+            type="text"
+            inputMode="text"
+            autoCapitalize="characters"
+            maxLength={4}
+            value={mirrorCode}
+            onChange={(e) => setMirrorCode(e.target.value.toUpperCase())}
+            className="bg-[var(--bg-surface)] border border-[color:var(--accent-border)] rounded-[var(--radius)] px-3 py-2 text-white text-2xl text-center tracking-[0.4em] uppercase outline-none focus:border-[color:var(--accent-border-strong)] transition-colors"
+            style={{ fontFamily: 'var(--font-share-tech-mono)' }}
+            placeholder="ABCD"
+          />
+          <div className="flex gap-2 justify-end">
+            <Button type="button" variant="ghost" onClick={() => setMirrorModalOpen(false)}>
+              {'Cancelar'}
+            </Button>
+            <Button type="submit" variant="primary" disabled={mirrorCode.trim().length < 4} icon={Eye}>
+              {'Ver'}
             </Button>
           </div>
         </form>

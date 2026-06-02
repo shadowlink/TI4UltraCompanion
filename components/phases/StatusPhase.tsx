@@ -101,7 +101,7 @@ export default function StatusPhase() {
                       unoptimized
                     />
                   </div>
-                  <span className="text-sm text-[color:var(--text-secondary)] leading-none truncate max-w-full px-1">
+                  <span className="text-base text-[color:var(--text-secondary)] leading-none truncate max-w-full px-1">
                     {faction.shortName} ({player.name})
                   </span>
                   <div className="flex items-center gap-2 mt-0.5">
