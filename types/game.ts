@@ -113,18 +113,8 @@ export type AgendaVoteType =
   | 'ElectStrategy'
   | 'ElectOther';
 
-// Real-time sync state (SaveState + transient fields needed for live viewer)
-export interface SyncState extends SaveState {
-  votes: VoteRecord[];
-  votingPlayerIdx: number;
-  clockRun: ClockRun;
-  currentPlayerTimer: number;
-  agendaStage: AgendaStage;
-  agendaVoteType: AgendaVoteType | null;
-  agendaColumns: string[];
-}
-
-// Serializable save state (subset of full state, without DOM/timer values)
+// Serializable game state. Persisted to localStorage and broadcast over room sync.
+// Excludes pure UI/derived fields (modals, transitions, decisionTimerRemaining).
 export interface SaveState {
   nbPlayers: number;
   players: PlayerData[];
@@ -150,7 +140,21 @@ export interface SaveState {
   exhaustedTechs: Record<number, string[]>;
   /** Nekro Virus only — faction-specific tech IDs assimilated via Valefar X/Y (max 2 per player). */
   nekroAssimilated: Record<number, string[]>;
+  // Agenda voting (live state, persisted so a refresh mid-vote restores it)
+  votes: VoteRecord[];
+  votingPlayerIdx: number;
+  agendaStage: AgendaStage;
+  agendaVoteType: AgendaVoteType | null;
+  agendaColumns: string[];
+  // Clock (persisted so per-player timer and pause/run state survive refresh)
+  clockRun: ClockRun;
+  currentPlayerTimer: number;
+  lastActivity: number;
 }
+
+// Real-time sync state — same shape as SaveState; kept as a distinct name so call
+// sites that semantically mean "broadcast snapshot" stay readable.
+export type SyncState = SaveState;
 
 export const DEFAULT_OPTIONS: GameOptions = {
   vpWinGoal: 10,
@@ -193,15 +197,15 @@ export function normalizePlayer(p: PlayerData): PlayerData {
 export function makeDefaultStrategies(): StrategyEntry[] {
   return [
     // Slot 0: Naalu gift slot (special)
-    { nameEn: 'Naalu Gift', nameEs: 'Regalo Naalu', playerIdx: NO_PLAYER, status: STRATEGY_DISABLED, color: 'red', tradeGoods: 0, isNaaluSlot: true },
-    // Slots 1-8: regular strategy cards
-    { nameEn: 'Leadership', nameEs: 'Liderazgo', playerIdx: NO_PLAYER, status: STRATEGY_AVAILABLE, color: 'red', tradeGoods: 0, isNaaluSlot: false },
-    { nameEn: 'Diplomacy', nameEs: 'Diplomacia', playerIdx: NO_PLAYER, status: STRATEGY_AVAILABLE, color: 'blue', tradeGoods: 0, isNaaluSlot: false },
-    { nameEn: 'Politics', nameEs: 'Política', playerIdx: NO_PLAYER, status: STRATEGY_AVAILABLE, color: 'yellow', tradeGoods: 0, isNaaluSlot: false },
-    { nameEn: 'Construction', nameEs: 'Construcción', playerIdx: NO_PLAYER, status: STRATEGY_AVAILABLE, color: 'green', tradeGoods: 0, isNaaluSlot: false },
-    { nameEn: 'Trade', nameEs: 'Comercio', playerIdx: NO_PLAYER, status: STRATEGY_AVAILABLE, color: 'orange', tradeGoods: 0, isNaaluSlot: false },
-    { nameEn: 'Warfare', nameEs: 'Guerra', playerIdx: NO_PLAYER, status: STRATEGY_AVAILABLE, color: 'darkred', tradeGoods: 0, isNaaluSlot: false },
-    { nameEn: 'Technology', nameEs: 'Tecnología', playerIdx: NO_PLAYER, status: STRATEGY_AVAILABLE, color: 'cyan', tradeGoods: 0, isNaaluSlot: false },
-    { nameEn: 'Imperial', nameEs: 'Imperialismo', playerIdx: NO_PLAYER, status: STRATEGY_AVAILABLE, color: 'purple', tradeGoods: 0, isNaaluSlot: false },
+    { nameEn: 'Naalu Gift', nameEs: 'Regalo Naalu', playerIdx: NO_PLAYER, status: STRATEGY_DISABLED, color: '#e23b3b', tradeGoods: 0, isNaaluSlot: true },
+    // Slots 1-8: regular strategy cards. Colors are CSS hex (alpha is appended as `${color}22`).
+    { nameEn: 'Leadership', nameEs: 'Liderazgo', playerIdx: NO_PLAYER, status: STRATEGY_AVAILABLE, color: '#e23b3b', tradeGoods: 0, isNaaluSlot: false },
+    { nameEn: 'Diplomacy', nameEs: 'Diplomacia', playerIdx: NO_PLAYER, status: STRATEGY_AVAILABLE, color: '#e67e22', tradeGoods: 0, isNaaluSlot: false },
+    { nameEn: 'Politics', nameEs: 'Política', playerIdx: NO_PLAYER, status: STRATEGY_AVAILABLE, color: '#f1c40f', tradeGoods: 0, isNaaluSlot: false },
+    { nameEn: 'Construction', nameEs: 'Construcción', playerIdx: NO_PLAYER, status: STRATEGY_AVAILABLE, color: '#43c463', tradeGoods: 0, isNaaluSlot: false },
+    { nameEn: 'Trade', nameEs: 'Comercio', playerIdx: NO_PLAYER, status: STRATEGY_AVAILABLE, color: '#10b981', tradeGoods: 0, isNaaluSlot: false },
+    { nameEn: 'Warfare', nameEs: 'Guerra', playerIdx: NO_PLAYER, status: STRATEGY_AVAILABLE, color: '#38bdf8', tradeGoods: 0, isNaaluSlot: false },
+    { nameEn: 'Technology', nameEs: 'Tecnología', playerIdx: NO_PLAYER, status: STRATEGY_AVAILABLE, color: '#1d4ed8', tradeGoods: 0, isNaaluSlot: false },
+    { nameEn: 'Imperial', nameEs: 'Imperialismo', playerIdx: NO_PLAYER, status: STRATEGY_AVAILABLE, color: '#a855f7', tradeGoods: 0, isNaaluSlot: false },
   ];
 }

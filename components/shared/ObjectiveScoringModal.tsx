@@ -92,7 +92,7 @@ export default function ObjectiveScoringModal({ objectiveId, onClose }: Props) {
                     <Image src={faction.iconPath} alt={faction.shortName} fill className="object-contain" unoptimized />
                   </div>
                   <div className="flex-1 text-left min-w-0">
-                    <p className="text-base text-white truncate" style={{ color }}>
+                    <p className="text-lg text-white truncate" style={{ color }}>
                       {faction.shortName}{player.name ? ` (${player.name})` : ''}
                     </p>
                     <p className="text-xs text-gray-400">

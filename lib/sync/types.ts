@@ -15,6 +15,7 @@ export type MobileCommand =
   | { type: 'unscoreObjective'; objectiveId: string }
   | { type: 'researchTech'; techId: string }
   | { type: 'researchTechWithBypass'; techId: string; bypassTechId: string }
+  | { type: 'researchTechAnalytical'; techId: string }
   | { type: 'unresearchTech'; techId: string }
   | { type: 'exhaustTech'; techId: string }
   | { type: 'readyTech'; techId: string }

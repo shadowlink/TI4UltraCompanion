@@ -187,7 +187,7 @@ export const STANDARD_UNIT_ORDER: UnitType[] = [
 const STANDARD_UNIT_NAMES: Record<UnitType, { es: string; en: string }> = {
   flagship: { es: "Nave Insignia", en: "Flagship" },
   warSun: { es: "Estrella de Guerra", en: "War Sun" },
-  dreadnought: { es: "Súper Acorazado I", en: "Dreadnought I" },
+  dreadnought: { es: "Acorazado I", en: "Dreadnought I" },
   cruiser: { es: "Crucero I", en: "Cruiser I" },
   destroyer: { es: "Destructor I", en: "Destroyer I" },
   carrier: { es: "Transporte I", en: "Carrier I" },
@@ -216,12 +216,12 @@ const STANDARD_UPGRADE_META: Record<
   dreadnought: {
     hasUpgrade: true,
     upgradePrereqs: ["blue", "blue", "yellow"],
-    upgradedStats: ["combat", "capacity"],
+    upgradedStats: ["movement"],
   },
   cruiser: {
     hasUpgrade: true,
     upgradePrereqs: ["green", "yellow", "red"],
-    upgradedStats: ["combat", "capacity"],
+    upgradedStats: ["combat", "movement", "capacity"],
   },
   destroyer: {
     hasUpgrade: true,
@@ -231,7 +231,7 @@ const STANDARD_UPGRADE_META: Record<
   carrier: {
     hasUpgrade: true,
     upgradePrereqs: ["blue", "blue"],
-    upgradedStats: ["capacity"],
+    upgradedStats: ["movement", "capacity"],
   },
   fighter: {
     hasUpgrade: true,
@@ -446,11 +446,11 @@ const L1Z1X_SHEET: FactionSheet = {
     },
     {
       type: "dreadnought",
-      nameEs: "Súper Acorazado I",
+      nameEs: "Acorazado I",
       nameEn: "Dreadnought I",
       hasUpgrade: true,
       upgradePrereqs: ["blue", "blue", "yellow"],
-      upgradedStats: ["combat", "capacity"],
+      upgradedStats: ["movement"],
       stats: {
         cost: "4",
         combat: 5,
@@ -466,7 +466,7 @@ const L1Z1X_SHEET: FactionSheet = {
       nameEn: "Carrier I",
       hasUpgrade: true,
       upgradePrereqs: ["blue", "blue"],
-      upgradedStats: ["capacity"],
+      upgradedStats: ["movement", "capacity"],
       stats: {
         cost: "3",
         combat: 9,
@@ -482,7 +482,7 @@ const L1Z1X_SHEET: FactionSheet = {
       nameEn: "Cruiser I",
       hasUpgrade: true,
       upgradePrereqs: ["green", "yellow", "red"],
-      upgradedStats: ["combat", "capacity"],
+      upgradedStats: ["combat", "movement", "capacity"],
       stats: {
         cost: "2",
         combat: 7,
@@ -888,7 +888,7 @@ const SOL_SHEET: FactionSheet = {
   commodities: 4,
   abilities: [
     {
-      nameEs: "DESCENSO ORBITAL",
+      nameEs: "DESEMBARCO ORBITAL",
       nameEn: "ORBITAL DROP",
       descriptionEs:
         "ACCIÓN: Gasta 1 ficha de tu reserva de Estrategia para coger 2 unidades de Infantería de tus refuerzos y colocarlos en un planeta que controles.",
@@ -1223,7 +1223,7 @@ const JOLNAR_SHEET: FactionSheet = {
       descriptionEs:
         "Cuando investigues una Tecnología que no sea una mejora de unidad, puedes ignorar 1 de sus requisitos.",
       descriptionEn:
-        "When you research a non-unit-upgrade technology, you may research 1 additional non-unit-upgrade technology.",
+        "When you research a technology that is not a unit upgrade technology, you may ignore 1 prerequisite.",
     },
   ],
   units: withOverride(makeStandardUnits(), "flagship", {
@@ -2301,7 +2301,7 @@ export function getFactionSheet(factionIdx: number): FactionSheet | undefined {
 export const UNIT_TYPE_LABELS: Record<UnitType, { es: string; en: string }> = {
   flagship: { es: "Nave Insignia", en: "Flagship" },
   warSun: { es: "Estrella de Guerra", en: "War Sun" },
-  dreadnought: { es: "Súper Acorazado", en: "Dreadnought" },
+  dreadnought: { es: "Acorazado", en: "Dreadnought" },
   cruiser: { es: "Crucero", en: "Cruiser" },
   destroyer: { es: "Destructor", en: "Destroyer" },
   carrier: { es: "Transporte", en: "Carrier" },

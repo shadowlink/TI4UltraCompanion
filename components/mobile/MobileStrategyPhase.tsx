@@ -131,7 +131,7 @@ export default function MobileStrategyPhase({ myPlayerIdx, sendCommand }: Props)
               </span>
               {player && (
                 <span
-                  className="text-[10px] text-center truncate max-w-full mt-0.5 z-10"
+                  className="text-xs text-center truncate max-w-full mt-0.5 z-10"
                   style={{ color: playerColor, fontFamily: 'var(--font-aldrich)' }}
                 >
                   {faction?.shortName}{player.name ? ` (${player.name})` : ''}

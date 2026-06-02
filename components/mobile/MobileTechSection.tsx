@@ -300,6 +300,7 @@ export default function MobileTechSection({ viewingPlayerIdx, myPlayerIdx, sendC
           sendCommand={sendCommand}
           onClose={() => { setOpenTech(null); setOpenTechNekroActions(null); }}
           nekroActions={openTechNekroActions ?? undefined}
+          viewerFactionIdx={viewingFactionIdx}
         />
       )}
     </>

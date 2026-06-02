@@ -13,6 +13,7 @@ import {
   type Technology,
 } from '@/data/technologies';
 import type { MobileCommand } from '@/lib/sync/types';
+import { JOL_NAR_FACTION } from '@/lib/constants';
 import type { NekroModalActions } from './MobileTechSection';
 
 interface Props {
@@ -27,6 +28,8 @@ interface Props {
   onClose: () => void;
   /** When set, the normal research/prereq logic is replaced by Nekro-specific actions. */
   nekroActions?: NekroModalActions;
+  /** Faction index of the player whose sheet is shown (enables faction-specific abilities). */
+  viewerFactionIdx: number | null;
 }
 
 export default function MobileTechDetailsModal({
@@ -37,6 +40,7 @@ export default function MobileTechDetailsModal({
   sendCommand,
   onClose,
   nekroActions,
+  viewerFactionIdx,
 }: Props) {
   const color = TECH_COLOR_HEX[tech.color];
 
@@ -58,6 +62,14 @@ export default function MobileTechDetailsModal({
     aiDevReady &&
     missing === 1 &&
     tech.id !== AI_DEV_ALGORITHM_ID;
+
+  // Jol-Nar "MENTE ANALÍTICA": ignore 1 prereq on non-unit-upgrade techs (passive, no cost).
+  const canUseAnalytical =
+    canToggle &&
+    !researched &&
+    !isUnitUpgrade &&
+    viewerFactionIdx === JOL_NAR_FACTION &&
+    missing === 1;
 
   const startingFactions = (tech.startingFactionIdx ?? [])
     .map((i) => FACTIONS[i])
@@ -91,6 +103,12 @@ export default function MobileTechDetailsModal({
       techId: tech.id,
       bypassTechId: AI_DEV_ALGORITHM_ID,
     });
+    onClose();
+  };
+
+  const useAnalytical = async () => {
+    if (!canUseAnalytical) return;
+    await sendCommand({ type: 'researchTechAnalytical', techId: tech.id });
     onClose();
   };
 
@@ -345,6 +363,15 @@ export default function MobileTechDetailsModal({
                       style={{ fontFamily: 'var(--font-aldrich)' }}
                     >
                       🤖 {'Usar Algoritmo IA (ignora 1 prereq + agota)'}
+                    </button>
+                  )}
+                  {canUseAnalytical && (
+                    <button
+                      onClick={useAnalytical}
+                      className="w-full py-2 rounded border-2 border-cyan-500/60 bg-cyan-500/15 text-cyan-200 text-xs active:bg-cyan-500/30"
+                      style={{ fontFamily: 'var(--font-aldrich)' }}
+                    >
+                      🧠 {'Mente Analítica (ignora 1 prereq)'}
                     </button>
                   )}
                   {!prereqsMet && (

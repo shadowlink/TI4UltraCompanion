@@ -3,6 +3,8 @@
 import Image from 'next/image';
 import { useGameStore } from '@/store/gameStore';
 import { FACTIONS, PLAYER_COLORS, PLAYER_COLOR_VALUES } from '@/data/factions';
+import { getFactionSheet } from '@/data/factionSheets';
+import { useIsViewOnly } from '@/lib/viewOnlyContext';
 import { Crown, Swords, Rocket, Star } from '@/components/ui/icons';
 
 export default function VPBar() {
@@ -12,6 +14,7 @@ export default function VPBar() {
   const showVPBar = useGameStore((s) => s.options.showVPBar);
   const vpWinGoal = useGameStore((s) => s.options.vpWinGoal);
   const incrementVP = useGameStore((s) => s.incrementVP);
+  const viewOnly = useIsViewOnly();
 
   if (!showVPBar) return null;
 
@@ -24,46 +27,59 @@ export default function VPBar() {
         const isSpeaker = speakerIdx === i;
         const isWinner = player.vp >= vpWinGoal;
         const tokens = player.commandTokens ?? { tactic: 0, fleet: 0, strategy: 0 };
+        const commodities = player.commodities ?? 0;
+        const tradeGoods = player.tradeGoods ?? 0;
+        const maxCommodities = getFactionSheet(player.faction)?.commodities ?? 0;
 
         return (
           <div
             key={i}
-            className="flex flex-1 items-center gap-2 px-2 py-2 border-b border-white/5 last:border-b-0 cursor-pointer select-none hover:bg-white/5 transition-colors"
+            className={`flex flex-col flex-1 justify-center gap-1.5 px-2.5 py-2 border-b border-white/5 last:border-b-0 select-none transition-colors ${viewOnly ? '' : 'cursor-pointer hover:bg-white/5'}`}
             style={{ borderLeftWidth: 3, borderLeftColor: colorValue, borderLeftStyle: 'solid' }}
-            onClick={() => incrementVP(i, 1)}
-            title={`${faction.shortName} — Táctica ${tokens.tactic} / Flota ${tokens.fleet} / Estrategia ${tokens.strategy}`}
+            onClick={viewOnly ? undefined : () => incrementVP(i, 1)}
+            title={`${faction.shortName}${player.name ? ` (${player.name})` : ''} — Táctica ${tokens.tactic} / Flota ${tokens.fleet} / Estrategia ${tokens.strategy} · Exportaciones ${commodities}${maxCommodities > 0 ? `/${maxCommodities}` : ''} / Mercancías ${tradeGoods}`}
           >
-            {/* Faction icon */}
-            <div className="w-10 h-10 relative flex-shrink-0">
-              <Image
-                src={faction.iconPath}
-                alt={faction.shortName}
-                fill
-                className="object-contain"
-                unoptimized
-              />
-            </div>
-
-            {/* Name + VP */}
-            <div className="flex flex-col min-w-0 flex-1">
-              <div className="flex items-center gap-1">
-                {isSpeaker && (
-                  <Crown
-                    size={12}
-                    className="text-[color:var(--warning)] flex-shrink-0"
-                    strokeWidth={2}
-                    aria-label="Speaker"
-                  />
-                )}
-                <span
-                  className="text-xs text-white text-shadow truncate"
-                  style={{ fontFamily: 'var(--font-electrolize)' }}
-                >
-                  {faction.shortName}{player.name ? ` (${player.name})` : ''}
-                </span>
+            {/* Top: icon + faction/name + VP */}
+            <div className="flex items-center gap-2.5">
+              <div className="w-11 h-11 relative flex-shrink-0">
+                <Image
+                  src={faction.iconPath}
+                  alt={faction.shortName}
+                  fill
+                  className="object-contain"
+                  unoptimized
+                />
               </div>
+
+              <div className="flex flex-col min-w-0 flex-1">
+                <div className="flex items-center gap-1">
+                  {isSpeaker && (
+                    <Crown
+                      size={12}
+                      className="text-[color:var(--warning)] flex-shrink-0"
+                      strokeWidth={2}
+                      aria-label="Speaker"
+                    />
+                  )}
+                  <span
+                    className="text-[11px] uppercase tracking-wider text-[color:var(--text-secondary)] leading-none truncate"
+                    style={{ fontFamily: 'var(--font-aldrich)' }}
+                  >
+                    {faction.shortName}
+                  </span>
+                </div>
+                {player.name && (
+                  <span
+                    className="text-lg font-bold text-white text-shadow leading-tight truncate"
+                    style={{ fontFamily: 'var(--font-electrolize)' }}
+                  >
+                    {player.name}
+                  </span>
+                )}
+              </div>
+
               <span
-                className="text-3xl font-bold leading-none text-shadow"
+                className="text-3xl font-bold leading-none text-shadow flex-shrink-0"
                 style={{
                   fontFamily: 'var(--font-share-tech-mono)',
                   color: isWinner ? 'var(--vp-gold)' : 'var(--text-primary)',
@@ -73,33 +89,33 @@ export default function VPBar() {
               </span>
             </div>
 
-            {/* Command tokens */}
-            <div className="flex flex-col justify-center gap-2 flex-shrink-0">
-              <div className="flex items-center justify-end gap-1">
-                <Swords size={20} className="text-[color:var(--accent)]" strokeWidth={2} aria-hidden />
-                <span
-                  className="text-xl font-bold text-white leading-none min-w-[22px] text-right"
-                  style={{ fontFamily: 'var(--font-share-tech-mono)' }}
-                >
-                  {tokens.tactic}
+            {/* Bottom strip: command tokens (left) + economy (right) */}
+            <div className="flex items-center gap-2 pl-0.5">
+              <div className="flex items-center gap-2.5">
+                <span className="flex items-center gap-1">
+                  <Swords size={15} className="text-[color:var(--accent)]" strokeWidth={2} aria-hidden />
+                  <span className="text-sm font-bold text-white leading-none" style={{ fontFamily: 'var(--font-share-tech-mono)' }}>{tokens.tactic}</span>
+                </span>
+                <span className="flex items-center gap-1">
+                  <Rocket size={15} className="text-[color:var(--info)]" strokeWidth={2} aria-hidden />
+                  <span className="text-sm font-bold text-white leading-none" style={{ fontFamily: 'var(--font-share-tech-mono)' }}>{tokens.fleet}</span>
+                </span>
+                <span className="flex items-center gap-1">
+                  <Star size={15} className="text-[color:var(--success)]" strokeWidth={2} aria-hidden />
+                  <span className="text-sm font-bold text-white leading-none" style={{ fontFamily: 'var(--font-share-tech-mono)' }}>{tokens.strategy}</span>
                 </span>
               </div>
-              <div className="flex items-center justify-end gap-1">
-                <Rocket size={20} className="text-[color:var(--info)]" strokeWidth={2} aria-hidden />
-                <span
-                  className="text-xl font-bold text-white leading-none min-w-[22px] text-right"
-                  style={{ fontFamily: 'var(--font-share-tech-mono)' }}
-                >
-                  {tokens.fleet}
+
+              <div className="ml-auto flex items-center gap-2.5">
+                <span className="flex items-center gap-1">
+                  <span className="text-[10px] uppercase tracking-wider leading-none" style={{ color: '#06b6d4', fontFamily: 'var(--font-aldrich)' }}>Exp</span>
+                  <span className="text-sm font-bold text-white leading-none" style={{ fontFamily: 'var(--font-share-tech-mono)' }}>
+                    {commodities}{maxCommodities > 0 && <span className="text-[10px] text-gray-400">/{maxCommodities}</span>}
+                  </span>
                 </span>
-              </div>
-              <div className="flex items-center justify-end gap-1">
-                <Star size={20} className="text-[color:var(--success)]" strokeWidth={2} aria-hidden />
-                <span
-                  className="text-xl font-bold text-white leading-none min-w-[22px] text-right"
-                  style={{ fontFamily: 'var(--font-share-tech-mono)' }}
-                >
-                  {tokens.strategy}
+                <span className="flex items-center gap-1">
+                  <span className="text-[10px] uppercase tracking-wider leading-none" style={{ color: '#fbbf24', fontFamily: 'var(--font-aldrich)' }}>Mer</span>
+                  <span className="text-sm font-bold text-white leading-none" style={{ fontFamily: 'var(--font-share-tech-mono)' }}>{tradeGoods}</span>
                 </span>
               </div>
             </div>

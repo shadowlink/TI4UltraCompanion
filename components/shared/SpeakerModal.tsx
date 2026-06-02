@@ -49,7 +49,7 @@ export default function SpeakerModal({ onClose }: SpeakerModalProps) {
                 <div className="w-12 h-12 relative">
                   <Image src={faction.iconPath} alt={faction.shortName} fill className="object-contain" unoptimized />
                 </div>
-                <span className="text-xs text-white text-shadow">{faction.shortName} ({player.name})</span>
+                <span className="text-sm text-white text-shadow text-center">{faction.shortName} ({player.name})</span>
               </button>
             );
           })}

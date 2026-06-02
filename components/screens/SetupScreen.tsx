@@ -115,7 +115,7 @@ export default function SetupScreen() {
                     </span>
                   )}
                   {player.name && (
-                    <span className="text-sm text-[color:var(--accent-soft)] text-shadow text-center leading-tight font-bold">
+                    <span className="text-base text-[color:var(--accent-soft)] text-shadow text-center leading-tight font-bold">
                       {player.name}
                     </span>
                   )}
