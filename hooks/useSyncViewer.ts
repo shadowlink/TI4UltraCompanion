@@ -45,7 +45,8 @@ export function useSyncViewer(code: string | null) {
     };
 
     poll();
-    const id = setInterval(poll, 350);
+    // 250 ms: la confirmación del pick/acción llega antes (menos sensación de lag).
+    const id = setInterval(poll, 250);
     return () => {
       active = false;
       clearInterval(id);

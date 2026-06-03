@@ -5,6 +5,7 @@ import { useGameStore } from '@/store/gameStore';
 import { FACTIONS, PLAYER_COLORS, PLAYER_COLOR_VALUES } from '@/data/factions';
 import { getFactionSheet } from '@/data/factionSheets';
 import { useIsViewOnly } from '@/lib/viewOnlyContext';
+import Badge from '@/components/ui/Badge';
 import { Crown, Swords, Rocket, Star } from '@/components/ui/icons';
 
 export default function VPBar() {
@@ -26,6 +27,7 @@ export default function VPBar() {
         const colorValue = PLAYER_COLOR_VALUES[colorName];
         const isSpeaker = speakerIdx === i;
         const isWinner = player.vp >= vpWinGoal;
+        const isAbandoned = player.abandoned;
         const tokens = player.commandTokens ?? { tactic: 0, fleet: 0, strategy: 0 };
         const commodities = player.commodities ?? 0;
         const tradeGoods = player.tradeGoods ?? 0;
@@ -34,7 +36,7 @@ export default function VPBar() {
         return (
           <div
             key={i}
-            className={`flex flex-col flex-1 justify-center gap-1.5 px-2.5 py-2 border-b border-white/5 last:border-b-0 select-none transition-colors ${viewOnly ? '' : 'cursor-pointer hover:bg-white/5'}`}
+            className={`flex flex-col flex-1 justify-center gap-1.5 px-2.5 py-2 border-b border-white/5 last:border-b-0 select-none transition-colors ${viewOnly ? '' : 'cursor-pointer hover:bg-white/5'} ${isAbandoned ? 'opacity-45 grayscale' : ''}`}
             style={{ borderLeftWidth: 3, borderLeftColor: colorValue, borderLeftStyle: 'solid' }}
             onClick={viewOnly ? undefined : () => incrementVP(i, 1)}
             title={`${faction.shortName}${player.name ? ` (${player.name})` : ''} — Táctica ${tokens.tactic} / Flota ${tokens.fleet} / Estrategia ${tokens.strategy} · Exportaciones ${commodities}${maxCommodities > 0 ? `/${maxCommodities}` : ''} / Mercancías ${tradeGoods}`}
@@ -67,6 +69,11 @@ export default function VPBar() {
                   >
                     {faction.shortName}
                   </span>
+                  {isAbandoned && (
+                    <Badge tone="danger" size="xs" className="flex-shrink-0">
+                      Abandonó
+                    </Badge>
+                  )}
                 </div>
                 {player.name && (
                   <span

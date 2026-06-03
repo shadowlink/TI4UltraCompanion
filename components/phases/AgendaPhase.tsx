@@ -98,7 +98,7 @@ export default function AgendaPhase() {
   const votingOrder = Array.from(
     { length: nbPlayers },
     (_, i) => (speakerIdx + 1 + i) % nbPlayers
-  );
+  ).filter((pIdx) => !players[pIdx].abandoned);
   const allVoted = votingPlayerIdx === NO_PLAYER;
   const currentVoterIdx = allVoted ? -1 : votingPlayerIdx;
   const currentPlayer = currentVoterIdx >= 0 ? players[currentVoterIdx] : null;
@@ -127,7 +127,10 @@ export default function AgendaPhase() {
         cols = ['A Favor', 'En Contra'];
         break;
       case 'ElectPlayer':
-        cols = players.slice(0, nbPlayers).map((p) => `${FACTIONS[p.faction].shortName} (${p.name})`);
+        cols = players
+          .slice(0, nbPlayers)
+          .filter((p) => !p.abandoned)
+          .map((p) => `${FACTIONS[p.faction].shortName} (${p.name})`);
         break;
       default:
         cols = [];

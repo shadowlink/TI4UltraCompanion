@@ -32,7 +32,6 @@ export default function StrategyPhase() {
   const strategies = useGameStore((s) => s.strategies);
   const speakerIdx = useGameStore((s) => s.speakerIdx);
   const turnCounter = useGameStore((s) => s.turnCounter);
-  const playerChooseCount = useGameStore((s) => s.playerChooseCount);
   const telephaticPlayerIdx = useGameStore((s) => s.telephaticPlayerIdx);
   const activeModal = useGameStore((s) => s.activeModal);
   const openModal = useGameStore((s) => s.openModal);
@@ -53,10 +52,10 @@ export default function StrategyPhase() {
     (p) => p.faction === HACAN_FACTION || p.faction === WINNU_FACTION
   );
 
-  const picksNeeded = nbPlayers <= 4 ? nbPlayers * 2 : nbPlayers;
-  const allPicked = playerChooseCount >= picksNeeded;
-
-  const pickOrder = Array.from({ length: nbPlayers }, (_, i) => (speakerIdx + i) % nbPlayers);
+  // Los jugadores que han abandonado no entran en el orden de selección.
+  const pickOrder = Array.from({ length: nbPlayers }, (_, i) => (speakerIdx + i) % nbPlayers).filter(
+    (pIdx) => !players[pIdx].abandoned
+  );
   const playerPickCount: Record<number, number> = {};
   strategies.forEach((st) => {
     if (st.playerIdx !== NO_PLAYER && st.playerIdx < 8) {
@@ -69,6 +68,8 @@ export default function StrategyPhase() {
   const maxPicksPerPlayer = nbPlayers <= 4 ? 2 : 1;
   const currentPickerIdx =
     pickOrder.find((pIdx) => (playerPickCount[pIdx] ?? 0) < maxPicksPerPlayer) ?? NO_PLAYER;
+  // La fase termina cuando todos los jugadores activos han alcanzado su cupo de cartas.
+  const allPicked = pickOrder.every((pIdx) => (playerPickCount[pIdx] ?? 0) >= maxPicksPerPlayer);
 
   const currentPicker = currentPickerIdx !== NO_PLAYER ? players[currentPickerIdx] : null;
   const currentFaction = currentPicker ? FACTIONS[currentPicker.faction] : null;
@@ -281,6 +282,7 @@ export default function StrategyPhase() {
         </div>
         <div className="px-5 pb-4 flex flex-col gap-2">
           {players.slice(0, nbPlayers).map((player, i) => {
+            if (player.abandoned) return null;
             const faction = FACTIONS[player.faction];
             const playerStrat = strategies.find(
               (st) => st.playerIdx === i && !st.isNaaluSlot

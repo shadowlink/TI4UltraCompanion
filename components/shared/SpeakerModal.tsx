@@ -37,6 +37,7 @@ export default function SpeakerModal({ onClose }: SpeakerModalProps) {
 
         <div className="flex flex-wrap gap-3 justify-center mb-4">
           {players.slice(0, nbPlayers).map((player, i) => {
+            if (player.abandoned) return null;
             const faction = FACTIONS[player.faction];
             const colorValue = PLAYER_COLOR_VALUES[PLAYER_COLORS[player.color]];
             return (

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { useGameStore } from '@/store/gameStore';
 import { FACTIONS, PLAYER_COLORS, PLAYER_COLOR_VALUES } from '@/data/factions';
@@ -22,6 +22,11 @@ export default function MobileStrategyPhase({ myPlayerIdx, sendCommand }: Props)
   const speakerIdx = useGameStore((s) => s.speakerIdx);
   const [busy, setBusy] = useState(false);
   const [detailStrat, setDetailStrat] = useState<{ strategy: StrategyEntry; stratIdx: number } | null>(null);
+  // Carta tocada cuya elección está en curso (feedback inmediato hasta que el
+  // estado sincronizado confirme el pick). Evita la sensación de "no responde".
+  const [pendingIdx, setPendingIdx] = useState<number | null>(null);
+  const pickingRef = useRef(false);
+  const pendingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Determine current picker (same logic as host StrategyPhase)
   const pickOrder = Array.from({ length: nbPlayers }, (_, i) => (speakerIdx + i) % nbPlayers);
@@ -37,11 +42,39 @@ export default function MobileStrategyPhase({ myPlayerIdx, sendCommand }: Props)
   const allPicked = currentPickerIdx === NO_PLAYER;
 
   const handlePick = async (stratIdx: number) => {
-    if (!isMyTurn || busy) return;
-    setBusy(true);
-    await sendCommand({ type: 'pickStrategy', stratIdx });
-    setBusy(false);
+    // Guard síncrono (ref) para cerrar la carrera del estado async: un toque a la vez.
+    if (!isMyTurn || pickingRef.current || pendingIdx !== null) return;
+    pickingRef.current = true;
+    setPendingIdx(stratIdx); // feedback inmediato: la tarjeta se marca al instante
+    // Red de seguridad: si el comando se perdiera, no dejar la UI bloqueada.
+    if (pendingTimerRef.current) clearTimeout(pendingTimerRef.current);
+    pendingTimerRef.current = setTimeout(() => setPendingIdx(null), 3000);
+
+    const res = await sendCommand({ type: 'pickStrategy', stratIdx });
+    pickingRef.current = false;
+    if (!res.ok) {
+      // Falló el envío: permitir reintento de inmediato.
+      if (pendingTimerRef.current) clearTimeout(pendingTimerRef.current);
+      setPendingIdx(null);
+    }
   };
+
+  // Limpia el estado pendiente cuando el estado sincronizado confirma la elección
+  // (la carta pasa a ser mía o ya no es mi turno).
+  useEffect(() => {
+    if (pendingIdx === null) return;
+    const st = strategies[pendingIdx];
+    const confirmed = (st && st.playerIdx === myPlayerIdx) || currentPickerIdx !== myPlayerIdx;
+    if (confirmed) {
+      if (pendingTimerRef.current) clearTimeout(pendingTimerRef.current);
+      setPendingIdx(null);
+    }
+  }, [strategies, currentPickerIdx, myPlayerIdx, pendingIdx]);
+
+  // Limpia el temporizador al desmontar.
+  useEffect(() => () => {
+    if (pendingTimerRef.current) clearTimeout(pendingTimerRef.current);
+  }, []);
 
   const handleFinalizeStrategy = async () => {
     if (!allPicked || busy) return;
@@ -70,14 +103,15 @@ export default function MobileStrategyPhase({ myPlayerIdx, sendCommand }: Props)
           const faction = player ? FACTIONS[player.faction] : null;
           const playerColor = player ? PLAYER_COLOR_VALUES[PLAYER_COLORS[player.color]] : undefined;
           const stratName = st.nameEs;
-          const canClick = isMyTurn && isAvailable;
+          const isPending = pendingIdx === stratIdx;
+          const canClick = isMyTurn && isAvailable && pendingIdx === null;
 
           return (
             <div
               key={stratIdx}
-              className={`relative rounded-lg border-2 p-2 flex flex-col items-center ${
-                canClick ? 'ring-2 ring-orange-400/50' : ''
-              }`}
+              className={`relative rounded-lg border-2 p-2 flex flex-col items-center transition-opacity ${
+                isPending ? 'ring-2 ring-orange-400' : canClick ? 'ring-2 ring-orange-400/50' : ''
+              } ${pendingIdx !== null && !isPending ? 'opacity-40' : ''}`}
               style={{
                 borderColor: st.color,
                 background: `linear-gradient(180deg, ${st.color}22 0%, ${st.color}08 60%, rgba(0,0,0,0.5) 100%)`,
@@ -88,10 +122,20 @@ export default function MobileStrategyPhase({ myPlayerIdx, sendCommand }: Props)
               <button
                 type="button"
                 onClick={() => handlePick(stratIdx)}
-                disabled={!canClick || busy}
-                className={`absolute inset-0 ${canClick ? 'pointer-events-auto active:scale-95' : 'pointer-events-none'}`}
+                disabled={!canClick}
+                className={`absolute inset-0 touch-manipulation ${canClick ? 'pointer-events-auto active:scale-95' : 'pointer-events-none'}`}
                 aria-label={`Elegir ${stratName}`}
               />
+
+              {/* Feedback inmediato mientras se confirma la elección */}
+              {isPending && (
+                <div className="absolute inset-0 z-30 flex flex-col items-center justify-center gap-1 rounded-lg bg-black/60 pointer-events-none">
+                  <span className="spinner w-6 h-6 rounded-full border-2 border-orange-300 border-t-transparent" aria-hidden />
+                  <span className="text-[11px] text-orange-200 uppercase tracking-wider" style={{ fontFamily: 'var(--font-aldrich)' }}>
+                    {'Seleccionando…'}
+                  </span>
+                </div>
+              )}
 
               {/* Info button — always tappable */}
               <button
@@ -107,17 +151,17 @@ export default function MobileStrategyPhase({ myPlayerIdx, sendCommand }: Props)
               </button>
 
               <span
-                className="absolute top-1 right-2 text-3xl font-bold opacity-60 leading-none"
+                className="absolute top-1 right-2 text-3xl font-bold opacity-60 leading-none pointer-events-none"
                 style={{ fontFamily: 'var(--font-audiowide)', color: st.color }}
               >
                 {stratIdx}
               </span>
               {faction ? (
-                <div className="w-12 h-12 relative mb-1 z-10 mt-3">
+                <div className="w-12 h-12 relative mb-1 z-10 mt-3 pointer-events-none">
                   <Image src={faction.iconPath} alt={faction.shortName} fill className="object-contain" unoptimized />
                 </div>
               ) : (
-                <div className="h-12 flex items-center justify-center z-10 mt-3">
+                <div className="h-12 flex items-center justify-center z-10 mt-3 pointer-events-none">
                   <span
                     className="text-2xl font-bold"
                     style={{ fontFamily: 'var(--font-audiowide)', color: st.color }}
@@ -126,12 +170,12 @@ export default function MobileStrategyPhase({ myPlayerIdx, sendCommand }: Props)
                   </span>
                 </div>
               )}
-              <span className="text-xs text-white text-center leading-tight z-10 mt-0.5" style={{ fontFamily: 'var(--font-electrolize)' }}>
+              <span className="text-xs text-white text-center leading-tight z-10 mt-0.5 pointer-events-none" style={{ fontFamily: 'var(--font-electrolize)' }}>
                 {stratName}
               </span>
               {player && (
                 <span
-                  className="text-xs text-center truncate max-w-full mt-0.5 z-10"
+                  className="text-xs text-center truncate max-w-full mt-0.5 z-10 pointer-events-none"
                   style={{ color: playerColor, fontFamily: 'var(--font-aldrich)' }}
                 >
                   {faction?.shortName}{player.name ? ` (${player.name})` : ''}
@@ -139,10 +183,10 @@ export default function MobileStrategyPhase({ myPlayerIdx, sendCommand }: Props)
               )}
               {st.tradeGoods > 0 && !isPicked && (
                 <span
-                  className="text-[10px] font-bold z-10 mt-0.5"
+                  className="text-[10px] font-bold z-10 mt-0.5 pointer-events-none"
                   style={{ color: '#ffe41f', fontFamily: 'var(--font-share-tech-mono)' }}
                 >
-                  +{st.tradeGoods} BC
+                  +{st.tradeGoods} Mercancías
                 </span>
               )}
             </div>
@@ -267,7 +311,7 @@ function StrategyDetailSheet({
                   className="text-xs text-[color:var(--vp-gold)] text-center"
                   style={{ fontFamily: 'var(--font-share-tech-mono)' }}
                 >
-                  +{strategy.tradeGoods} BC acumulados
+                  +{strategy.tradeGoods} Mercancías acumuladas
                 </p>
               )}
             </>

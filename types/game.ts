@@ -51,6 +51,8 @@ export interface PlayerData {
   commandTokens: CommandTokenPools;
   commodities: number;
   tradeGoods: number;
+  /** Jugador que ha abandonado la partida: sigue visible pero se omite en el flujo. */
+  abandoned: boolean;
 }
 
 export interface StrategyEntry {
@@ -177,6 +179,7 @@ export function makeDefaultPlayer(idx: number): PlayerData {
     commandTokens: { tactic: 3, fleet: 3, strategy: 2 },
     commodities: 0,
     tradeGoods: 0,
+    abandoned: false,
   };
 }
 
@@ -185,12 +188,14 @@ export function normalizePlayer(p: PlayerData): PlayerData {
   const tokensOk = p && p.commandTokens && typeof p.commandTokens.tactic === 'number';
   const commoditiesOk = typeof p.commodities === 'number';
   const tradeGoodsOk = typeof p.tradeGoods === 'number';
-  if (tokensOk && commoditiesOk && tradeGoodsOk) return p;
+  const abandonedOk = typeof p.abandoned === 'boolean';
+  if (tokensOk && commoditiesOk && tradeGoodsOk && abandonedOk) return p;
   return {
     ...p,
     commandTokens: tokensOk ? p.commandTokens : { tactic: 3, fleet: 3, strategy: 2 },
     commodities: commoditiesOk ? p.commodities : 0,
     tradeGoods: tradeGoodsOk ? p.tradeGoods : 0,
+    abandoned: abandonedOk ? p.abandoned : false,
   };
 }
 

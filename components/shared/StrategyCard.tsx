@@ -172,7 +172,7 @@ export default function StrategyCard({
             fontFamily: 'var(--font-share-tech-mono)',
           }}
         >
-          {showTG && strategy.tradeGoods > 0 ? `+${strategy.tradeGoods} BC` : ' '}
+          {showTG && strategy.tradeGoods > 0 ? `+${strategy.tradeGoods} Mercancías` : ' '}
         </span>
       </div>
 

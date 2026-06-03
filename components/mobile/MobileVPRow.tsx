@@ -17,10 +17,11 @@ export default function MobileVPRow() {
           const faction = FACTIONS[p.faction];
           const color = PLAYER_COLOR_VALUES[PLAYER_COLORS[p.color]];
           const isSpeaker = i === speakerIdx;
+          const isAbandoned = p.abandoned;
           return (
             <div
               key={i}
-              className="flex-shrink-0 flex items-center gap-1.5 px-2 py-1 rounded border bg-gray-900/60"
+              className={`flex-shrink-0 flex items-center gap-1.5 px-2 py-1 rounded border bg-gray-900/60 ${isAbandoned ? 'opacity-40 grayscale' : ''}`}
               style={{ borderColor: color }}
             >
               <div className="w-5 h-5 relative flex-shrink-0">
@@ -28,7 +29,7 @@ export default function MobileVPRow() {
               </div>
               <div className="flex flex-col items-start leading-none">
                 <span className="text-[9px] text-gray-400 truncate max-w-[70px]" style={{ color }}>
-                  {faction.shortName}{isSpeaker ? ' 👑' : ''}
+                  {faction.shortName}{isSpeaker ? ' 👑' : ''}{isAbandoned ? ' ✖' : ''}
                 </span>
                 <span
                   className={`text-lg font-bold leading-tight ${p.vp >= vpGoal ? 'text-yellow-400' : 'text-white'}`}

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useGameStore } from '@/store/gameStore';
+import { FACTIONS } from '@/data/factions';
 import Modal from '@/components/ui/Modal';
 import Button from '@/components/ui/Button';
 import { Hexagon } from '@/components/ui/icons';
@@ -10,6 +11,9 @@ export default function OptionsPanel() {
   const options = useGameStore((s) => s.options);
   const setOptions = useGameStore((s) => s.setOptions);
   const closeModal = useGameStore((s) => s.closeModal);
+  const players = useGameStore((s) => s.players);
+  const nbPlayers = useGameStore((s) => s.nbPlayers);
+  const setPlayerAbandoned = useGameStore((s) => s.setPlayerAbandoned);
 
   const [vpWinGoal, setVpWinGoal] = useState(String(options.vpWinGoal));
   const [decisionTimer, setDecisionTimer] = useState(String(options.decisionTimerLimit));
@@ -81,6 +85,32 @@ export default function OptionsPanel() {
               checked={options.detailedAgenda}
               onChange={(v) => setOptions({ detailedAgenda: v })}
             />
+          </div>
+        </section>
+
+        <section>
+          <p
+            className="text-xs text-[color:var(--text-muted)] uppercase tracking-wider mb-1"
+            style={{ fontFamily: 'var(--font-aldrich)' }}
+          >
+            {'Jugadores'}
+          </p>
+          <p className="text-[11px] text-[color:var(--text-muted)] mb-3 leading-snug">
+            {'Marca a un jugador que abandone la partida: dejará de contar en el flujo (turnos, votaciones, Portavoz) pero seguirá visible.'}
+          </p>
+          <div className="flex flex-col gap-2.5">
+            {players.slice(0, nbPlayers).map((player, i) => {
+              const faction = FACTIONS[player.faction];
+              const label = `${faction.shortName}${player.name ? ` (${player.name})` : ''}`;
+              return (
+                <Toggle
+                  key={i}
+                  label={`Abandonó — ${label}`}
+                  checked={player.abandoned}
+                  onChange={(v) => setPlayerAbandoned(i, v)}
+                />
+              );
+            })}
           </div>
         </section>
 

@@ -42,6 +42,20 @@ import { TECH_BY_ID, canResearch } from '@/data/technologies';
 import { getFactionSheet } from '@/data/factionSheets';
 import { STARTING_TECHS_BY_IDX } from '@/data/factionExtras';
 
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+/**
+ * Siguiente jugador activo (no abandonado) tras `from`, en sentido horario.
+ * Devuelve NO_PLAYER si no queda ninguno.
+ */
+function nextActivePlayerIdx(players: PlayerData[], nbPlayers: number, from: number): number {
+  for (let step = 1; step <= nbPlayers; step++) {
+    const idx = (from + step) % nbPlayers;
+    if (!players[idx]?.abandoned) return idx;
+  }
+  return NO_PLAYER;
+}
+
 // ─── State shape ─────────────────────────────────────────────────────────────
 
 interface GameState {
@@ -119,6 +133,9 @@ interface GameState {
 
   // Speaker
   setSpeaker: (playerIdx: number) => void;
+
+  // Player management
+  setPlayerAbandoned: (playerIdx: number, abandoned: boolean) => void;
 
   // Strategy phase
   assignStrategy: (stratIdx: number, playerIdx: number) => void;
@@ -345,6 +362,47 @@ export const useGameStore = create<GameState>()((set, get) => ({
     set({ speakerIdx: playerIdx, previousSpeakerIdx: s.speakerIdx, players });
   },
 
+  // ── Player management ────────────────────────────────────────────────────────
+
+  setPlayerAbandoned: (playerIdx, abandoned) => {
+    const s = get();
+    if (playerIdx < 0 || playerIdx >= s.nbPlayers) return;
+
+    set((st) => {
+      const players = [...st.players];
+      players[playerIdx] = { ...players[playerIdx], abandoned };
+      // Al abandonar, marca como pasadas sus cartas de Estrategia disponibles para
+      // que la fase de Acción las salte y la detección de "todos han pasado" funcione.
+      let strategies = st.strategies;
+      if (abandoned) {
+        strategies = st.strategies.map((card) =>
+          (card.playerIdx === playerIdx || card.secondPickPlayerIdx === playerIdx) &&
+          card.status === STRATEGY_AVAILABLE
+            ? { ...card, status: STRATEGY_PASSED as StrategyStatus }
+            : card
+        );
+      }
+      return { players, strategies };
+    });
+
+    if (!abandoned) return;
+
+    const st = get();
+    // Si el Portavoz abandona, pásalo automáticamente al siguiente jugador activo.
+    if (st.speakerIdx === playerIdx) {
+      const next = nextActivePlayerIdx(st.players, st.nbPlayers, playerIdx);
+      if (next !== NO_PLAYER) get().setSpeaker(next);
+    }
+    // Si es su turno de acción ahora mismo, avanza al siguiente.
+    if (st.phase === PHASE_ACTION && st.strategies[st.activeStrategyIdx]?.playerIdx === playerIdx) {
+      get().nextPlayerAction();
+    }
+    // Si le toca votar ahora mismo, avanza al siguiente votante.
+    if (st.phase === PHASE_AGENDA && st.votingPlayerIdx === playerIdx) {
+      get().nextVotingPlayer();
+    }
+  },
+
   // ── Strategy phase ─────────────────────────────────────────────────────────
 
   assignStrategy: (stratIdx, playerIdx) => {
@@ -390,11 +448,21 @@ export const useGameStore = create<GameState>()((set, get) => ({
 
   finalizeStrategyPhase: () => {
     const s = get();
-    let strategies = s.strategies.map((st) => ({
-      ...st,
-      tradeGoods: st.playerIdx === NO_PLAYER && !st.isNaaluSlot ? st.tradeGoods + 1 : st.tradeGoods,
-      status: (st.status === STRATEGY_PICKED ? STRATEGY_AVAILABLE : st.status) as StrategyStatus,
-    }));
+    // Las cartas escogidas entregan sus Mercancías acumuladas a su dueño (y quedan
+    // a 0); las cartas no escogidas acumulan +1 Mercancía.
+    const tgGains: Record<number, number> = {};
+    let strategies = s.strategies.map((st) => {
+      const newStatus = (st.status === STRATEGY_PICKED ? STRATEGY_AVAILABLE : st.status) as StrategyStatus;
+      const isUnchosen = st.playerIdx === NO_PLAYER && !st.isNaaluSlot;
+      if (isUnchosen) {
+        return { ...st, tradeGoods: st.tradeGoods + 1, status: newStatus };
+      }
+      if (!st.isNaaluSlot && st.playerIdx !== NO_PLAYER && st.playerIdx < 8 && st.tradeGoods > 0) {
+        tgGains[st.playerIdx] = (tgGains[st.playerIdx] ?? 0) + st.tradeGoods;
+        return { ...st, tradeGoods: 0, status: newStatus };
+      }
+      return { ...st, status: newStatus };
+    });
     // Apply Naalu Telepathic: copy chosen strategy to slot 0, disable original
     if (s.naaluStrategyIdx !== NO_PLAYER && s.naaluStrategyIdx < strategies.length) {
       const src = strategies[s.naaluStrategyIdx];
@@ -425,7 +493,12 @@ export const useGameStore = create<GameState>()((set, get) => ({
     ) {
       initIdx++;
     }
-    set({ strategies: updatedStrategies, activeStrategyIdx: initIdx < 9 ? initIdx : 0 });
+    // Aplica a cada jugador las Mercancías ganadas de sus cartas escogidas.
+    const players =
+      Object.keys(tgGains).length > 0
+        ? s.players.map((p, i) => (tgGains[i] ? { ...p, tradeGoods: p.tradeGoods + tgGains[i] } : p))
+        : s.players;
+    set({ strategies: updatedStrategies, activeStrategyIdx: initIdx < 9 ? initIdx : 0, players });
     get().closeModal();
     get().setPhase(PHASE_ACTION);
   },
@@ -460,6 +533,7 @@ export const useGameStore = create<GameState>()((set, get) => ({
       safety < 18 &&
       (s.strategies[idx].playerIdx === NO_PLAYER ||
         s.strategies[idx].playerIdx >= 8 ||
+        s.players[s.strategies[idx].playerIdx]?.abandoned ||
         s.strategies[idx].secondPickPlayerIdx !== undefined ||
         (s.strategies[idx].status !== STRATEGY_AVAILABLE &&
           s.strategies[idx].status !== STRATEGY_PLAYED))
@@ -595,7 +669,7 @@ export const useGameStore = create<GameState>()((set, get) => ({
   newAgenda: () => {
     set((s) => ({
       votes: [],
-      votingPlayerIdx: (s.speakerIdx + 1) % s.nbPlayers,
+      votingPlayerIdx: nextActivePlayerIdx(s.players, s.nbPlayers, s.speakerIdx),
     }));
     get().setPhase(PHASE_AGENDA);
   },
@@ -619,7 +693,7 @@ export const useGameStore = create<GameState>()((set, get) => ({
       if (s.votingPlayerIdx === s.speakerIdx) {
         return { votingPlayerIdx: NO_PLAYER };
       }
-      return { votingPlayerIdx: (s.votingPlayerIdx + 1) % s.nbPlayers };
+      return { votingPlayerIdx: nextActivePlayerIdx(s.players, s.nbPlayers, s.votingPlayerIdx) };
     });
   },
 
@@ -629,7 +703,7 @@ export const useGameStore = create<GameState>()((set, get) => ({
       set({
         agendaStep: 2,
         votes: [],
-        votingPlayerIdx: (s.speakerIdx + 1) % s.nbPlayers,
+        votingPlayerIdx: nextActivePlayerIdx(s.players, s.nbPlayers, s.speakerIdx),
         agendaStage: 'type_select',
         agendaVoteType: null,
         agendaColumns: [],

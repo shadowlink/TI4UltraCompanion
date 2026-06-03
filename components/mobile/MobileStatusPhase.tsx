@@ -99,10 +99,11 @@ export default function MobileStatusPhase({ myPlayerIdx, sendCommand }: Props) {
             const faction = FACTIONS[p.faction];
             const color = PLAYER_COLOR_VALUES[PLAYER_COLORS[p.color]];
             const isMe = i === myPlayerIdx;
+            const isAbandoned = p.abandoned;
             return (
               <div
                 key={i}
-                className="flex items-center gap-2 px-2 py-1.5 rounded border bg-gray-900/40"
+                className={`flex items-center gap-2 px-2 py-1.5 rounded border bg-gray-900/40 ${isAbandoned ? 'opacity-40 grayscale' : ''}`}
                 style={{ borderColor: color }}
               >
                 <div className="w-8 h-8 relative flex-shrink-0">
@@ -112,6 +113,7 @@ export default function MobileStatusPhase({ myPlayerIdx, sendCommand }: Props) {
                   <p className="text-sm text-white truncate" style={{ color }}>
                     {faction.shortName}{p.name ? ` (${p.name})` : ''}
                     {isMe && <span className="ml-1 text-[10px] text-orange-300">★</span>}
+                    {isAbandoned && <span className="ml-1 text-[10px] text-red-300 uppercase">abandonó</span>}
                   </p>
                 </div>
                 {isMe ? (

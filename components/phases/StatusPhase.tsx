@@ -7,6 +7,7 @@ import { PHASE_END } from '@/lib/constants';
 import { formatTime } from '@/lib/timeUtils';
 import Panel from '@/components/ui/Panel';
 import Button from '@/components/ui/Button';
+import Badge from '@/components/ui/Badge';
 import {
   Check,
   Plus,
@@ -84,12 +85,13 @@ export default function StatusPhase() {
               const faction = FACTIONS[player.faction];
               const colorValue = PLAYER_COLOR_VALUES[PLAYER_COLORS[player.color]];
               const isWinner = player.vp >= vpWinGoal;
+              const isAbandoned = player.abandoned;
               return (
                 <div
                   key={i}
                   className={`flex flex-col items-center gap-1 p-2 rounded-[var(--radius)] border-2 bg-[var(--bg-surface)] ${
                     isWinner ? 'ring-2 ring-[color:var(--vp-gold)]/60' : ''
-                  }`}
+                  } ${isAbandoned ? 'opacity-45 grayscale' : ''}`}
                   style={{ borderColor: colorValue }}
                 >
                   <div className={`relative ${compact ? 'w-12 h-12' : 'w-16 h-16'}`}>
@@ -104,6 +106,11 @@ export default function StatusPhase() {
                   <span className="text-base text-[color:var(--text-secondary)] leading-none truncate max-w-full px-1">
                     {faction.shortName} ({player.name})
                   </span>
+                  {isAbandoned && (
+                    <Badge tone="danger" size="xs">
+                      Abandonó
+                    </Badge>
+                  )}
                   <div className="flex items-center gap-2 mt-0.5">
                     <button
                       onClick={() => incrementVP(i, -1)}
