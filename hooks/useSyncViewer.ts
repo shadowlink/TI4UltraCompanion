@@ -11,6 +11,11 @@ interface PollResponse {
   error?: string;
 }
 
+// Intervalo de sondeo. En LAN 250 ms da sensación de inmediatez; en serverless
+// (Vercel) conviene subirlo vía NEXT_PUBLIC_POLL_INTERVAL_MS para no agotar el
+// presupuesto de invocaciones.
+const POLL_MS = Number(process.env.NEXT_PUBLIC_POLL_INTERVAL_MS) || 250;
+
 export function useSyncViewer(code: string | null) {
   const [connected, setConnected] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -45,8 +50,7 @@ export function useSyncViewer(code: string | null) {
     };
 
     poll();
-    // 250 ms: la confirmación del pick/acción llega antes (menos sensación de lag).
-    const id = setInterval(poll, 250);
+    const id = setInterval(poll, POLL_MS);
     return () => {
       active = false;
       clearInterval(id);

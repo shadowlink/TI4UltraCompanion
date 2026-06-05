@@ -272,6 +272,9 @@ function processCommand(cmd: PendingCommand): void {
   }
 }
 
+// Sondeo de comandos del anfitrión. Configurable para serverless; ver useSyncViewer.
+const HOST_POLL_MS = Number(process.env.NEXT_PUBLIC_POLL_INTERVAL_MS) || 200;
+
 export function useCommandProcessor(roomCode: string | null, pushNow?: () => void) {
   const inFlightRef = useRef(false);
   const pushNowRef = useRef(pushNow);
@@ -303,7 +306,7 @@ export function useCommandProcessor(roomCode: string | null, pushNow?: () => voi
       }
     };
 
-    const id = setInterval(poll, 200);
+    const id = setInterval(poll, HOST_POLL_MS);
     return () => {
       active = false;
       clearInterval(id);

@@ -16,24 +16,43 @@ export default function HostPanel() {
   const [error, setError] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
 
-  const buildUrls = (ip: string, port: number | string, code: string) => {
-    setWatchUrl(`http://${ip}:${port}/game?viewer=${code}`);
-    setMirrorUrl(`http://${ip}:${port}/game?mirror=${code}`);
+  // URL pública explícita (Tailscale Funnel u otro despliegue), horneada en
+  // build. Si está definida tiene prioridad.
+  const publicBase = process.env.NEXT_PUBLIC_PUBLIC_URL?.replace(/\/$/, '');
+
+  const buildUrlsFromBase = (base: string, code: string) => {
+    setWatchUrl(`${base}/game?viewer=${code}`);
+    setMirrorUrl(`${base}/game?mirror=${code}`);
+  };
+
+  /**
+   * Resuelve la base de las URLs del QR, en orden de prioridad:
+   *  1. NEXT_PUBLIC_PUBLIC_URL si se definió en build.
+   *  2. El origin actual si el anfitrión abrió la app por un host accesible para
+   *     los móviles (p. ej. la URL `.ts.net` del Funnel, o una IP de LAN). Así el
+   *     túnel funciona sin recompilar: basta abrir la app por su URL pública.
+   *  3. La IP de LAN vía /api/network-info (caso: el anfitrión abrió localhost).
+   */
+  const resolveBase = async (): Promise<string> => {
+    if (publicBase) return publicBase;
+    const host = typeof window !== 'undefined' ? window.location.hostname : '';
+    const isLocal = host === 'localhost' || host === '127.0.0.1' || host === '[::1]' || host === '';
+    if (!isLocal) return window.location.origin;
+    const netRes = await fetch('/api/network-info');
+    const { addresses, port } = await netRes.json();
+    const ip = addresses?.[0]?.ip ?? 'localhost';
+    return `http://${ip}:${port}`;
   };
 
   const createRoom = async () => {
     setCreating(true);
     setError(null);
     try {
-      const [roomRes, netRes] = await Promise.all([
-        fetch('/api/room/create', { method: 'POST' }),
-        fetch('/api/network-info'),
-      ]);
+      const roomRes = await fetch('/api/room/create', { method: 'POST' });
       const { code } = await roomRes.json();
-      const { addresses, port } = await netRes.json();
-      const ip = addresses?.[0]?.ip ?? 'localhost';
+      const base = await resolveBase();
       setRoomCode(code);
-      buildUrls(ip, port, code);
+      buildUrlsFromBase(base, code);
     } catch {
       setError('Error al crear sala');
     } finally {
@@ -43,12 +62,8 @@ export default function HostPanel() {
 
   useEffect(() => {
     if (roomCode) {
-      fetch('/api/network-info')
-        .then((r) => r.json())
-        .then(({ addresses, port }) => {
-          const ip = addresses?.[0]?.ip ?? 'localhost';
-          buildUrls(ip, port, roomCode);
-        })
+      resolveBase()
+        .then((base) => buildUrlsFromBase(base, roomCode))
         .catch(() => {});
     } else {
       createRoom();
