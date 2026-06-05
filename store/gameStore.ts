@@ -93,6 +93,9 @@ interface GameState {
   revealedCount: number;
   objectivesScoredBy: Record<string, number[]>;
 
+  /** El aviso "la partida ya habría terminado" ya se mostró (no repetir). */
+  endNotified: boolean;
+
   // Technologies
   researchedTechs: Record<number, string[]>;
   exhaustedTechs: Record<number, string[]>;
@@ -164,6 +167,7 @@ interface GameState {
   setVote: (record: VoteRecord) => void;
   clearVote: (playerIdx: number) => void;
   nextVotingPlayer: () => void;
+  resetVoting: () => void;
   advanceAgendaStep: () => void;
   setAgendaStage: (stage: AgendaStage) => void;
   setAgendaVoteType: (type: AgendaVoteType | null) => void;
@@ -174,6 +178,7 @@ interface GameState {
   // Public objectives
   initializePublicObjectives: () => void;
   revealNextObjective: () => void;
+  markEndNotified: () => void;
   scoreObjective: (objectiveId: string, playerIdx: number) => void;
   unscoreObjective: (objectiveId: string, playerIdx: number) => void;
   researchTech: (playerIdx: number, techId: string) => void;
@@ -237,6 +242,7 @@ const INITIAL_STATE = {
   statusStep: 0 as 0 | 1,
   objectiveDeck: [] as string[],
   revealedCount: 0,
+  endNotified: false,
   objectivesScoredBy: {} as Record<string, number[]>,
   researchedTechs: {} as Record<number, string[]>,
   exhaustedTechs: {} as Record<number, string[]>,
@@ -352,8 +358,11 @@ export const useGameStore = create<GameState>()((set, get) => ({
 
   setSpeaker: (playerIdx) => {
     const s = get();
+    // Ignora índices fuera de rango (salvo NO_PLAYER) para no corromper el array.
+    if (playerIdx !== NO_PLAYER && (playerIdx < 0 || playerIdx >= s.nbPlayers)) return;
     const players = [...s.players];
-    if (s.speakerIdx !== NO_PLAYER && s.speakerIdx !== playerIdx) {
+    const prevValid = s.speakerIdx !== NO_PLAYER && s.speakerIdx >= 0 && s.speakerIdx < s.nbPlayers;
+    if (prevValid && s.speakerIdx !== playerIdx) {
       players[s.speakerIdx] = { ...players[s.speakerIdx] };
     }
     if (playerIdx !== NO_PLAYER) {
@@ -609,7 +618,8 @@ export const useGameStore = create<GameState>()((set, get) => ({
   incrementVP: (playerIdx, delta) => {
     set((s) => {
       const players = [...s.players];
-      const newVP = Math.max(0, players[playerIdx].vp + delta) % (s.options.vpWinGoal + 1);
+      // +6: permite PV por encima del objetivo (prórroga) conservando el ciclo de la barra.
+      const newVP = Math.max(0, players[playerIdx].vp + delta) % (s.options.vpWinGoal + 6);
       players[playerIdx] = { ...players[playerIdx], vp: newVP };
       return { players };
     });
@@ -693,8 +703,19 @@ export const useGameStore = create<GameState>()((set, get) => ({
       if (s.votingPlayerIdx === s.speakerIdx) {
         return { votingPlayerIdx: NO_PLAYER };
       }
-      return { votingPlayerIdx: nextActivePlayerIdx(s.players, s.nbPlayers, s.votingPlayerIdx) };
+      const next = nextActivePlayerIdx(s.players, s.nbPlayers, s.votingPlayerIdx);
+      // Sin más jugadores activos (caso degenerado): terminar la votación.
+      return { votingPlayerIdx: next };
     });
+  },
+
+  // Reinicia la votación empezando por el primer jugador ACTIVO tras el Portavoz
+  // (salta abandonados). Lo usa la UI de Agenda al elegir el tipo de votación.
+  resetVoting: () => {
+    set((s) => ({
+      votes: [],
+      votingPlayerIdx: nextActivePlayerIdx(s.players, s.nbPlayers, s.speakerIdx),
+    }));
   },
 
   advanceAgendaStep: () => {
@@ -749,6 +770,8 @@ export const useGameStore = create<GameState>()((set, get) => ({
   revealNextObjective: () => {
     set((s) => ({ revealedCount: Math.min(s.revealedCount + 1, 10) }));
   },
+
+  markEndNotified: () => set({ endNotified: true }),
 
   scoreObjective: (objectiveId, playerIdx) => {
     set((s) => {
@@ -1028,6 +1051,7 @@ export const useGameStore = create<GameState>()((set, get) => ({
       objectiveDeck: saved.objectiveDeck ?? [],
       revealedCount: saved.revealedCount ?? 0,
       objectivesScoredBy: saved.objectivesScoredBy ?? {},
+      endNotified: saved.endNotified ?? false,
       researchedTechs: saved.researchedTechs ?? {},
       exhaustedTechs: saved.exhaustedTechs ?? {},
       nekroAssimilated: saved.nekroAssimilated ?? {},

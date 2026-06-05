@@ -49,6 +49,7 @@ export default function AgendaPhase() {
   const resetDecisionTimer = useGameStore((s) => s.resetDecisionTimer);
   const setVote = useGameStore((s) => s.setVote);
   const nextVotingPlayer = useGameStore((s) => s.nextVotingPlayer);
+  const resetVoting = useGameStore((s) => s.resetVoting);
   const votingPlayerIdx = useGameStore((s) => s.votingPlayerIdx);
   const stage = useGameStore((s) => s.agendaStage);
   const voteType = useGameStore((s) => s.agendaVoteType) as VoteType | null;
@@ -136,10 +137,7 @@ export default function AgendaPhase() {
         cols = [];
     }
     setAgendaColumns(cols);
-    useGameStore.setState((s) => ({
-      votes: [],
-      votingPlayerIdx: (s.speakerIdx + 1) % s.nbPlayers,
-    }));
+    resetVoting();
     setAgendaStage('voting');
   };
 

@@ -23,6 +23,7 @@ export default function VPBar() {
     <div className="flex flex-col flex-1 overflow-y-auto border-b border-[color:var(--accent-border-faint)] bg-[var(--bg-surface)]">
       {players.slice(0, nbPlayers).map((player, i) => {
         const faction = FACTIONS[player.faction];
+        if (!faction) return null;
         const colorName = PLAYER_COLORS[player.color];
         const colorValue = PLAYER_COLOR_VALUES[colorName];
         const isSpeaker = speakerIdx === i;

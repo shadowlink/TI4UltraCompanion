@@ -55,9 +55,15 @@ export function useHydrateOnMount(enabled: boolean) {
 
   useEffect(() => {
     if (!enabled) return;
-    const saved = loadGame();
-    if (saved) {
-      hydrateFromSave(saved);
+    try {
+      const saved = loadGame();
+      if (saved) {
+        hydrateFromSave(saved);
+      }
+    } catch (e) {
+      // Un guardado corrupto no debe romper el arranque: se continúa con el
+      // estado inicial (el usuario podrá importar una copia de seguridad).
+      console.error('No se pudo restaurar la partida guardada:', e);
     }
   }, [enabled, hydrateFromSave]);
 }

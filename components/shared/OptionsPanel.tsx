@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useGameStore } from '@/store/gameStore';
 import { FACTIONS } from '@/data/factions';
+import { downloadBackup, importBackupFile } from '@/lib/backup';
 import Modal from '@/components/ui/Modal';
 import Button from '@/components/ui/Button';
 import { Hexagon } from '@/components/ui/icons';
@@ -18,6 +19,23 @@ export default function OptionsPanel() {
   const [vpWinGoal, setVpWinGoal] = useState(String(options.vpWinGoal));
   const [decisionTimer, setDecisionTimer] = useState(String(options.decisionTimerLimit));
   const [inactivityTimer, setInactivityTimer] = useState(String(options.inactivityMinutes));
+  const [backupMsg, setBackupMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    if (!window.confirm('Esto sobrescribirá la partida actual con la copia importada. ¿Continuar?')) {
+      return;
+    }
+    const ok = await importBackupFile(file);
+    setBackupMsg(
+      ok
+        ? { ok: true, text: 'Partida restaurada correctamente.' }
+        : { ok: false, text: 'El archivo no es una copia de seguridad válida.' },
+    );
+  };
 
   useEffect(() => {
     setVpWinGoal(String(options.vpWinGoal));
@@ -112,6 +130,41 @@ export default function OptionsPanel() {
               );
             })}
           </div>
+        </section>
+
+        <section>
+          <p
+            className="text-xs text-[color:var(--text-muted)] uppercase tracking-wider mb-1"
+            style={{ fontFamily: 'var(--font-aldrich)' }}
+          >
+            {'Copia de seguridad'}
+          </p>
+          <p className="text-[11px] text-[color:var(--text-muted)] mb-3 leading-snug">
+            {'Descarga una copia del estado de la partida o restaura una guardada. Útil como respaldo durante la partida.'}
+          </p>
+          <div className="flex gap-2">
+            <Button onClick={() => { setBackupMsg(null); downloadBackup(); }} variant="secondary" size="md" fullWidth>
+              {'Exportar'}
+            </Button>
+            <Button onClick={() => fileInputRef.current?.click()} variant="secondary" size="md" fullWidth>
+              {'Importar'}
+            </Button>
+          </div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="application/json,.json"
+            onChange={handleImportFile}
+            className="hidden"
+          />
+          {backupMsg && (
+            <p
+              className="text-xs mt-2"
+              style={{ color: backupMsg.ok ? 'var(--success)' : 'var(--danger)' }}
+            >
+              {backupMsg.text}
+            </p>
+          )}
         </section>
 
         <section>

@@ -15,6 +15,7 @@ export default function MobileVPRow() {
       <div className="flex gap-1.5 overflow-x-auto px-2 py-2 scrollbar-hide">
         {players.slice(0, nbPlayers).map((p, i) => {
           const faction = FACTIONS[p.faction];
+          if (!faction) return null;
           const color = PLAYER_COLOR_VALUES[PLAYER_COLORS[p.color]];
           const isSpeaker = i === speakerIdx;
           const isAbandoned = p.abandoned;

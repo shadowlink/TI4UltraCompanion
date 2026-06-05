@@ -97,6 +97,7 @@ export default function MobileStatusPhase({ myPlayerIdx, sendCommand }: Props) {
           .sort((a, b) => b.p.vp - a.p.vp)
           .map(({ p, i }) => {
             const faction = FACTIONS[p.faction];
+            if (!faction) return null;
             const color = PLAYER_COLOR_VALUES[PLAYER_COLORS[p.color]];
             const isMe = i === myPlayerIdx;
             const isAbandoned = p.abandoned;

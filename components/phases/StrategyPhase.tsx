@@ -69,7 +69,10 @@ export default function StrategyPhase() {
   const currentPickerIdx =
     pickOrder.find((pIdx) => (playerPickCount[pIdx] ?? 0) < maxPicksPerPlayer) ?? NO_PLAYER;
   // La fase termina cuando todos los jugadores activos han alcanzado su cupo de cartas.
-  const allPicked = pickOrder.every((pIdx) => (playerPickCount[pIdx] ?? 0) >= maxPicksPerPlayer);
+  // Si no hay ningún jugador activo (todos abandonados), NO se considera completada
+  // para no entrar a la fase de Acción sin slots válidos.
+  const allPicked =
+    pickOrder.length > 0 && pickOrder.every((pIdx) => (playerPickCount[pIdx] ?? 0) >= maxPicksPerPlayer);
 
   const currentPicker = currentPickerIdx !== NO_PLAYER ? players[currentPickerIdx] : null;
   const currentFaction = currentPicker ? FACTIONS[currentPicker.faction] : null;

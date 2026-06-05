@@ -97,6 +97,7 @@ export type ModalType =
   | 'pauseAlert'
   | 'instructions'
   | 'broadcast'
+  | 'gameOver'
   | null;
 
 export interface TransitionText {
@@ -138,6 +139,8 @@ export interface SaveState {
   objectiveDeck: string[];
   revealedCount: number;
   objectivesScoredBy: Record<string, number[]>;
+  /** Aviso de "partida ya habría terminado" ya mostrado. Opcional en saves antiguos. */
+  endNotified?: boolean;
   researchedTechs: Record<number, string[]>;
   exhaustedTechs: Record<number, string[]>;
   /** Nekro Virus only — faction-specific tech IDs assimilated via Valefar X/Y (max 2 per player). */

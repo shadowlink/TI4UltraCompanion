@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { useGameStore } from '@/store/gameStore';
 import { FACTIONS, PLAYER_COLORS, PLAYER_COLOR_VALUES } from '@/data/factions';
 import { PHASE_END } from '@/lib/constants';
+import { computeEndState } from '@/lib/gameEnd';
 import { formatTime } from '@/lib/timeUtils';
 import Panel from '@/components/ui/Panel';
 import Button from '@/components/ui/Button';
@@ -45,9 +46,18 @@ export default function StatusPhase() {
   const newTurn = useGameStore((s) => s.newTurn);
   const revealNextObjective = useGameStore((s) => s.revealNextObjective);
   const readyAllTechs = useGameStore((s) => s.readyAllTechs);
+  const objectiveDeck = useGameStore((s) => s.objectiveDeck);
+  const revealedCount = useGameStore((s) => s.revealedCount);
 
   const activePlayers = players.slice(0, nbPlayers);
-  const hasWinner = activePlayers.some((p) => p.vp >= vpWinGoal);
+  // La partida "habría terminado" por PV o por agotarse los objetivos públicos.
+  const { anyEnd: gameWouldEnd } = computeEndState({
+    players,
+    nbPlayers,
+    objectiveDeck,
+    revealedCount,
+    vpWinGoal,
+  });
 
   const handleNextFromStep0 = () => {
     revealNextObjective();
@@ -83,6 +93,7 @@ export default function StatusPhase() {
           >
             {activePlayers.map((player, i) => {
               const faction = FACTIONS[player.faction];
+              if (!faction) return null;
               const colorValue = PLAYER_COLOR_VALUES[PLAYER_COLORS[player.color]];
               const isWinner = player.vp >= vpWinGoal;
               const isAbandoned = player.abandoned;
@@ -166,14 +177,14 @@ export default function StatusPhase() {
 
           {/* ── Bottom buttons (pinned to bottom-right corner) ──────────── */}
           <div className="flex items-center justify-between flex-shrink-0 gap-3 mt-auto">
-            {hasWinner ? (
+            {gameWouldEnd ? (
               <Button
                 onClick={() => setPhase(PHASE_END)}
                 variant="warning"
                 size="lg"
                 icon={Trophy}
               >
-                {'Fin del Juego'}
+                {'Terminar partida'}
               </Button>
             ) : (
               <div />
