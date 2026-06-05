@@ -1,8 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import { motion } from 'motion/react';
 import Image from 'next/image';
 import { useGameStore } from '@/store/gameStore';
+import { useVisualEffects } from '@/hooks/useVisualEffects';
 import { FACTIONS, PLAYER_COLOR_VALUES, PLAYER_COLORS } from '@/data/factions';
 import {
   NO_PLAYER,
@@ -45,6 +47,7 @@ export default function StrategyPhase() {
 
   const [swapMode, setSwapMode] = useState(false);
   const [swapFirstIdx, setSwapFirstIdx] = useState<number | null>(null);
+  const fx = useVisualEffects();
 
   const activePlayers = players.slice(0, nbPlayers);
   const naaluInGame = activePlayers.some((p) => p.faction === NAALU_FACTION);
@@ -126,7 +129,13 @@ export default function StrategyPhase() {
       >
         {!allPicked && currentFaction && currentPicker ? (
           <>
-            <div className="w-20 h-20 relative flex-shrink-0">
+            <motion.div
+              key={currentPickerIdx}
+              className="w-20 h-20 relative flex-shrink-0"
+              initial={fx ? { scale: 0.7, opacity: 0, rotate: -8 } : false}
+              animate={{ scale: 1, opacity: 1, rotate: 0 }}
+              transition={{ duration: 0.4, ease: 'easeOut' }}
+            >
               <Image
                 src={currentFaction.iconPath}
                 alt={currentFaction.shortName}
@@ -134,7 +143,7 @@ export default function StrategyPhase() {
                 className="object-contain"
                 unoptimized
               />
-            </div>
+            </motion.div>
             <div>
               <p className="text-2xl text-white text-shadow">
                 {currentFaction.nameEs} ({currentPicker.name})

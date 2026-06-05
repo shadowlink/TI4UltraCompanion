@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import { useState } from 'react';
 import { useGameStore } from '@/store/gameStore';
 import { FACTIONS } from '@/data/factions';
 import { TECH_COLOR_HEX, UNIT_TYPE_LABELS, type TechColor } from '@/data/factionSheets';
@@ -43,6 +44,7 @@ export default function MobileTechDetailsModal({
   viewerFactionIdx,
 }: Props) {
   const color = TECH_COLOR_HEX[tech.color];
+  const [confirmOverride, setConfirmOverride] = useState(false);
 
   const researched = researchedIds.includes(tech.id);
   const exhausted = researched && exhaustedIds.includes(tech.id);
@@ -70,6 +72,10 @@ export default function MobileTechDetailsModal({
     !isUnitUpgrade &&
     viewerFactionIdx === JOL_NAR_FACTION &&
     missing === 1;
+
+  // Override manual: para recursos no rastreados por la app (especialidad de
+  // planeta, notas de promesa, reliquias…) que cubren los prerrequisitos que faltan.
+  const canOverride = canToggle && !researched && !prereqsMet && !nekroActions;
 
   const startingFactions = (tech.startingFactionIdx ?? [])
     .map((i) => FACTIONS[i])
@@ -109,6 +115,12 @@ export default function MobileTechDetailsModal({
   const useAnalytical = async () => {
     if (!canUseAnalytical) return;
     await sendCommand({ type: 'researchTechAnalytical', techId: tech.id });
+    onClose();
+  };
+
+  const useOverride = async () => {
+    if (!canOverride) return;
+    await sendCommand({ type: 'researchTechOverride', techId: tech.id });
     onClose();
   };
 
@@ -377,6 +389,30 @@ export default function MobileTechDetailsModal({
                   {!prereqsMet && (
                     <p className="text-[11px] text-red-300 text-center">
                       {`Te faltan ${missing} prerequisitos`}
+                    </p>
+                  )}
+                  {canOverride && (
+                    confirmOverride ? (
+                      <button
+                        onClick={useOverride}
+                        className="w-full py-2.5 rounded border-2 border-amber-500/70 bg-amber-500/25 text-amber-100 text-sm active:bg-amber-500/40"
+                        style={{ fontFamily: 'var(--font-aldrich)' }}
+                      >
+                        ⚠ {'¿Seguro? Investigar igualmente'}
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => setConfirmOverride(true)}
+                        className="w-full py-2 rounded border border-amber-500/40 bg-amber-500/5 text-amber-300/90 text-xs active:bg-amber-500/15"
+                        style={{ fontFamily: 'var(--font-aldrich)' }}
+                      >
+                        {'Investigar igualmente'}
+                      </button>
+                    )
+                  )}
+                  {canOverride && (
+                    <p className="text-[10px] text-gray-500 text-center leading-snug">
+                      {'Úsalo si cubres los prerrequisitos con la especialidad de un planeta u otro efecto que la app no controla.'}
                     </p>
                   )}
                 </>

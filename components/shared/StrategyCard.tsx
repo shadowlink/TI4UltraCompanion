@@ -6,6 +6,7 @@ import { FACTIONS, PLAYER_COLORS, PLAYER_COLOR_VALUES } from '@/data/factions';
 import { NO_PLAYER, STRATEGY_PLAYED, STRATEGY_PASSED, STRATEGY_DISABLED } from '@/lib/constants';
 import { Check, RefreshCw } from '@/components/ui/icons';
 import { getStrategyActions } from '@/data/strategyActions';
+import { useVisualEffects } from '@/hooks/useVisualEffects';
 import type { StrategyEntry } from '@/types/game';
 
 interface StrategyCardProps {
@@ -33,6 +34,7 @@ export default function StrategyCard({
 }: StrategyCardProps) {
   void _stratIdx;
   const players = useGameStore((s) => s.players);
+  const fx = useVisualEffects();
 
   const isAssigned = strategy.playerIdx !== NO_PLAYER && strategy.playerIdx < 8;
   const isDisabled = strategy.status === STRATEGY_DISABLED;
@@ -84,10 +86,17 @@ export default function StrategyCard({
           </span>
           {assignedPlayer && (
             <span
-              className="text-[11px] block truncate"
+              className="block truncate leading-tight"
               style={{ color: playerColorValue, fontFamily: 'var(--font-aldrich)' }}
             >
-              {faction?.shortName}{assignedPlayer.name ? ` (${assignedPlayer.name})` : ''}
+              {assignedPlayer.name ? (
+                <>
+                  <span className="text-sm font-bold">{assignedPlayer.name}</span>
+                  {faction && <span className="text-[10px] opacity-70"> · {faction.shortName}</span>}
+                </>
+              ) : (
+                <span className="text-[11px]">{faction?.shortName}</span>
+              )}
             </span>
           )}
         </div>
@@ -119,6 +128,11 @@ export default function StrategyCard({
           : `inset 0 0 15px ${cardColor}08`,
       }}
     >
+      {/* Anillo pulsante de la carta activa */}
+      {isCurrent && fx && (
+        <span className="pulse-ring" style={{ ['--ring-color' as string]: cardColor }} aria-hidden />
+      )}
+
       {/* Rank — large background watermark */}
       <span
         className="absolute top-1 right-3 text-6xl font-bold leading-none pointer-events-none"
@@ -151,17 +165,25 @@ export default function StrategyCard({
           {cardName}
         </span>
 
-        {/* Player line — always reserved */}
+        {/* Player line — always reserved. El nombre del jugador es lo prominente
+            (la gente se identifica mejor por su nombre que por su facción). */}
         <span
-          className="text-sm text-center mt-0.5 truncate max-w-full min-h-[1.25rem] leading-tight"
+          className="block text-center mt-0.5 truncate max-w-full min-h-[1.5rem] leading-tight"
           style={{
             color: assignedPlayer ? playerColorValue : 'transparent',
             fontFamily: 'var(--font-aldrich)',
           }}
         >
-          {assignedPlayer
-            ? `${faction?.shortName}${assignedPlayer.name ? ` (${assignedPlayer.name})` : ''}`
-            : ' '}
+          {assignedPlayer ? (
+            assignedPlayer.name ? (
+              <>
+                <span className="text-lg font-bold">{assignedPlayer.name}</span>
+                {faction && <span className="text-[11px] opacity-70"> · {faction.shortName}</span>}
+              </>
+            ) : (
+              <span className="text-sm">{faction?.shortName ?? ' '}</span>
+            )
+          ) : ' '}
         </span>
 
         {/* BC line — always reserved */}
@@ -172,7 +194,7 @@ export default function StrategyCard({
             fontFamily: 'var(--font-share-tech-mono)',
           }}
         >
-          {showTG && strategy.tradeGoods > 0 ? `+${strategy.tradeGoods} Mercancías` : ' '}
+          {showTG && strategy.tradeGoods > 0 ? `+${strategy.tradeGoods} Mercancías` : ' '}
         </span>
       </div>
 

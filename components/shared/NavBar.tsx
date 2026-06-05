@@ -2,6 +2,8 @@
 
 import { useGameStore } from '@/store/gameStore';
 import { formatTime } from '@/lib/timeUtils';
+import { useActiveDecisionPlayer } from '@/hooks/useActiveDecisionPlayer';
+import { NO_PLAYER } from '@/lib/constants';
 import { Timer, Radio, Settings } from '@/components/ui/icons';
 
 const PHASE_LABELS: Record<number, string> = {
@@ -14,18 +16,26 @@ const PHASE_LABELS: Record<number, string> = {
 export default function NavBar() {
   const gameDuration = useGameStore((s) => s.gameDuration);
   const clockRun = useGameStore((s) => s.clockRun);
+  const clockStarted = useGameStore((s) => s.clockStarted);
   const phase = useGameStore((s) => s.phase);
   const turnCounter = useGameStore((s) => s.turnCounter);
   const decisionTimerRemaining = useGameStore((s) => s.decisionTimerRemaining);
   const decisionTimerLimit = useGameStore((s) => s.options.decisionTimerLimit);
   const setClock = useGameStore((s) => s.setClock);
+  const startClock = useGameStore((s) => s.startClock);
   const openModal = useGameStore((s) => s.openModal);
 
+  const activeDecisionIdx = useActiveDecisionPlayer();
+  const decisionActive = activeDecisionIdx !== NO_PLAYER;
   const phaseLabel = PHASE_LABELS[phase] ?? '';
-  const progressPct = Math.max(0, (decisionTimerRemaining / decisionTimerLimit) * 100);
-  const isDecisionRed = decisionTimerRemaining <= 5;
+  const progressPct = decisionActive ? Math.max(0, (decisionTimerRemaining / decisionTimerLimit) * 100) : 0;
+  const isDecisionRed = decisionActive && decisionTimerRemaining <= 5;
 
   const handleClockClick = () => {
+    if (!clockStarted) {
+      startClock();
+      return;
+    }
     setClock(clockRun === 1 ? -1 : 1);
   };
 
@@ -35,14 +45,14 @@ export default function NavBar() {
       <button
         onClick={handleClockClick}
         className="flex items-center gap-2 pointer-events-auto"
-        title={clockRun === 1 ? 'Pause' : 'Resume'}
+        title={!clockStarted ? 'Comenzar' : clockRun === 1 ? 'Pause' : 'Resume'}
       >
         <Timer size={16} className="text-[color:var(--accent)]" strokeWidth={2} aria-hidden />
         <span
           className={`text-base ${clockRun !== 1 ? 'text-[color:var(--text-muted)]' : 'text-white'}`}
           style={{ fontFamily: 'var(--font-share-tech-mono)' }}
         >
-          {clockRun === 0 ? '—Pausa—' : formatTime(gameDuration)}
+          {!clockStarted ? '▶ Empezar' : clockRun === 0 ? '—Pausa—' : formatTime(gameDuration)}
         </span>
       </button>
 
@@ -82,7 +92,7 @@ export default function NavBar() {
             color: isDecisionRed ? 'var(--danger)' : 'var(--text-secondary)',
           }}
         >
-          {decisionTimerRemaining > 0 ? decisionTimerRemaining : '¡Decide!'}
+          {!decisionActive ? '—' : decisionTimerRemaining > 0 ? decisionTimerRemaining : '¡Decide!'}
         </span>
       </div>
 

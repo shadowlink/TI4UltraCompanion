@@ -79,6 +79,8 @@ export interface GameOptions {
   showVPBar: boolean;
   showFactionClock: boolean;
   detailedAgenda: boolean;
+  /** Efectos visuales (fondo estelar, transiciones, destellos). Opcional en saves antiguos → activo por defecto. */
+  visualEffects?: boolean;
 }
 
 export type ModalType =
@@ -153,6 +155,8 @@ export interface SaveState {
   agendaColumns: string[];
   // Clock (persisted so per-player timer and pause/run state survive refresh)
   clockRun: ClockRun;
+  /** El reloj ya se arrancó. Opcional en saves antiguos → se asume true al cargar. */
+  clockStarted?: boolean;
   currentPlayerTimer: number;
   lastActivity: number;
 }
@@ -166,8 +170,9 @@ export const DEFAULT_OPTIONS: GameOptions = {
   decisionTimerLimit: 90,
   inactivityMinutes: 15,
   showVPBar: true,
-  showFactionClock: false,
+  showFactionClock: true,
   detailedAgenda: false,
+  visualEffects: true,
 };
 
 export function makeDefaultPlayer(idx: number): PlayerData {

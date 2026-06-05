@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Audiowide, Aldrich, Electrolize, Share_Tech_Mono } from 'next/font/google';
 import './globals.css';
+import StarfieldBackground from '@/components/shared/StarfieldBackground';
 
 const audiowide = Audiowide({
   weight: '400',
@@ -41,7 +42,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       lang="en"
       className={`${audiowide.variable} ${aldrich.variable} ${electrolize.variable} ${shareTechMono.variable} h-full`}
     >
-      <body className="h-full overflow-hidden">{children}</body>
+      <body className="h-full overflow-hidden">
+        <StarfieldBackground />
+        <div className="relative z-[1] h-full">{children}</div>
+      </body>
     </html>
   );
 }

@@ -103,6 +103,11 @@ export default function OptionsPanel() {
               checked={options.detailedAgenda}
               onChange={(v) => setOptions({ detailedAgenda: v })}
             />
+            <Toggle
+              label="Efectos visuales"
+              checked={options.visualEffects !== false}
+              onChange={(v) => setOptions({ visualEffects: v })}
+            />
           </div>
         </section>
 

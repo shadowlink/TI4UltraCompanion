@@ -1,10 +1,12 @@
 'use client';
 
 import { useEffect } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
 import { useSearchParams } from 'next/navigation';
 import { useGameStore } from '@/store/gameStore';
 import { FACTIONS } from '@/data/factions';
 import { computeEndState } from '@/lib/gameEnd';
+import { useVisualEffects } from '@/hooks/useVisualEffects';
 import { useIsViewOnly } from '@/lib/viewOnlyContext';
 import { useHydrateOnMount, useAutoPersist, flushPersistSync } from '@/hooks/usePersistence';
 import { useGameClock } from '@/hooks/useGameClock';
@@ -30,7 +32,7 @@ import OptionsPanel from '@/components/shared/OptionsPanel';
 import HostPanel from '@/components/shared/HostPanel';
 import Modal from '@/components/ui/Modal';
 import Button from '@/components/ui/Button';
-import { AlertTriangle, Power, Trophy } from '@/components/ui/icons';
+import { AlertTriangle, Power, Trophy, Timer } from '@/components/ui/icons';
 import SetupScreen from '@/components/screens/SetupScreen';
 import EndGameScreen from '@/components/screens/EndGameScreen';
 import StrategyPhase from '@/components/phases/StrategyPhase';
@@ -282,6 +284,7 @@ function HostLayout({ phase }: { phase: number }) {
   };
 
   const showNav = phase !== PHASE_INIT && phase !== PHASE_END;
+  const fx = useVisualEffects();
 
   return (
     <div className="flex flex-row h-screen overflow-hidden">
@@ -293,13 +296,58 @@ function HostLayout({ phase }: { phase: number }) {
       )}
 
       <div className="flex-1 flex flex-col overflow-hidden">
+        <StartClockBanner phase={phase} />
         <OvertimeBanner phase={phase} />
         {showNav && <PublicObjectivesBar />}
         <main className="flex-1 overflow-y-auto">
-          {renderPhase()}
+          {fx ? (
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={phase}
+                className="h-full"
+                initial={{ opacity: 0, y: 8, scale: 0.995 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -8, scale: 0.995 }}
+                transition={{ duration: 0.28, ease: 'easeOut' }}
+              >
+                {renderPhase()}
+              </motion.div>
+            </AnimatePresence>
+          ) : (
+            renderPhase()
+          )}
         </main>
       </div>
     </div>
+  );
+}
+
+/** Banner de arranque: la partida está lista pero el reloj no cuenta hasta que el
+ *  anfitrión pulsa "Comenzar". Solo en el anfitrión (no en el espejo). */
+function StartClockBanner({ phase }: { phase: number }) {
+  const clockStarted = useGameStore((s) => s.clockStarted);
+  const startClock = useGameStore((s) => s.startClock);
+  const isViewOnly = useIsViewOnly();
+
+  if (isViewOnly || clockStarted) return null;
+  if (phase === PHASE_INIT || phase === PHASE_END) return null;
+
+  return (
+    <button
+      type="button"
+      onClick={() => startClock()}
+      className="flex-shrink-0 w-full flex items-center justify-center gap-2 px-3 py-2.5 border-b text-sm uppercase tracking-wider cursor-pointer pointer-events-auto hover:bg-[color:var(--accent)]/20 transition-colors"
+      style={{
+        fontFamily: 'var(--font-aldrich)',
+        background: 'color-mix(in srgb, var(--accent) 16%, transparent)',
+        borderColor: 'var(--accent-border-strong)',
+        color: 'var(--accent-soft)',
+        boxShadow: 'var(--glow-accent)',
+      }}
+    >
+      <Timer size={16} strokeWidth={2} aria-hidden />
+      <span>{'Partida lista — ▶ Comenzar a contar el tiempo'}</span>
+    </button>
   );
 }
 

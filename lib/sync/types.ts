@@ -16,6 +16,7 @@ export type MobileCommand =
   | { type: 'researchTech'; techId: string }
   | { type: 'researchTechWithBypass'; techId: string; bypassTechId: string }
   | { type: 'researchTechAnalytical'; techId: string }
+  | { type: 'researchTechOverride'; techId: string }
   | { type: 'unresearchTech'; techId: string }
   | { type: 'exhaustTech'; techId: string }
   | { type: 'readyTech'; techId: string }

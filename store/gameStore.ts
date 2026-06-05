@@ -37,6 +37,7 @@ import {
   type AgendaVoteType,
 } from '@/types/game';
 import { clearSavedGame, extractSaveState } from '@/lib/persistence';
+import { getActiveDecisionPlayer } from '@/lib/turnInfo';
 import { STAGE_I_OBJECTIVES, STAGE_II_OBJECTIVES, OBJECTIVES_BY_ID } from '@/data/publicObjectives';
 import { TECH_BY_ID, canResearch } from '@/data/technologies';
 import { getFactionSheet } from '@/data/factionSheets';
@@ -108,6 +109,10 @@ interface GameState {
   // Clock
   gameDuration: number;
   clockRun: ClockRun;
+  /** El anfitrión ya ha arrancado el reloj. Mientras es false, el tiempo no corre. */
+  clockStarted: boolean;
+  /** Jugador al que se le está acumulando tiempo ahora (derivado; no persistido). */
+  currentTurnPlayerIdx: number;
   currentPlayerTimer: number;
   lastActivity: number;
   decisionTimerRemaining: number;
@@ -132,6 +137,8 @@ interface GameState {
   // Phase management
   setPhase: (phase: GamePhase, label?: string) => void;
   startFirstRound: () => void;
+  /** Arranca el reloj por primera vez (el anfitrión pulsa "Comenzar"). */
+  startClock: () => void;
   newTurn: () => void;
 
   // Speaker
@@ -250,6 +257,8 @@ const INITIAL_STATE = {
   options: DEFAULT_OPTIONS,
   gameDuration: 0,
   clockRun: 0 as ClockRun,
+  clockStarted: false,
+  currentTurnPlayerIdx: NO_PLAYER,
   currentPlayerTimer: 0,
   lastActivity: 0,
   decisionTimerRemaining: DEFAULT_OPTIONS.decisionTimerLimit,
@@ -305,10 +314,14 @@ export const useGameStore = create<GameState>()((set, get) => ({
       phase,
       showTransition: true,
       transitionText: { turn: turnLabel, phase: phaseLabel },
-      clockRun: phase === PHASE_END ? 0 : 1,
+      // El reloj solo corre si el anfitrión ya lo arrancó (clockStarted).
+      clockRun: phase === PHASE_END ? 0 : (s.clockStarted ? 1 : 0),
     });
     setTimeout(() => set({ showTransition: false }), 2000);
   },
+
+  startClock: () =>
+    set((s) => ({ clockStarted: true, clockRun: 1 as ClockRun, lastActivity: s.gameDuration })),
 
   startFirstRound: () => {
     const s = get();
@@ -556,7 +569,8 @@ export const useGameStore = create<GameState>()((set, get) => ({
 
     set({ activeStrategyIdx: idx, currentPlayerTimer: 0 });
     get().resetDecisionTimer();
-    get().setClock(1);
+    // No arrancar el reloj si el anfitrión aún no lo ha comenzado.
+    if (get().clockStarted) get().setClock(1);
   },
 
   resolveAction: ({ s1, s2, pass }) => {
@@ -594,16 +608,10 @@ export const useGameStore = create<GameState>()((set, get) => ({
         }
       }
 
-      // Save player clock
-      const players = [...st.players];
-      if (playerIdx < 8) {
-        players[playerIdx] = {
-          ...players[playerIdx],
-          clock: players[playerIdx].clock + st.currentPlayerTimer,
-        };
-      }
-
-      return { strategies, players, currentPlayerTimer: 0 };
+      // El tiempo del jugador ya se acumula segundo a segundo en `tick`, así que
+      // aquí no se vuelve a sumar (evita el doble conteo). Solo se reinicia el
+      // cronómetro del turno actual.
+      return { strategies, currentPlayerTimer: 0 };
     });
 
     get().nextPlayerAction();
@@ -977,11 +985,29 @@ export const useGameStore = create<GameState>()((set, get) => ({
   tick: () => {
     set((s) => {
       if (s.clockRun !== 1) return {};
-      return {
-        gameDuration: s.gameDuration + 1,
-        currentPlayerTimer: s.currentPlayerTimer + 1,
-        decisionTimerRemaining: Math.max(0, s.decisionTimerRemaining - 1),
-      };
+      // El tiempo total de partida siempre avanza mientras el reloj corre.
+      const patch: Partial<GameState> = { gameDuration: s.gameDuration + 1 };
+
+      const act = getActiveDecisionPlayer(s);
+      const turnChanged = act !== s.currentTurnPlayerIdx;
+      if (turnChanged) {
+        patch.currentTurnPlayerIdx = act;
+        patch.currentPlayerTimer = 0;
+        patch.decisionTimerRemaining = s.options.decisionTimerLimit;
+      }
+
+      // La cuenta atrás y el tiempo por jugador solo corren si alguien debe actuar.
+      if (act !== NO_PLAYER && act < 8) {
+        const players = [...s.players];
+        players[act] = { ...players[act], clock: players[act].clock + 1 };
+        patch.players = players;
+        const baseTurn = turnChanged ? 0 : s.currentPlayerTimer;
+        const baseDecision = turnChanged ? s.options.decisionTimerLimit : s.decisionTimerRemaining;
+        patch.currentPlayerTimer = baseTurn + 1;
+        patch.decisionTimerRemaining = Math.max(0, baseDecision - 1);
+      }
+
+      return patch;
     });
   },
 
@@ -1063,6 +1089,8 @@ export const useGameStore = create<GameState>()((set, get) => ({
       agendaVoteType: saved.agendaVoteType ?? null,
       agendaColumns: saved.agendaColumns ?? [],
       clockRun: saved.clockRun ?? 0,
+      // Saves antiguos en curso se asumen ya empezados (para no congelar el reloj).
+      clockStarted: saved.clockStarted ?? true,
       currentPlayerTimer: saved.currentPlayerTimer ?? 0,
       lastActivity: saved.lastActivity ?? saved.gameDuration ?? 0,
       decisionTimerRemaining: saved.options.decisionTimerLimit,
@@ -1091,6 +1119,7 @@ export const useGameStore = create<GameState>()((set, get) => ({
       votes: synced.votes,
       votingPlayerIdx: synced.votingPlayerIdx,
       clockRun: synced.clockRun,
+      clockStarted: synced.clockStarted ?? true,
       currentPlayerTimer: synced.currentPlayerTimer,
       agendaStage: synced.agendaStage ?? 'type_select',
       agendaVoteType: synced.agendaVoteType ?? null,

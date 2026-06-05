@@ -44,6 +44,7 @@ export function extractSaveState<T extends SaveState>(s: T): SaveState {
     agendaVoteType: s.agendaVoteType,
     agendaColumns: s.agendaColumns,
     clockRun: s.clockRun,
+    clockStarted: s.clockStarted,
     currentPlayerTimer: s.currentPlayerTimer,
     lastActivity: s.lastActivity,
   };

@@ -153,6 +153,17 @@ function processCommand(cmd: PendingCommand): void {
       store.forceResearchTech(playerIdx, cmd.command.techId);
       return;
     }
+    case 'researchTechOverride': {
+      // Override manual: el jugador declara un recurso no rastreado (especialidad
+      // de planeta, nota de promesa, reliquia…) que cubre los prerrequisitos que
+      // faltan. forceResearchTech ya valida que la tech existe y no está investigada.
+      const tech = TECH_BY_ID[cmd.command.techId];
+      if (!tech) return;
+      const owned = store.researchedTechs[playerIdx] ?? [];
+      if (owned.includes(cmd.command.techId)) return;
+      store.forceResearchTech(playerIdx, cmd.command.techId);
+      return;
+    }
     case 'unresearchTech': {
       store.unresearchTech(playerIdx, cmd.command.techId);
       return;

@@ -347,6 +347,10 @@ const STANDARD_UNIT_STATS: Record<UnitType, UnitStats> = {
     capacity: null,
     abilitiesEs: ["Producción X"],
     abilitiesEn: ["Production X"],
+    description: {
+      es: "La Producción de esta unidad es igual a 2 + los Recursos de este planeta. Hasta 3 Cazas no cuentan para la Capacidad de transporte de tus naves.",
+      en: "This unit's Production value is equal to 2 + the Resources of this planet. Up to 3 of your Fighters in this system don't count against your ships' capacity.",
+    },
   },
 };
 

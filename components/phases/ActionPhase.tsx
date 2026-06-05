@@ -21,7 +21,6 @@ export default function ActionPhase() {
   const players = useGameStore((s) => s.players);
   const strategies = useGameStore((s) => s.strategies);
   const activeStrategyIdx = useGameStore((s) => s.activeStrategyIdx);
-  const currentPlayerTimer = useGameStore((s) => s.currentPlayerTimer);
   const roundCounter = useGameStore((s) => s.roundCounter);
   const turnCounter = useGameStore((s) => s.turnCounter);
   const activeModal = useGameStore((s) => s.activeModal);
@@ -141,7 +140,7 @@ export default function ActionPhase() {
                         style={{ fontFamily: 'var(--font-share-tech-mono)' }}
                       >
                         <Timer size={14} strokeWidth={2} aria-hidden />
-                        {formatTime(currentPlayerTimer + activePlayer.clock)}
+                        {formatTime(activePlayer.clock)}
                       </p>
                     )}
                   </div>
