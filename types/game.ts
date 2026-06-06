@@ -81,6 +81,8 @@ export interface GameOptions {
   detailedAgenda: boolean;
   /** Efectos visuales (fondo estelar, transiciones, destellos). Opcional en saves antiguos → activo por defecto. */
   visualEffects?: boolean;
+  /** Modo gigante: objetivos enormes y cartas de estrategia minimalistas, para ver de lejos (TV). Opcional → desactivado por defecto. */
+  giantMode?: boolean;
 }
 
 export type ModalType =
@@ -173,6 +175,7 @@ export const DEFAULT_OPTIONS: GameOptions = {
   showFactionClock: true,
   detailedAgenda: false,
   visualEffects: true,
+  giantMode: false,
 };
 
 export function makeDefaultPlayer(idx: number): PlayerData {

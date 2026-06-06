@@ -11,8 +11,11 @@ import {
 } from '@/lib/constants';
 import { formatTime } from '@/lib/timeUtils';
 import StrategyCard from '@/components/shared/StrategyCard';
+import StrategyActionHelper from '@/components/shared/StrategyActionHelper';
 import SpeakerModal from '@/components/shared/SpeakerModal';
 import Button from '@/components/ui/Button';
+import { getFactionSheet } from '@/data/factionSheets';
+import { type QuickActionKind } from '@/data/strategyActions';
 import { Timer, Check, ArrowRight, Zap, Hexagon, X } from '@/components/ui/icons';
 import { type LucideIcon } from '@/components/ui/icons';
 
@@ -25,7 +28,13 @@ export default function ActionPhase() {
   const turnCounter = useGameStore((s) => s.turnCounter);
   const activeModal = useGameStore((s) => s.activeModal);
   const showFactionClock = useGameStore((s) => s.options.showFactionClock);
+  const giant = useGameStore((s) => s.options.giantMode === true);
   const resolveAction = useGameStore((s) => s.resolveAction);
+  const adjustTokens = useGameStore((s) => s.adjustTokens);
+  const adjustTradeGoods = useGameStore((s) => s.adjustTradeGoods);
+  const adjustCommodities = useGameStore((s) => s.adjustCommodities);
+  const replenishCommodities = useGameStore((s) => s.replenishCommodities);
+  const incrementVP = useGameStore((s) => s.incrementVP);
 
   // One action per turn: a single mutually-exclusive selection (TI4 rule).
   const [selected, setSelected] = useState<'s1' | 's2' | 'other' | 'pass' | null>(null);
@@ -64,6 +73,39 @@ export default function ActionPhase() {
     setSelected(null);
   };
 
+  // Aplica una acción rápida del ayudante sobre el jugador activo.
+  const applyQuickAction = (q: QuickActionKind) => {
+    if (activePlayerIdx >= 8) return;
+    switch (q.kind) {
+      case 'tokens':
+        adjustTokens(activePlayerIdx, q.pool, q.amount);
+        break;
+      case 'tradeGoods':
+        adjustTradeGoods(activePlayerIdx, q.amount);
+        break;
+      case 'commodities':
+        adjustCommodities(activePlayerIdx, q.amount);
+        break;
+      case 'replenishCommodities':
+        replenishCommodities(activePlayerIdx);
+        break;
+      case 'incrementVP':
+        incrementVP(activePlayerIdx, q.amount);
+        break;
+    }
+  };
+
+  // Carta cuya ayuda mostrar, según la acción seleccionada. Tanto la carta
+  // activa como la "segunda carta" (≤4 jug.) las juega su dueño con la habilidad
+  // PRIMARIA en su turno; la secundaria la usan los demás y no tiene turno aquí.
+  const helperCard =
+    s2Active && secondStrategy
+      ? { nameEn: secondStrategy.nameEn, variant: 'primary' as const }
+      : s1Active && activeStrategy && !activeStrategy.isNaaluSlot
+        ? { nameEn: activeStrategy.nameEn, variant: 'primary' as const }
+        : null;
+  const commodityMax = activePlayer ? getFactionSheet(activePlayer.faction)?.commodities ?? 0 : 0;
+
   const sidebarStrategies = strategies
     .map((st, i) => ({ st, i }))
     .filter(({ st }) => st.playerIdx !== NO_PLAYER && st.playerIdx < 8 && st.status !== STRATEGY_DISABLED);
@@ -88,6 +130,47 @@ export default function ActionPhase() {
         )}
       </div>
 
+      {/* ── Modo gigante: orden de facciones en horizontal + botones mini ──
+          Sin cabecera de jugador (ya se ve resaltado en el panel lateral) ni
+          checklist; los jugadores accionan normalmente desde su móvil. */}
+      {giant && (
+        <div className="flex flex-col gap-3 flex-shrink-0">
+          <div
+            className="grid gap-2"
+            style={{ gridTemplateColumns: `repeat(${Math.max(1, Math.ceil(sidebarStrategies.length / 2))}, minmax(0, 1fr))` }}
+          >
+            {sidebarStrategies.map(({ st, i }) => (
+              <StrategyCard
+                key={i}
+                strategy={st}
+                stratIdx={i}
+                rank={i}
+                isActive={true}
+                isCurrent={i === activeStrategyIdx}
+                showTG={false}
+                size="sm"
+              />
+            ))}
+          </div>
+          {activeFaction && activePlayer && (
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <ActionBtn label={activeStrategy?.nameEs ?? ''} icon={Zap} active={s1Active} done={isS1Played} tone="accent" onClick={() => toggle('s1')} compact />
+              {secondStrategy && (
+                <ActionBtn label={`${secondStrategy.nameEs} (2)`} icon={Zap} active={s2Active} done={isS2Played} tone="info" onClick={() => toggle('s2')} compact />
+              )}
+              <ActionBtn label={'Táctica'} icon={Hexagon} active={otherActive} done={false} tone="success" onClick={() => toggle('other')} compact />
+              <ActionBtn label={'Pasar'} icon={X} active={passActive} done={false} disabled={!canPass} tone="danger" onClick={() => toggle('pass')} compact />
+              {anyActionSelected && (
+                <Button onClick={handleResolve} variant="primary" size="sm" icon={ArrowRight} iconPosition="right">
+                  {'Resolver'}
+                </Button>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {!giant && (
       <div className="flex gap-4 flex-1 min-h-0">
         {/* ── Strategy sidebar ──────────────────────────────────────────── */}
         <div className="flex flex-col gap-1 w-60 flex-shrink-0 overflow-y-auto">
@@ -186,6 +269,17 @@ export default function ActionPhase() {
                 </div>
               </div>
 
+              {/* Strategy action helper (checklist + atajos numéricos) */}
+              {helperCard && (
+                <StrategyActionHelper
+                  nameEn={helperCard.nameEn}
+                  variant={helperCard.variant}
+                  onQuickAction={applyQuickAction}
+                  commodityMax={commodityMax}
+                  currentCommodities={activePlayer?.commodities ?? 0}
+                />
+              )}
+
               {/* Resolve button */}
               {anyActionSelected && (
                 <Button onClick={handleResolve} variant="primary" size="lg" icon={ArrowRight} iconPosition="right">
@@ -202,6 +296,7 @@ export default function ActionPhase() {
           )}
         </div>
       </div>
+      )}
 
       {activeModal === 'speaker' && <SpeakerModal />}
     </div>
@@ -227,6 +322,7 @@ function ActionBtn({
   disabled = false,
   tone,
   onClick,
+  compact = false,
 }: {
   label: string;
   icon: LucideIcon;
@@ -235,12 +331,13 @@ function ActionBtn({
   disabled?: boolean;
   tone: Tone;
   onClick: () => void;
+  compact?: boolean;
 }) {
   const isUnavailable = done || disabled;
   const color = TONE_VARS[tone];
 
   const cls = [
-    'px-4 py-3 text-lg rounded-[var(--radius)] border transition-all text-left flex items-center gap-3 pointer-events-auto',
+    `${compact ? 'px-2 py-1 text-xs gap-1.5' : 'px-4 py-3 text-lg gap-3'} rounded-[var(--radius)] border transition-all text-left flex items-center pointer-events-auto`,
   ];
   const style: React.CSSProperties = { fontFamily: 'var(--font-aldrich)' };
 
@@ -262,9 +359,9 @@ function ActionBtn({
       className={cls.join(' ')}
       style={style}
     >
-      <Icon size={18} strokeWidth={2} aria-hidden style={{ color: active && !isUnavailable ? color : undefined }} />
-      <span className="flex-1">{label}</span>
-      {done && <Check size={16} strokeWidth={2} className="text-[color:var(--success)]" aria-hidden />}
+      <Icon size={compact ? 14 : 18} strokeWidth={2} aria-hidden style={{ color: active && !isUnavailable ? color : undefined }} />
+      <span className={compact ? '' : 'flex-1'}>{label}</span>
+      {done && <Check size={compact ? 12 : 16} strokeWidth={2} className="text-[color:var(--success)]" aria-hidden />}
     </button>
   );
 }

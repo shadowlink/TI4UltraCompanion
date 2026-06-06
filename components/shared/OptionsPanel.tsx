@@ -108,6 +108,11 @@ export default function OptionsPanel() {
               checked={options.visualEffects !== false}
               onChange={(v) => setOptions({ visualEffects: v })}
             />
+            <Toggle
+              label="Modo gigante (TV / a distancia)"
+              checked={options.giantMode === true}
+              onChange={(v) => setOptions({ giantMode: v })}
+            />
           </div>
         </section>
 

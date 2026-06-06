@@ -19,6 +19,7 @@ export default function PublicObjectivesBar() {
   const revealedCount = useGameStore((s) => s.revealedCount);
   const objectivesScoredBy = useGameStore((s) => s.objectivesScoredBy);
   const players = useGameStore((s) => s.players);
+  const giant = useGameStore((s) => s.options.giantMode === true);
   const [openId, setOpenId] = useState<string | null>(null);
 
   if (objectiveDeck.length === 0) return null;
@@ -26,11 +27,15 @@ export default function PublicObjectivesBar() {
   return (
     <>
       <div
-        className="flex-shrink-0 border-b border-orange-500/20 bg-gray-900"
+        className={`flex-shrink-0 border-b border-orange-500/20 bg-gray-900 ${
+          giant ? 'max-h-[48vh] overflow-y-auto' : ''
+        }`}
       >
         <div
-          className="grid gap-1 px-2 py-2"
-          style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))' }}
+          className={`grid px-2 py-2 ${giant ? 'gap-2' : 'gap-1'}`}
+          style={{
+            gridTemplateColumns: `repeat(auto-fit, minmax(${giant ? 280 : 140}px, 1fr))`,
+          }}
         >
           {objectiveDeck.map((id, idx) => {
             const obj = OBJECTIVES_BY_ID[id];
@@ -44,9 +49,9 @@ export default function PublicObjectivesBar() {
                 <div
                   key={`${id}-${idx}`}
                   className="rounded border border-gray-700/60 bg-black/40 flex items-center justify-center p-2"
-                  style={{ minHeight: 240 }}
+                  style={{ minHeight: giant ? 110 : 240 }}
                 >
-                  <Lock size={32} className="text-gray-600" strokeWidth={2} aria-label="Oculta" />
+                  <Lock size={giant ? 34 : 32} className="text-gray-600" strokeWidth={2} aria-label="Oculta" />
                 </div>
               );
             }
@@ -55,11 +60,13 @@ export default function PublicObjectivesBar() {
               <button
                 key={`${id}-${idx}`}
                 onClick={() => setOpenId(id)}
-                className="rounded border-2 px-2.5 py-2.5 text-left transition hover:brightness-110 flex flex-col gap-2 pointer-events-auto"
+                className={`rounded border-2 text-left transition hover:brightness-110 flex flex-col pointer-events-auto ${
+                  giant ? 'px-3 py-3 gap-2' : 'px-2.5 py-2.5 gap-2'
+                }`}
                 style={{
                   borderColor: stageColor,
                   background: `linear-gradient(180deg, ${stageColor}25 0%, rgba(0,0,0,0.55) 100%)`,
-                  minHeight: 180,
+                  minHeight: giant ? undefined : 180,
                 }}
               >
                 {/* Top row: stage badge + points */}
@@ -68,7 +75,7 @@ export default function PublicObjectivesBar() {
                     {obj.stage === 1 ? 'I' : 'II'}
                   </Badge>
                   <span
-                    className="text-3xl font-bold leading-none"
+                    className={`${giant ? 'text-4xl' : 'text-3xl'} font-bold leading-none`}
                     style={{ color: stageColor, fontFamily: 'var(--font-share-tech-mono)' }}
                   >
                     {obj.points}
@@ -77,7 +84,7 @@ export default function PublicObjectivesBar() {
 
                 {/* Name */}
                 <p
-                  className="text-sm text-white leading-tight"
+                  className={`${giant ? 'text-lg' : 'text-sm'} text-white leading-tight`}
                   style={{ fontFamily: 'var(--font-audiowide)' }}
                 >
                   {obj.nameEn}
@@ -85,7 +92,7 @@ export default function PublicObjectivesBar() {
 
                 {/* Condition (always visible) */}
                 <p
-                  className="text-xs text-gray-200 leading-snug flex-1"
+                  className={`${giant ? 'text-xl' : 'text-xs'} text-gray-200 leading-snug flex-1`}
                   style={{ fontFamily: 'var(--font-electrolize)' }}
                   title={obj.conditionEn}
                 >
@@ -103,7 +110,7 @@ export default function PublicObjectivesBar() {
                       return (
                         <div
                           key={pIdx}
-                          className="w-5 h-5 relative rounded-full border bg-black/40"
+                          className={`${giant ? 'w-9 h-9' : 'w-5 h-5'} relative rounded-full border bg-black/40`}
                           style={{ borderColor: color }}
                           title={`${faction.shortName}${player.name ? ` (${player.name})` : ''}`}
                         >

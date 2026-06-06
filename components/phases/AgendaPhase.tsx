@@ -38,6 +38,7 @@ interface PlayerVote {
 export default function AgendaPhase() {
   const nbPlayers = useGameStore((s) => s.nbPlayers);
   const players = useGameStore((s) => s.players);
+  const giant = useGameStore((s) => s.options.giantMode === true);
   const agendaStep = useGameStore((s) => s.agendaStep);
   const speakerIdx = useGameStore((s) => s.speakerIdx);
   const turnCounter = useGameStore((s) => s.turnCounter);
@@ -318,8 +319,8 @@ export default function AgendaPhase() {
         )}
       </div>
 
-      {/* Current voter */}
-      {currentFaction && currentPlayer && (
+      {/* Current voter (oculto en modo gigante: el lateral ya marca al votante) */}
+      {!giant && currentFaction && currentPlayer && (
         <Panel
           variant={isNekro ? 'subtle' : 'accent'}
           className={`flex items-center gap-4 p-3 flex-shrink-0 ${isNekro ? 'opacity-70' : ''}`}

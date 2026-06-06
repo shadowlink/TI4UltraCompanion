@@ -24,6 +24,11 @@ export type MobileCommand =
   | { type: 'adjustTokens'; pool: 'tactic' | 'fleet' | 'strategy'; delta: number }
   | { type: 'adjustCommodities'; delta: number }
   | { type: 'adjustTradeGoods'; delta: number }
+  // Acciones rápidas del ayudante de estrategia (cantidad >1; validan turno activo)
+  | { type: 'gainTokens'; pool: 'tactic' | 'fleet' | 'strategy'; amount: number }
+  | { type: 'gainTradeGoods'; amount: number }
+  | { type: 'gainCommodities'; amount: number }
+  | { type: 'replenishCommodities' }
   | { type: 'assimilateTech'; techId: string }
   | { type: 'unassimilateTech'; techId: string }
   | { type: 'nekroGainTech'; techId: string }

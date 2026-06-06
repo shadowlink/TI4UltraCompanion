@@ -13,6 +13,7 @@ export {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  Circle,
   CircleDot,
   ClipboardList,
   Coins,

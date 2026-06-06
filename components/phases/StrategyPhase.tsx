@@ -48,6 +48,7 @@ export default function StrategyPhase() {
   const [swapMode, setSwapMode] = useState(false);
   const [swapFirstIdx, setSwapFirstIdx] = useState<number | null>(null);
   const fx = useVisualEffects();
+  const giant = useGameStore((s) => s.options.giantMode === true);
 
   const activePlayers = players.slice(0, nbPlayers);
   const naaluInGame = activePlayers.some((p) => p.faction === NAALU_FACTION);
@@ -122,7 +123,9 @@ export default function StrategyPhase() {
         </div>
       </div>
 
-      {/* Picker box — always mounted to avoid layout jump when selection completes */}
+      {/* Picker box — always mounted to avoid layout jump when selection completes.
+          En modo gigante se oculta: el panel lateral ya resalta al picker activo. */}
+      {!giant && (
       <Panel
         variant={allPicked ? 'surface' : 'accent'}
         className="flex items-center gap-4 p-4 transition-colors"
@@ -170,6 +173,7 @@ export default function StrategyPhase() {
           </div>
         )}
       </Panel>
+      )}
 
       {/* Swap mode banner */}
       {swapMode && (

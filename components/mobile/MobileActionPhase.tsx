@@ -6,6 +6,9 @@ import { useGameStore } from '@/store/gameStore';
 import { FACTIONS, PLAYER_COLORS, PLAYER_COLOR_VALUES } from '@/data/factions';
 import { NO_PLAYER, STRATEGY_PLAYED, STRATEGY_PASSED } from '@/lib/constants';
 import type { MobileCommand } from '@/lib/sync/types';
+import StrategyActionHelper from '@/components/shared/StrategyActionHelper';
+import { getFactionSheet } from '@/data/factionSheets';
+import { type QuickActionKind } from '@/data/strategyActions';
 
 interface Props {
   myPlayerIdx: number;
@@ -44,6 +47,34 @@ export default function MobileActionPhase({ myPlayerIdx, sendCommand }: Props) {
     mySecondStrategy.status === STRATEGY_PLAYED ||
     mySecondStrategy.status === STRATEGY_PASSED;
   const canPass = s1Done && s2Done;
+
+  const myPlayer = myPlayerIdx >= 0 ? players[myPlayerIdx] : null;
+  const commodityMax = myPlayer ? getFactionSheet(myPlayer.faction)?.commodities ?? 0 : 0;
+
+  const handleQuickAction = async (q: QuickActionKind) => {
+    if (busy) return;
+    let cmd: MobileCommand;
+    switch (q.kind) {
+      case 'tokens':
+        cmd = { type: 'gainTokens', pool: q.pool, amount: q.amount };
+        break;
+      case 'tradeGoods':
+        cmd = { type: 'gainTradeGoods', amount: q.amount };
+        break;
+      case 'commodities':
+        cmd = { type: 'gainCommodities', amount: q.amount };
+        break;
+      case 'replenishCommodities':
+        cmd = { type: 'replenishCommodities' };
+        break;
+      case 'incrementVP':
+        cmd = { type: 'incrementVP', delta: q.amount };
+        break;
+    }
+    setBusy(true);
+    await sendCommand(cmd);
+    setBusy(false);
+  };
 
   const handleAction = async (action: 'strat1' | 'strat2' | 'tactical' | 'pass') => {
     if (!isMyTurn || busy) return;
@@ -152,6 +183,30 @@ export default function MobileActionPhase({ myPlayerIdx, sendCommand }: Props) {
             </p>
           )}
         </div>
+      )}
+
+      {/* Ayudas de la(s) carta(s) de estrategia que juego en mi turno */}
+      {isMyTurn && activeStrat && !activeStrat.isNaaluSlot && (
+        <StrategyActionHelper
+          nameEn={activeStrat.nameEn}
+          variant="primary"
+          onQuickAction={handleQuickAction}
+          commodityMax={commodityMax}
+          currentCommodities={myPlayer?.commodities ?? 0}
+          disabled={busy}
+          compact
+        />
+      )}
+      {isMyTurn && mySecondStrategy && (
+        <StrategyActionHelper
+          nameEn={mySecondStrategy.nameEn}
+          variant="primary"
+          onQuickAction={handleQuickAction}
+          commodityMax={commodityMax}
+          currentCommodities={myPlayer?.commodities ?? 0}
+          disabled={busy}
+          compact
+        />
       )}
 
       <div>

@@ -163,6 +163,7 @@ interface GameState {
   incrementVP: (playerIdx: number, delta: number) => void;
   adjustTokens: (playerIdx: number, pool: 'tactic' | 'fleet' | 'strategy', delta: number) => void;
   adjustCommodities: (playerIdx: number, delta: number) => void;
+  replenishCommodities: (playerIdx: number) => void;
   adjustTradeGoods: (playerIdx: number, delta: number) => void;
 
   // Status
@@ -662,6 +663,18 @@ export const useGameStore = create<GameState>()((set, get) => ({
       return { players };
     });
   },
+
+  // Reponer Exportaciones al máximo de la facción (idempotente).
+  replenishCommodities: (playerIdx) =>
+    set((s) => {
+      const player = s.players[playerIdx];
+      if (!player) return {};
+      const max = getFactionSheet(player.faction)?.commodities ?? 0;
+      if ((player.commodities ?? 0) === max) return {};
+      const players = [...s.players];
+      players[playerIdx] = { ...player, commodities: max };
+      return { players };
+    }),
 
   adjustTradeGoods: (playerIdx, delta) => {
     set((s) => {

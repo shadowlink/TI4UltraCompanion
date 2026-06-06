@@ -42,6 +42,15 @@ function findPlayerIdxOfFaction(factionIdx: number): number {
   return s.players.slice(0, s.nbPlayers).findIndex((p) => p.faction === factionIdx);
 }
 
+/** true si estamos en Fase de Acción y es el turno de acción de este jugador. */
+function isActiveStrategyPlayer(
+  store: ReturnType<typeof useGameStore.getState>,
+  playerIdx: number,
+): boolean {
+  if (store.phase !== PHASE_ACTION) return false;
+  return store.strategies[store.activeStrategyIdx]?.playerIdx === playerIdx;
+}
+
 function processCommand(cmd: PendingCommand): void {
   const store = useGameStore.getState();
   const playerIdx = findPlayerIdxOfFaction(cmd.factionIdx);
@@ -197,6 +206,36 @@ function processCommand(cmd: PendingCommand): void {
       const { delta } = cmd.command;
       if (delta !== 1 && delta !== -1) return;
       store.adjustTradeGoods(playerIdx, delta);
+      return;
+    }
+
+    // ── Acciones rápidas del ayudante de estrategia ─────────────────────────
+    // Solo durante la Fase de Acción y solo el jugador cuyo turno está activo.
+    case 'gainTokens': {
+      if (!isActiveStrategyPlayer(store, playerIdx)) return;
+      const { pool, amount } = cmd.command;
+      if (pool !== 'tactic' && pool !== 'fleet' && pool !== 'strategy') return;
+      if (!Number.isInteger(amount) || amount < 1 || amount > 3) return;
+      store.adjustTokens(playerIdx, pool, amount);
+      return;
+    }
+    case 'gainTradeGoods': {
+      if (!isActiveStrategyPlayer(store, playerIdx)) return;
+      const { amount } = cmd.command;
+      if (!Number.isInteger(amount) || amount < 1 || amount > 3) return;
+      store.adjustTradeGoods(playerIdx, amount);
+      return;
+    }
+    case 'gainCommodities': {
+      if (!isActiveStrategyPlayer(store, playerIdx)) return;
+      const { amount } = cmd.command;
+      if (!Number.isInteger(amount) || amount < 1 || amount > 3) return;
+      store.adjustCommodities(playerIdx, amount);
+      return;
+    }
+    case 'replenishCommodities': {
+      if (!isActiveStrategyPlayer(store, playerIdx)) return;
+      store.replenishCommodities(playerIdx);
       return;
     }
     case 'assimilateTech': {

@@ -48,6 +48,7 @@ export default function StatusPhase() {
   const readyAllTechs = useGameStore((s) => s.readyAllTechs);
   const objectiveDeck = useGameStore((s) => s.objectiveDeck);
   const revealedCount = useGameStore((s) => s.revealedCount);
+  const giant = useGameStore((s) => s.options.giantMode === true);
 
   const activePlayers = players.slice(0, nbPlayers);
   // La partida "habría terminado" por PV o por agotarse los objetivos públicos.
@@ -155,7 +156,8 @@ export default function StatusPhase() {
             })}
           </div>
 
-          {/* ── Status checklist ─────────────────────────────────────── */}
+          {/* ── Status checklist (oculta en modo gigante) ─────────────── */}
+          {!giant && (
           <Panel variant="subtle" className="p-3 flex-shrink-0">
             <p
               className="text-xs text-[color:var(--text-muted)] uppercase tracking-wider mb-2"
@@ -174,6 +176,7 @@ export default function StatusPhase() {
               ))}
             </ul>
           </Panel>
+          )}
 
           {/* ── Bottom buttons (pinned to bottom-right corner) ──────────── */}
           <div className="flex items-center justify-between flex-shrink-0 gap-3 mt-auto">
