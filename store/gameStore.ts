@@ -766,11 +766,15 @@ export const useGameStore = create<GameState>()((set, get) => ({
   setAgendaVoteType: (type) => set({ agendaVoteType: type }),
   setAgendaColumns: (cols) => set({ agendaColumns: cols }),
   addAgendaColumn: (label) => set((s) => ({ agendaColumns: [...s.agendaColumns, label] })),
-  resetAgendaContext: () => set({
+  resetAgendaContext: () => set((s) => ({
     agendaStage: 'type_select',
     agendaVoteType: null,
     agendaColumns: [],
-  }),
+    // Al volver a elegir tipo ("Cambiar"), descarta votos y turno previos para no
+    // dejar estado fantasma si luego se reconfigura el voto.
+    votes: [],
+    votingPlayerIdx: nextActivePlayerIdx(s.players, s.nbPlayers, s.speakerIdx),
+  })),
 
   // ── Public objectives ──────────────────────────────────────────────────────
 
@@ -1143,7 +1147,7 @@ export const useGameStore = create<GameState>()((set, get) => ({
       researchedTechs: synced.researchedTechs ?? {},
       exhaustedTechs: synced.exhaustedTechs ?? {},
       nekroAssimilated: synced.nekroAssimilated ?? {},
-      decisionTimerRemaining: synced.options.decisionTimerLimit,
+      decisionTimerRemaining: synced.decisionTimerRemaining ?? synced.options.decisionTimerLimit,
     });
   },
 

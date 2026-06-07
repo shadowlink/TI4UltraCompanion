@@ -27,6 +27,7 @@ import {
 import VPBar from '@/components/shared/VPBar';
 import NavBar from '@/components/shared/NavBar';
 import PublicObjectivesBar from '@/components/shared/PublicObjectivesBar';
+import GiantDashboard from '@/components/shared/GiantDashboard';
 import TransitionOverlay from '@/components/shared/TransitionOverlay';
 import OptionsPanel from '@/components/shared/OptionsPanel';
 import HostPanel from '@/components/shared/HostPanel';
@@ -68,6 +69,7 @@ export default function GameShell() {
   const activeModal = useGameStore((s) => s.activeModal);
   const closeModal = useGameStore((s) => s.closeModal);
   const setClock = useGameStore((s) => s.setClock);
+  const giantMode = useGameStore((s) => s.options.giantMode === true);
 
   // ── Fin de partida no abrupto: detectar y anunciar (sin terminar) ──────────
   const players = useGameStore((s) => s.players);
@@ -168,9 +170,14 @@ export default function GameShell() {
         </div>
       );
     }
+    const isActivePhase =
+      phase === PHASE_STRATEGY ||
+      phase === PHASE_ACTION ||
+      phase === PHASE_STATUS ||
+      phase === PHASE_AGENDA;
     return (
       <ViewOnlyContext value={true}>
-        <HostLayout phase={phase} />
+        {giantMode && isActivePhase ? <GiantDashboard /> : <HostLayout phase={phase} />}
       </ViewOnlyContext>
     );
   }

@@ -10,7 +10,7 @@ import { useActiveDecisionPlayer } from '@/hooks/useActiveDecisionPlayer';
 import { useVisualEffects } from '@/hooks/useVisualEffects';
 import Badge from '@/components/ui/Badge';
 import AnimatedVP from '@/components/shared/AnimatedVP';
-import { Crown, Swords, Rocket, Star, Timer } from '@/components/ui/icons';
+import { Crown, Swords, Rocket, Star, Timer, Minus } from '@/components/ui/icons';
 
 export default function VPBar() {
   const nbPlayers = useGameStore((s) => s.nbPlayers);
@@ -18,7 +18,6 @@ export default function VPBar() {
   const speakerIdx = useGameStore((s) => s.speakerIdx);
   const showVPBar = useGameStore((s) => s.options.showVPBar);
   const showFactionClock = useGameStore((s) => s.options.showFactionClock);
-  const giant = useGameStore((s) => s.options.giantMode === true);
   const vpWinGoal = useGameStore((s) => s.options.vpWinGoal);
   const incrementVP = useGameStore((s) => s.incrementVP);
   const activeDecisionIdx = useActiveDecisionPlayer();
@@ -113,47 +112,60 @@ export default function VPBar() {
                 )}
               </div>
 
-              <AnimatedVP
-                value={player.vp}
-                className="text-3xl font-bold leading-none text-shadow flex-shrink-0"
-                style={{
-                  fontFamily: 'var(--font-share-tech-mono)',
-                  color: isWinner ? 'var(--vp-gold)' : 'var(--text-primary)',
-                }}
-              />
+              <div className="flex items-center gap-1.5 flex-shrink-0">
+                {!viewOnly && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      incrementVP(i, -1);
+                    }}
+                    className="w-7 h-7 flex items-center justify-center rounded-full border border-white/15 text-[color:var(--text-secondary)] hover:border-[color:var(--danger)] hover:text-[color:var(--danger)] transition-colors pointer-events-auto"
+                    aria-label="Restar punto de victoria"
+                    title="Restar 1 PV"
+                  >
+                    <Minus size={14} strokeWidth={2} aria-hidden />
+                  </button>
+                )}
+                <AnimatedVP
+                  value={player.vp}
+                  className="text-3xl font-bold leading-none text-shadow"
+                  style={{
+                    fontFamily: 'var(--font-share-tech-mono)',
+                    color: isWinner ? 'var(--vp-gold)' : 'var(--text-primary)',
+                  }}
+                />
+              </div>
             </div>
 
             {/* Bottom strip: command tokens (left) + economy (right) */}
-            <div className={`flex items-center pl-0.5 ${giant ? 'gap-3' : 'gap-2'}`}>
-              <div className={`flex items-center ${giant ? 'gap-5' : 'gap-2.5'}`}>
-                <span className={`flex items-center ${giant ? 'gap-1.5' : 'gap-1'}`}>
-                  <Swords size={giant ? 24 : 15} className="text-[color:var(--accent)]" strokeWidth={2} aria-hidden />
-                  <span className={`${giant ? 'text-2xl' : 'text-sm'} font-bold text-white leading-none`} style={{ fontFamily: 'var(--font-share-tech-mono)' }}>{tokens.tactic}</span>
+            <div className="flex items-center gap-2 pl-0.5">
+              <div className="flex items-center gap-2.5">
+                <span className="flex items-center gap-1">
+                  <Swords size={15} className="text-[color:var(--accent)]" strokeWidth={2} aria-hidden />
+                  <span className="text-sm font-bold text-white leading-none" style={{ fontFamily: 'var(--font-share-tech-mono)' }}>{tokens.tactic}</span>
                 </span>
-                <span className={`flex items-center ${giant ? 'gap-1.5' : 'gap-1'}`}>
-                  <Rocket size={giant ? 24 : 15} className="text-[color:var(--info)]" strokeWidth={2} aria-hidden />
-                  <span className={`${giant ? 'text-2xl' : 'text-sm'} font-bold text-white leading-none`} style={{ fontFamily: 'var(--font-share-tech-mono)' }}>{tokens.fleet}</span>
+                <span className="flex items-center gap-1">
+                  <Rocket size={15} className="text-[color:var(--info)]" strokeWidth={2} aria-hidden />
+                  <span className="text-sm font-bold text-white leading-none" style={{ fontFamily: 'var(--font-share-tech-mono)' }}>{tokens.fleet}</span>
                 </span>
-                <span className={`flex items-center ${giant ? 'gap-1.5' : 'gap-1'}`}>
-                  <Star size={giant ? 24 : 15} className="text-[color:var(--success)]" strokeWidth={2} aria-hidden />
-                  <span className={`${giant ? 'text-2xl' : 'text-sm'} font-bold text-white leading-none`} style={{ fontFamily: 'var(--font-share-tech-mono)' }}>{tokens.strategy}</span>
+                <span className="flex items-center gap-1">
+                  <Star size={15} className="text-[color:var(--success)]" strokeWidth={2} aria-hidden />
+                  <span className="text-sm font-bold text-white leading-none" style={{ fontFamily: 'var(--font-share-tech-mono)' }}>{tokens.strategy}</span>
                 </span>
               </div>
 
-              {!giant && (
-                <div className="ml-auto flex items-center gap-2.5">
-                  <span className="flex items-center gap-1">
-                    <span className="text-[10px] uppercase tracking-wider leading-none" style={{ color: '#06b6d4', fontFamily: 'var(--font-aldrich)' }}>Exp</span>
-                    <span className="text-sm font-bold text-white leading-none" style={{ fontFamily: 'var(--font-share-tech-mono)' }}>
-                      {commodities}{maxCommodities > 0 && <span className="text-[10px] text-gray-400">/{maxCommodities}</span>}
-                    </span>
+              <div className="ml-auto flex items-center gap-2.5">
+                <span className="flex items-center gap-1">
+                  <span className="text-[10px] uppercase tracking-wider leading-none" style={{ color: '#06b6d4', fontFamily: 'var(--font-aldrich)' }}>Exp</span>
+                  <span className="text-sm font-bold text-white leading-none" style={{ fontFamily: 'var(--font-share-tech-mono)' }}>
+                    {commodities}{maxCommodities > 0 && <span className="text-[10px] text-gray-400">/{maxCommodities}</span>}
                   </span>
-                  <span className="flex items-center gap-1">
-                    <span className="text-[10px] uppercase tracking-wider leading-none" style={{ color: '#fbbf24', fontFamily: 'var(--font-aldrich)' }}>Mer</span>
-                    <span className="text-sm font-bold text-white leading-none" style={{ fontFamily: 'var(--font-share-tech-mono)' }}>{tradeGoods}</span>
-                  </span>
-                </div>
-              )}
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="text-[10px] uppercase tracking-wider leading-none" style={{ color: '#fbbf24', fontFamily: 'var(--font-aldrich)' }}>Mer</span>
+                  <span className="text-sm font-bold text-white leading-none" style={{ fontFamily: 'var(--font-share-tech-mono)' }}>{tradeGoods}</span>
+                </span>
+              </div>
             </div>
           </div>
         );

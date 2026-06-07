@@ -17,8 +17,6 @@ export default function ObjectiveScoringModal({ objectiveId, onClose }: Props) {
   const scoreObjective = useGameStore((s) => s.scoreObjective);
   const unscoreObjective = useGameStore((s) => s.unscoreObjective);
 
-  const giant = useGameStore((s) => s.options.giantMode === true);
-
   const obj = OBJECTIVES_BY_ID[objectiveId];
   if (!obj) return null;
 
@@ -69,7 +67,7 @@ export default function ObjectiveScoringModal({ objectiveId, onClose }: Props) {
         </div>
 
         <div className="px-5 py-3 border-b border-gray-700">
-          <p className={`${giant ? 'text-xl' : 'text-sm'} text-gray-200 leading-snug`}>{obj.conditionEn}</p>
+          <p className="text-sm text-gray-200 leading-snug">{obj.conditionEn}</p>
         </div>
 
         <div className="px-5 py-3">

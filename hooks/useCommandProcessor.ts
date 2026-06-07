@@ -23,7 +23,10 @@ import {
 
 function findCurrentPicker(): number {
   const s = useGameStore.getState();
-  const pickOrder = Array.from({ length: s.nbPlayers }, (_, i) => (s.speakerIdx + i) % s.nbPlayers);
+  // Los jugadores abandonados no eligen carta; excluirlos (igual que StrategyPhase)
+  // para que no bloqueen el turno de selección ni el rechazo de pickStrategy.
+  const pickOrder = Array.from({ length: s.nbPlayers }, (_, i) => (s.speakerIdx + i) % s.nbPlayers)
+    .filter((idx) => !s.players[idx]?.abandoned);
   const counts: Record<number, number> = {};
   s.strategies.forEach((st) => {
     if (st.playerIdx !== NO_PLAYER && st.playerIdx < 8) {
@@ -279,7 +282,11 @@ function processCommand(cmd: PendingCommand): void {
         if (st.secondPickPlayerIdx !== undefined && st.secondPickPlayerIdx < 8) counts[st.secondPickPlayerIdx] = (counts[st.secondPickPlayerIdx] ?? 0) + 1;
       });
       const maxPicks = store.nbPlayers <= 4 ? 2 : 1;
-      const pickOrder = Array.from({ length: store.nbPlayers }, (_, i) => (store.speakerIdx + i) % store.nbPlayers);
+      // Excluir abandonados (no eligen carta) y exigir al menos un jugador activo,
+      // igual que el guard `allPicked` de StrategyPhase.
+      const pickOrder = Array.from({ length: store.nbPlayers }, (_, i) => (store.speakerIdx + i) % store.nbPlayers)
+        .filter((idx) => !store.players[idx]?.abandoned);
+      if (pickOrder.length === 0) return;
       if (!pickOrder.every((idx) => (counts[idx] ?? 0) >= maxPicks)) return;
       store.finalizeStrategyPhase();
       return;
@@ -309,6 +316,10 @@ function processCommand(cmd: PendingCommand): void {
       if (playerIdx !== store.speakerIdx) return;
       store.setAgendaVoteType(cmd.command.voteType);
       store.setAgendaColumns(cmd.command.columns);
+      // Igual que el flujo de escritorio (startVoting): limpia votos previos y fija
+      // votingPlayerIdx al primer jugador activo tras el portavoz, para que el turno
+      // de votación nunca quede obsoleto al iniciar el voto desde el móvil.
+      store.resetVoting();
       store.setAgendaStage('voting');
       return;
     }

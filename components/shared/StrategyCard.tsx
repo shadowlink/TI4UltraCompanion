@@ -5,7 +5,7 @@ import { useGameStore } from '@/store/gameStore';
 import { FACTIONS, PLAYER_COLORS, PLAYER_COLOR_VALUES } from '@/data/factions';
 import { NO_PLAYER, STRATEGY_PLAYED, STRATEGY_PASSED, STRATEGY_DISABLED } from '@/lib/constants';
 import { Check, RefreshCw } from '@/components/ui/icons';
-import { getStrategyActions, getStrategyShort } from '@/data/strategyActions';
+import { getStrategyActions } from '@/data/strategyActions';
 import { useVisualEffects } from '@/hooks/useVisualEffects';
 import type { StrategyEntry } from '@/types/game';
 
@@ -34,7 +34,6 @@ export default function StrategyCard({
 }: StrategyCardProps) {
   void _stratIdx;
   const players = useGameStore((s) => s.players);
-  const giant = useGameStore((s) => s.options.giantMode === true);
   const fx = useVisualEffects();
 
   const isAssigned = strategy.playerIdx !== NO_PLAYER && strategy.playerIdx < 8;
@@ -51,7 +50,6 @@ export default function StrategyCard({
   const cardName = strategy.nameEs;
   const cardColor = strategy.color;
   const actions = getStrategyActions(strategy.nameEn);
-  const shortLabel = getStrategyShort(strategy.nameEn, cardName);
 
   if (size === 'sm') {
     return (
@@ -69,7 +67,7 @@ export default function StrategyCard({
         style={{ borderColor: playerColorValue ?? cardColor, borderWidth: isCurrent ? 2 : 1 }}
       >
         <span
-          className={`${giant ? 'text-3xl' : 'text-xl'} font-bold leading-none flex-shrink-0`}
+          className="text-xl font-bold leading-none flex-shrink-0"
           style={{ fontFamily: 'var(--font-share-tech-mono)', color: cardColor }}
         >
           {rank}
@@ -81,10 +79,10 @@ export default function StrategyCard({
         )}
         <div className="flex-1 min-w-0">
           <span
-            className={`${giant ? 'text-lg' : 'text-sm'} text-shadow leading-tight block truncate ${isPlayed ? 'line-through' : ''}`}
+            className={`text-sm text-shadow leading-tight block truncate ${isPlayed ? 'line-through' : ''}`}
             style={{ fontFamily: 'var(--font-electrolize)' }}
           >
-            {giant ? shortLabel : cardName}
+            {cardName}
           </span>
           {assignedPlayer && (
             <span
@@ -161,21 +159,11 @@ export default function StrategyCard({
 
         {/* Strategy name */}
         <span
-          className={`${giant ? 'text-2xl' : 'text-lg'} font-semibold text-center text-shadow leading-tight mt-1.5 ${isPlayed ? 'line-through' : ''}`}
+          className={`text-lg font-semibold text-center text-shadow leading-tight mt-1.5 ${isPlayed ? 'line-through' : ''}`}
           style={{ fontFamily: 'var(--font-electrolize)', color: 'white' }}
         >
           {cardName}
         </span>
-
-        {/* Giant mode: resumen ultracorto de qué hace */}
-        {giant && (
-          <span
-            className="text-center leading-tight mt-1 text-[color:var(--accent-soft)]"
-            style={{ fontFamily: 'var(--font-aldrich)', fontSize: '1.05rem' }}
-          >
-            {shortLabel}
-          </span>
-        )}
 
         {/* Player line — always reserved. El nombre del jugador es lo prominente
             (la gente se identifica mejor por su nombre que por su facción). */}
@@ -210,8 +198,8 @@ export default function StrategyCard({
         </span>
       </div>
 
-      {/* Action texts — ocultos en modo gigante para dejar solo lo esencial */}
-      {actions && !giant && (
+      {/* Action texts */}
+      {actions && (
         <div className="px-3 pt-3 pb-3 mt-2 flex-1 flex flex-col gap-2 z-10 border-t border-white/10 bg-black/30">
           <div>
             <span

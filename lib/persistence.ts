@@ -46,6 +46,7 @@ export function extractSaveState<T extends SaveState>(s: T): SaveState {
     clockRun: s.clockRun,
     clockStarted: s.clockStarted,
     currentPlayerTimer: s.currentPlayerTimer,
+    decisionTimerRemaining: s.decisionTimerRemaining,
     lastActivity: s.lastActivity,
   };
 }

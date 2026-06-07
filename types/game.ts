@@ -160,6 +160,8 @@ export interface SaveState {
   /** El reloj ya se arrancó. Opcional en saves antiguos → se asume true al cargar. */
   clockStarted?: boolean;
   currentPlayerTimer: number;
+  /** Cuenta atrás de decisión (s). Opcional → en saves antiguos se cae al límite de opciones. */
+  decisionTimerRemaining?: number;
   lastActivity: number;
 }
 

@@ -28,7 +28,6 @@ export default function ActionPhase() {
   const turnCounter = useGameStore((s) => s.turnCounter);
   const activeModal = useGameStore((s) => s.activeModal);
   const showFactionClock = useGameStore((s) => s.options.showFactionClock);
-  const giant = useGameStore((s) => s.options.giantMode === true);
   const resolveAction = useGameStore((s) => s.resolveAction);
   const adjustTokens = useGameStore((s) => s.adjustTokens);
   const adjustTradeGoods = useGameStore((s) => s.adjustTradeGoods);
@@ -130,47 +129,6 @@ export default function ActionPhase() {
         )}
       </div>
 
-      {/* ── Modo gigante: orden de facciones en horizontal + botones mini ──
-          Sin cabecera de jugador (ya se ve resaltado en el panel lateral) ni
-          checklist; los jugadores accionan normalmente desde su móvil. */}
-      {giant && (
-        <div className="flex flex-col gap-3 flex-shrink-0">
-          <div
-            className="grid gap-2"
-            style={{ gridTemplateColumns: `repeat(${Math.max(1, Math.ceil(sidebarStrategies.length / 2))}, minmax(0, 1fr))` }}
-          >
-            {sidebarStrategies.map(({ st, i }) => (
-              <StrategyCard
-                key={i}
-                strategy={st}
-                stratIdx={i}
-                rank={i}
-                isActive={true}
-                isCurrent={i === activeStrategyIdx}
-                showTG={false}
-                size="sm"
-              />
-            ))}
-          </div>
-          {activeFaction && activePlayer && (
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <ActionBtn label={activeStrategy?.nameEs ?? ''} icon={Zap} active={s1Active} done={isS1Played} tone="accent" onClick={() => toggle('s1')} compact />
-              {secondStrategy && (
-                <ActionBtn label={`${secondStrategy.nameEs} (2)`} icon={Zap} active={s2Active} done={isS2Played} tone="info" onClick={() => toggle('s2')} compact />
-              )}
-              <ActionBtn label={'Táctica'} icon={Hexagon} active={otherActive} done={false} tone="success" onClick={() => toggle('other')} compact />
-              <ActionBtn label={'Pasar'} icon={X} active={passActive} done={false} disabled={!canPass} tone="danger" onClick={() => toggle('pass')} compact />
-              {anyActionSelected && (
-                <Button onClick={handleResolve} variant="primary" size="sm" icon={ArrowRight} iconPosition="right">
-                  {'Resolver'}
-                </Button>
-              )}
-            </div>
-          )}
-        </div>
-      )}
-
-      {!giant && (
       <div className="flex gap-4 flex-1 min-h-0">
         {/* ── Strategy sidebar ──────────────────────────────────────────── */}
         <div className="flex flex-col gap-1 w-60 flex-shrink-0 overflow-y-auto">
@@ -296,7 +254,6 @@ export default function ActionPhase() {
           )}
         </div>
       </div>
-      )}
 
       {activeModal === 'speaker' && <SpeakerModal />}
     </div>
